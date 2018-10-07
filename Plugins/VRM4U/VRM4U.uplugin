@@ -1,0 +1,28 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "VRMforUnreal",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+  "Modules": [
+    {
+      "Name": "VRM4U",
+      "Type": "Developer",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "VRMImporter",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
