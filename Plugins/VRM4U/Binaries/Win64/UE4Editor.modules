@@ -2,7 +2,7 @@
 	"BuildId": "4212847",
 	"Modules": 
 	{
-		"VRM4U": "UE4Editor-VRM4U-3924.dll",
-		"VRMImporter": "UE4Editor-VRMImporter-176.dll"
+		"VRM4U": "UE4Editor-VRM4U.dll",
+		"VRM4UImporter": "UE4Editor-VRM4UImporter.dll"
 	}
 }

@@ -20,7 +20,7 @@
       "LoadingPhase": "Default"
     },
     {
-      "Name": "VRMImporter",
+      "Name": "VRM4UImporter",
       "Type": "Editor",
       "LoadingPhase": "Default"
     }
