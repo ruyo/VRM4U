@@ -7,7 +7,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 なにかあれば @ruyo_h へどうぞ
 
 ### ソース
-エンジンコードを継ぎ接ぎしているため、UE4リポジトリのforkです。アクセスにはUE4アカウントの紐づけが必要です。  
+エンジンコードを継ぎ接ぎしています。アクセスにはUE4アカウントの紐づけが必要です。  
 無残です。見たことを後悔するかもしれません…  
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 
