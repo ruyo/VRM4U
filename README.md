@@ -14,6 +14,10 @@ https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 gltf, VRMの読み込みだけ知りたい方はこちらへ  
 https://github.com/ruyo/assimp
 
+
+公開の体裁を含め 多くの方の情報を参考にさせて頂いています。  
+ありがとうございます。
+
 ### リリース履歴
 - 2018/10/11 MToonの半透明情報だけ反映した。
 - 2018/10/10 VRoidモデルが白髪になってしまうのを修正。頂点法線が無効だったのを修正。
