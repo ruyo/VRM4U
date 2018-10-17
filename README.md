@@ -11,7 +11,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 無残です。見たことを後悔するかもしれません…  
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 
-gltf, VRMの読み込みだけ知りたい方はこちらへ  
+glTF, VRMの読み込みだけ知りたい方はこちらへ  
 https://github.com/ruyo/assimp
 
 
