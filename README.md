@@ -1,19 +1,36 @@
 # VRM4U
-Runtime VRM loader for UnrealEngine4
 
-詳細はこちら参照ください。
+## はじめに
+VRM4U はVRMファイルのインポーター兼ランタイムローダーです
+
+詳細はこちらから
 https://github.com/ruyo/VRM4U/wiki/VRM4U
 
-なにかあれば @ruyo_h へどうぞ
+## 特徴
+ - VRMファイルをインポートできます。VRMの基本的なデータ（骨、Morphtarget（BlendShape）、揺れ骨・コリジョン）に加えて、MToonを再現したマテリアルが設定されます。
+ - Humanoid用のRIGが生成されます。対応アニメーションをそのままリターゲットできます。
+
+## 動作環境
+ - UE4.20.3、UE4.21.0
+ - UE4.19も動きますが、マテリアルは生成されません。
+
+## 使い方
+ - VRMファイルをドラッグ＆ドロップしてください
+![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)
+ 
+## 作った人
+[@ruyo_h](https://twitter.com/ruyo_h)
+
+## ライセンス
+MIT(VRM4U)
+
+3-clause BSD-License(assimp)
 
 ### ソース
-エンジンコードを継ぎ接ぎしています。アクセスにはUE4アカウントの紐づけが必要です。  
-無残です。見たことを後悔するかもしれません…  
+UE4アカウントの紐づけが必要です。
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 
-glTF, VRMの読み込みだけ知りたい方はこちらへ  
 https://github.com/ruyo/assimp
-
 
 公開の体裁を含め 多くの方の情報を参考にさせて頂いています。  
 ありがとうございます。
