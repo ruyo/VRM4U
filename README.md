@@ -7,15 +7,20 @@ VRM4U はVRMファイルのインポーター兼ランタイムローダーで�
 https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ## 特徴
- - VRMファイルをインポートできます。VRMの基本的なデータ（骨、Morphtarget（BlendShape）、揺れ骨・コリジョン）に加えて、MToonを再現したマテリアルが設定されます。
- - Humanoid用のRIGが生成されます。対応アニメーションをそのままリターゲットできます。
+ - VRMファイルをインポートできます。
+     - 骨、Morphtarget・BlendShapeGroup、揺れ骨・コリジョン
+     - MToonを再現したマテリアル。アウトライン描画には同梱のActorを継承する必要があります。
+ - Humanoid用のRIGが生成されます。対応アニメーションをそのままリターゲット可能です。
 
 ## 動作環境
  - UE4.20.3、UE4.21.0
  - UE4.19も動きますが、マテリアルは生成されません。
 
 ## 使い方
+ - [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
+   「.uproject」とおなじ場所に「Plugings」フォルダを展開してください。
  - VRMファイルをドラッグ＆ドロップしてください
+ 
 ![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)
  
 ## 作った人
