@@ -32,7 +32,7 @@ MIT(VRM4U)
 3-clause BSD-License(assimp)
 
 ### ソース
-UE4アカウントの紐づけが必要です。
+UE4アカウントの紐づけが必要です。  
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 
 https://github.com/ruyo/assimp
@@ -41,6 +41,7 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2018/12/05 androidで動作できるようにした。releasesにビルド結果を追加した。既存のリソースは削除した。
 - 2018/11/28 Materialを選択可能にした。HumanoidのRIGを生成するようにした。
 - 2018/11/22 インポートオプションを追加した。MToonの未対応パラメータを対処した。
     - インポート時、不要な骨を含めるか選択可能ににした。Skeletonを選択可能にした。
