@@ -1,7 +1,10 @@
 # VRM4U
 
+[English Doc](https://github.com/ruyo/VRM4U/blob/master/README_en.md)
+
 ## はじめに
 VRM4U はVRMファイルのインポーター兼ランタイムローダーです
+
 
 詳細はこちらから
 https://github.com/ruyo/VRM4U/wiki/VRM4U
@@ -41,6 +44,7 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2018/12/31 異なるSkeletonにPhysicsAssetをコピーできるようにした
 - 2018/12/25 モデルをスケールした時、Shadowmapがずれるのを修正
 - 2018/12/16 マテリアルに調整用のMPCを追加した。
 - 2018/12/11 揺れ骨を暴れにくくした。PIE中のファイルDrag&Dropに対応した。
