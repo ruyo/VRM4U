@@ -12,7 +12,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ## 特徴
  - VRMファイルをインポートできます。
      - 骨、Morphtarget・BlendShapeGroup、揺れ骨・コリジョン
-     - MToonを再現したマテリアル。アウトライン描画には同梱のActorを継承する必要があります。
+     - MToonを再現したマテリアル。アウトライン描画には同梱のActorかCharacterを配置し、AssetListを設定する必要があります。
  - Humanoid用のRIGが生成されます。対応アニメーションをそのままリターゲット可能です。
 
 ## 動作環境
