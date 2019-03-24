@@ -20,12 +20,19 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
  - UE4.19も動きますが、マテリアルは生成されません。
 
 ## 使い方
- - [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
+- [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
    「.uproject」とおなじ場所に「Plugings」フォルダを展開してください。
- - VRMファイルをドラッグ＆ドロップしてください
- 
+
+### サンプルマップ
+- VRM4UContent/Maps/VRM4U_sample.umap
+- ContentBrowserに表示されない場合は、以下の項目を確認ください。
+![3](https://raw.githubusercontent.com/wiki/ruyo/VRM4U/images/samplemap.png)
+
+### 使い方
+- VRMファイルをドラッグ＆ドロップしてください
+
 ![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)
- 
+
 ## 作った人
 [@ruyo_h](https://twitter.com/ruyo_h)
 
