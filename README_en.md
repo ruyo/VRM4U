@@ -14,6 +14,10 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ## Requirement
  - UE4.20.3, UE4.21
 
+## SampleMap
+- VRM4UContent/Maps/VRM4U_sample.umap
+![3](https://raw.githubusercontent.com/wiki/ruyo/VRM4U/images/samplemap.png)
+
 ## Usage
  - Drag and drop VRM file.
 
