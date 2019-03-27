@@ -51,6 +51,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2019/03/28 マテリアル最適化時、メモリアクセス違反が起きるのを修正した。
+    - VRMSpringBoneがPhysicsCollisionに反応するようにした。
 - 2019/03/24 サンプルマップを追加した。
 - 2019/03/23 VRMSpringBoneを仮実装した。輪郭線の描画方法を変更した。
 - 2019/03/05 MotionController,LeapMotionによるトラッキングのAnimBPを追加した
