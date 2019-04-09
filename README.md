@@ -11,8 +11,8 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ## 特徴
 |||
 |----|----|
-|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/01.png)|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/02.png)|
 |![2](https://github.com/ruyo/VRM4U/wiki/images/shot/03.png)|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/04.png)|
+|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/01.png)|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/02.png)|
 
  - VRMファイルをインポートできます。
  - アニメーション
