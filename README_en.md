@@ -8,11 +8,20 @@ Also it can load models on runtime.
 https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ## Features
- - Import VRM file with bone, morphtarget, physicsasset and MToon material.
- - Generate humanoid rig automaticaly.
+|||
+|----|----|
+|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/03.png)|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/04.png)|
+|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/01.png)|![2](https://github.com/ruyo/VRM4U/wiki/images/shot/02.png)|
+
+- Import VRM file
+- Animation
+    - Generate humanoid rig.
+    - VRMSpringBone 
+- Material
+    - MToon simulated material. No postprocess.
 
 ## Requirement
- - UE4.20.3, UE4.21
+ - UE4.20.3, UE4.21, UE4.22
 
 ## SampleMap
 - VRM4UContent/Maps/VRM4U_sample.umap
