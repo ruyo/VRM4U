@@ -16,12 +16,13 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
  - VRMファイルをインポートできます。
  - アニメーション
-     - 骨、Morphtarget・BlendShapeGroup、揺れ骨・コリジョン
+     - 骨、Morphtarget・BlendShapeGroup、揺れ骨・コリジョン などが生成されます。
      - 揺れ骨の挙動はVRMSpringBoneかPhysicsAssetを選択できます。
-     - Humanoid用のRIGが生成されます。アニメーションをそのままリターゲット可能です。
+     - Humanoid用のRIGが生成されるので、アニメーションを手軽にリターゲット可能です。
  - マテリアル
-     - MToonを再現したマテリアル。影色の指定や、アウトラインの色・太さ調整。
+     - MToonを再現したマテリアル。影色の指定や、アウトラインの色・太さ調整、MatCapなど一通り適用されます。
      - 既存のPBR背景の中にキャラクタを描画できます。ポストプロセスを利用しません。
+     - モバイルでも描画可能です。(Forward/Deferred両対応) 
 
 ## 動作環境
  - UE4.20、UE4.21、UE4.22
