@@ -30,7 +30,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ## 使い方
 - [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
-   「.uproject」とおなじ場所に「Plugings」フォルダを展開してください。
+   「.uproject」とおなじ場所に「Plugins」フォルダを展開してください。
 
 ### サンプルマップ
 - VRM4UContent/Maps/VRM4U_sample.umap
