@@ -15,10 +15,11 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 - Import VRM file
 - Animation
-    - Generate humanoid rig.
-    - VRMSpringBone 
+    - Generate bone, blendshape, swing bone, collision and humanoid rig.
+    - Switch swing bone type PhysicsAsset/VRMSpringBone.
 - Material
     - MToon simulated material. No postprocess.
+    - Available on mobile. (Forward/Deferred)
 
 ## Requirement
  - UE4.20.3, UE4.21, UE4.22
