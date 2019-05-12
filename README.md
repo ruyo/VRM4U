@@ -22,7 +22,9 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
  - マテリアル
      - MToonを再現したマテリアル。影色の指定や、アウトラインの色・太さ調整、MatCapなど一通り適用されます。
      - 既存のPBR背景の中にキャラクタを描画できます。ポストプロセスを利用しません。
-     - モバイルでも描画可能です。(Forward/Deferred両対応) 
+ - モバイル
+     - BoneMapリダクションを使うことで、公式のUE4エディタからモバイルでSkeletalMeshを利用できます。
+     - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
  - UE4.20、UE4.21、UE4.22
