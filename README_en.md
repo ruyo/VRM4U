@@ -19,7 +19,9 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
     - Switch swing bone type PhysicsAsset/VRMSpringBone.
 - Material
     - MToon simulated material. No postprocess.
-    - Available on mobile. (Forward/Deferred)
+- Mobile
+    - Vanilla UE4Editor can use VRM on mobile by using BoneMap reduction.
+    - Available on Forward/Deferred.
 
 ## Requirement
  - UE4.20.3, UE4.21, UE4.22
