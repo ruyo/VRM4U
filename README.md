@@ -65,7 +65,7 @@ https://github.com/ruyo/assimp
 - 2019/05/14
     - VRMSpringBoneの重力方向がずれていたのを修正した。
     - VrmCharacterBaseでSpringBoneを利用できるようにした。
-    - 輪郭線が明るい場合があるのを修正した。（EyeAdaptation補正を追加した）
+    - 輪郭線が明るい場合があるのを修正した。（輪郭線にもEyeAdaptation補正を追加した）
 - 2019/05/13
     - VRMSpringBoneの重力、外力をワールド座標で反映するようにした。
     - インポート時間を短縮した。不要な処理をスキップした。
