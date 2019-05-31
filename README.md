@@ -62,6 +62,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2019/06/01
+    - AttachActorの設定が反映されないことがあるのを修正した。対象のSkeletalMeshのマテリアルを初期化するようにした。
 - 2019/05/27
     - OculusQuest(Android)向けにビルドした時のエラーを修正した。
 - 2019/05/24
