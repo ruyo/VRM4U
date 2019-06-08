@@ -33,6 +33,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ## 使い方
 - [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
    「.uproject」とおなじ場所に「Plugins」フォルダを展開してください。
+- パッケージ作成やモバイル転送する場合は、後述のソースリポジトリからダウンロードしてください。
 
 ### サンプルマップ
 - VRM4UContent/Maps/VRM4U_sample.umap
@@ -53,7 +54,7 @@ MIT(VRM4U)
 3-clause BSD-License(assimp)
 
 ### ソース
-UE4アカウントの紐づけが必要です。  
+UE4アカウントの紐づけが必要です。[手順はこちら](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin
 
 https://github.com/ruyo/assimp
