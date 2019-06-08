@@ -54,8 +54,9 @@ MIT(VRM4U)
 3-clause BSD-License(assimp)
 
 ### ソース
-UE4アカウントの紐づけが必要です。[手順はこちら](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)
-https://github.com/ruyo/UnrealEngine_VRM4UPlugin
+UE4アカウントの紐づけが必要です。
+
+https://github.com/ruyo/UnrealEngine_VRM4UPlugin （エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
 
 https://github.com/ruyo/assimp
 
