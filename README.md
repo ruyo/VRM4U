@@ -64,6 +64,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2019/07/13　マテリアルを修正＆機能追加
+    - ShaderToonyとShaderShiftが本家MToonとずれていたのを修正した。
+    - MatCapにシャドウを反映できるようにした
+    - Roughnessマップを反映できるようにした。
+    - UE4標準のSubsurfaceを利用できるようにした。
+    - カスタムのShadowmapサイズを変更できるようにした
 - 2019/06/24
     - RimLight, UVScrollに対応した。
     - モデルのtangentの軸がずれていたのを修正した。
