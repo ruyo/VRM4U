@@ -45,7 +45,7 @@ MIT(VRM4U)
 3-clause BSD-License(assimp)
 
 ### Source
-https://github.com/ruyo/UnrealEngine_VRM4UPlugin
+https://github.com/ruyo/UnrealEngine_VRM4UPlugin ([Connecting Epic, GitHub Accounts](https://www.unrealengine.com/en-US/blog/updated-authentication-process-for-connecting-epic-github-accounts))
 
 https://github.com/ruyo/assimp
 
