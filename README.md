@@ -56,7 +56,7 @@ MIT(VRM4U)
 ### ソース
 UE4アカウントの紐づけが必要です。
 
-https://github.com/ruyo/UnrealEngine_VRM4UPlugin （エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
+https://github.com/ruyo/UnrealEngine_VRM4UPlugin （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
 
 https://github.com/ruyo/assimp
 
