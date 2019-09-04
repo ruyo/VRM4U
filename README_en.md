@@ -24,7 +24,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
     - Available on Forward/Deferred.
 
 ## Requirement
- - UE4.20.3, UE4.21, UE4.22
+ - UE4.20.3, UE4.21, UE4.22, UE4.23
 
 ## SampleMap
 - VRM4UContent/Maps/VRM4U_sample.umap
