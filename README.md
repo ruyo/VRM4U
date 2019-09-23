@@ -45,6 +45,12 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)
 
+### 仕組み
+詳しく知りたい方はこちら
+
+
+https://speakerdeck.com/ruyo/vrm4u-wakaru
+
 ## 作った人
 [@ruyo_h](https://twitter.com/ruyo_h)
 
@@ -59,6 +65,7 @@ UE4アカウントの紐づけが必要です。
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
 
 https://github.com/ruyo/assimp
+
 
 公開の体裁を含め 多くの方の情報を参考にさせて頂いています。  
 ありがとうございます。
