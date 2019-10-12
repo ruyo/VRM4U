@@ -25,6 +25,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ## Requirement
  - UE4.20.3, UE4.21, UE4.22, UE4.23
+ - For packaging, use UnrealEngine_VRM4UPlugin repository.
 
 ## SampleMap
 - VRM4UContent/Maps/VRM4U_sample.umap
