@@ -1,6 +1,8 @@
 # VRM4U
 Runtime VRM loader for UnrealEngine4
 
+**For packaging, please download from UnrealEngine_VRM4UPlugin repository.**
+
 ## Description
 VRM4U is importer for VRM.
 Also it can load models on runtime.
@@ -25,7 +27,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 
 ## Requirement
  - UE4.20.3, UE4.21, UE4.22, UE4.23
- - For packaging, use UnrealEngine_VRM4UPlugin repository.
+ - **For packaging, use UnrealEngine_VRM4UPlugin repository.**
 
 ## SampleMap
 - VRM4UContent/Maps/VRM4U_sample.umap
