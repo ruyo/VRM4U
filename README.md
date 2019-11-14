@@ -46,7 +46,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ||
 |----|
 |![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)|
-|[![](https://img.youtube.com/vi/Qlz0bUSLjss/0.jpg)](https://www.youtube.com/watch?v=Qlz0bUSLjss)|
+|[![](https://img.youtube.com/vi/Qlz0bUSLjss/0.jpg)](https://www.youtube.com/watch?v=Qlz0bUSLjss) https://www.youtube.com/watch?v=Qlz0bUSLjss|
 
 
 ### 仕組み
