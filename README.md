@@ -43,7 +43,11 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
 ### 使い方
 - VRMファイルをドラッグ＆ドロップしてください
 
-![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)
+||
+|----|
+|![2](https://github.com/ruyo/VRM4U/wiki/images/overview.gif)|
+|[![](https://img.youtube.com/vi/Qlz0bUSLjss/0.jpg)](https://www.youtube.com/watch?v=Qlz0bUSLjss)|
+
 
 ### 仕組み
 詳しく知りたい方はこちら
