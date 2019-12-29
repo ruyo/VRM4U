@@ -5,6 +5,8 @@
 ## はじめに
 VRM4U はVRMファイルのインポーター兼ランタイムローダーです
 
+**※配布用のexe作成、モバイル実行には、ソースリポジトリのデータが必要です。** 後述の手順を参照ください。
+
 詳細はこちらから
 https://github.com/ruyo/VRM4U/wiki/VRM4U
 
@@ -65,6 +67,8 @@ MIT(VRM4U)
 
 ### ソース
 UE4アカウントの紐づけが必要です。
+
+ライセンスの都合上、念の為EpicGamesアカウント紐付けにしています。手間ですみません。。
 
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
 
