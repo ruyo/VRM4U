@@ -29,7 +29,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
      - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
- - UE4.20、UE4.21、UE4.22、UE4.23
+ - UE4.20〜UE4.24
  - UE4.19も動きますが、マテリアルは生成されません。
 
 ## 使い方
