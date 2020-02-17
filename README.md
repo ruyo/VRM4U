@@ -79,6 +79,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/02/18
+    - 嘘パース機能を追加した。サンプルマップを追加した。
+    - AdvancedLocomotionSystem向けの機能を追加した。
+    - (IKBone追加、VirtualBoneコピー、UE4Mannequinの骨名でスケルトン作成）
 - 2020/01/14
     - **※要再インポート**
     - VRMSpringBoneのメンバ変数名を変更した
