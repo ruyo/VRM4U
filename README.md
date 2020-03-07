@@ -3,12 +3,11 @@
 [English Doc](https://github.com/ruyo/VRM4U/blob/master/README_en.md)
 
 ## はじめに
-VRM4U はVRMファイルのインポーター兼ランタイムローダーです
+VRM4UはUE4で動作する、VRMファイルのインポーターです。
 
 **※配布用のexe作成、モバイル実行には、ソースリポジトリのデータが必要です。** 後述の手順を参照ください。
 
-詳細はこちらから
-https://github.com/ruyo/VRM4U/wiki/VRM4U
+使い方は [こちらのページにあります](https://ruyo.github.io/VRM4U/)
 
 ## 特徴
 |||
