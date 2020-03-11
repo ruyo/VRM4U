@@ -79,6 +79,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/03/12
+    - Toonの初期化をConstructionScriptに移動した。
+    - UpperChestが無いモデルの視線追従が弱いのを修正した。
+    - CustomAnimSequenceのアセット選択候補をリターゲット元のみにした。
+    - Morphコントロールをレベル上で確認可能にした。
+    - レベル上でアタッチ可能なアクタ VRMModelActorを追加した。
 - 2020/03/08
     - 視線追従Actorのターゲットを修正した。
     - PIEでキャラライトを設定すると 座標がずれるのを修正した。
