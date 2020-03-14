@@ -79,6 +79,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/03/15
+    - 多くの機能をAnimControlComponentにうつした。
+    - 風を設定できるようにした。
+    - 揺れ骨の設定をActorから操作できるようにした。
+    - アニメーションのフレームレートを操作できるようにした。
+    - Stencil設定用に、モデルを姿勢ごとコピーするActorを追加した。
 - 2020/03/12
     - Toonの初期化をConstructionScriptに移動した。
     - UpperChestが無いモデルの視線追従が弱いのを修正した。
