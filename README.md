@@ -79,6 +79,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/04/04
+    - 透過ウインドウに制限を入れた（新規ウインドウ実行時のみ有効）
+    - UE4.25 gameビルドに対応した。
+    - MToonMaterialSystemに自前のPostProcessVolumeを持たせるようにした。
+    - Exposureをオーバーライドするオプションを追加した。
+    - 一部のモジュールをMacで動作できるようにした。（ただしインポートは不可）
 - 2020/03/31
     - 色再現を優先するモードを追加した（FilmicToneMapperをOFF、色逆変換を無効化）
     - デバッグカメラ操作に、Roll回転とZoomを追加した。
