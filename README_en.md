@@ -26,7 +26,7 @@ https://github.com/ruyo/VRM4U/wiki/VRM4U
     - Available on Forward/Deferred.
 
 ## Requirement
- - UE4.20.3, UE4.21, UE4.22, UE4.23, UE4.24
+ - UE4.20 - UE4.25
  - Windows, Android, iOS
  - **For packaging, please download from UnrealEngine_VRM4UPlugin repository.**
 
