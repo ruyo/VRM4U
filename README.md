@@ -29,7 +29,7 @@ VRM4UはUE4で動作する、VRMファイルのインポーターです。
      - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
- - UE4.20〜UE4.24
+ - UE4.20〜UE4.25
  - Windows, Android, iOS
  - UE4.19も動きますが、マテリアルは生成されません。
 
