@@ -7,7 +7,7 @@ Runtime VRM loader for UnrealEngine4
 VRM4U is importer for VRM.
 Also it can load models on runtime.
 
-https://github.com/ruyo/VRM4U/wiki/VRM4U
+[Document is here(I'm sorry, it's a google translation.)](https://translate.google.com/translate?um=1&ie=UTF-8&hl=ja&client=tw-ob&sl=ja&tl=en&u=https%3A%2F%2Fruyo.github.io%2FVRM4U%2F01_quick-start%2F)
 
 ## Features
 |||
