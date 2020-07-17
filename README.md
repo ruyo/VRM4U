@@ -80,6 +80,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/07/18
+    - LiveLinkFaceサンプルを整理しました。
 - 2020/07/16
     - UE4.25向けのLiveLinkFaceサンプルを追加した。
     - キャラカメラのpitchが動作しないことがあるのを修正した。
