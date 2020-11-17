@@ -81,7 +81,7 @@ https://github.com/ruyo/assimp
 
 ### リリース履歴
 - 2020/11/18
-    - SSSモードのデフォルトマテリアル設定を変更した（MatCapとShadeHueShiftを有効化）
+    - SSSモードのデフォルトマテリアル設定を変更した（MatCapとShadeColor/ShadeHueShiftを有効化）
     - SingleAssetFile無効時も、AssetUtilによるマテリアル変更を可能にした。
     - MatCapに法線補正が影響しないようにした
     - キャラ用フォグシートを追加した。
