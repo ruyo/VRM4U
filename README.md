@@ -80,6 +80,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2020/11/25
+    - モデルの一部のパーツの座標がずれてしまうことがあるのを修正した。（パーツの原点がワールド原点でないもの）
 - 2020/11/18
     - SSSモードのデフォルトマテリアル設定を変更した（MatCapとShadeColor/ShadeHueShiftを有効化）
     - SingleAssetFile無効時も、AssetUtilによるマテリアル変更を可能にした。
