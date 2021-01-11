@@ -29,9 +29,10 @@ VRM4UはUE4で動作する、VRMファイルのインポーターです。
      - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
- - UE4.20〜UE4.25
+ - UE4.20〜UE4.26
  - Windows, Android, iOS
  - UE4.19も動きますが、マテリアルは生成されません。
+ - Macでは動きません。WindowsからのリモートビルドでiOSに転送することは可能です。
 
 ## 使い方
 - **配布用のexeを作成したり、モバイルで実行する場合は、後述のソースリポジトリからダウンロードしてください。**
@@ -80,6 +81,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/01/12
+    - ControlRigを上手く適用できないモデルに対応した（PMXで骨階層が異なるもの、準標準ボーンを利用しているもの）
+    - LightRigからDirectionalLightComponentを参照できるようにした（SunSkyActor対応）
+    - LightRigにDirectionalLightのピッチ角による明るさ補正オプションを追加した。
+    - 魚眼効果を追加した。嘘パースの制御方法を変更した。
+    - MToonMaterialSystemにSSGIの切り替えオプションを追加した
 - 2021/01/02
     - ControlRigに指骨や両足のコントローラを追加した。
 - 2020/12/30
