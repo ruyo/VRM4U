@@ -81,6 +81,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/01/24
+    - ControlRigのBackwardsSolveに対応した。
+    - MtoonAttachActorからDirectionalLightComponentを参照できるようにした
+    - SSSマテリアルのEmissiveを通常扱いにした（従来はBaseColorに合成するオプションが有効化されていた）
+    - SimpleCharacterサンプルを追加した。
 - 2021/01/12
     - ControlRigを上手く適用できないモデルに対応した（PMXで骨階層が異なるもの、準標準ボーンを利用しているもの）
     - LightRigからDirectionalLightComponentを参照できるようにした（SunSkyActor対応）
