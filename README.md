@@ -82,8 +82,8 @@ https://github.com/ruyo/assimp
 
 ### リリース履歴
 - 2021/02/12
-    - ControlRig:リターゲットを高速化した
-    - ControlRig:リターゲット後、モデルによって目骨や背骨のコントローラがずれることがあるのを修正
+    - ControlRig:リターゲットスクリプトを高速化した
+    - ControlRig:リターゲット後、モデルによってeyeやchestのコントローラがずれることがあるのを修正
     - ControlRig:LookAtフラグが誤作動することがあるのを修正
     - OculusQuest2のハンドトラッキングを修正（親指のトラッキング、サンプルの修正）
     - assimpを更新した(20210208)
