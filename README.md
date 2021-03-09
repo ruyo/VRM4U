@@ -81,6 +81,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/03/10
+    - uassetファイルのサイズを小さくした。MorphTarget生成時、不要な変形データを保持していたのを削除した。
 - 2021/02/24
     - BP_VrmModelActorを利用した際、MorphTargetのカーブも適用されるようにした。
 - 2021/02/23
