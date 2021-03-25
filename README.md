@@ -82,7 +82,7 @@ https://github.com/ruyo/assimp
 
 ### リリース履歴
 - 2021/03/24
-    - シーケンサーでフェイシャルアニメーションを制御するためのツールを追加した。
+    - シーケンサーでフェイシャルアニメーションを制御するためのツールを追加した。[解説はこちら](https://ruyo.github.io/VRM4U/07_controlrig_morph/)
 - 2021/03/15
     - MatCapによるリムライト表示について、ポリゴンの継ぎ目で強く出てしまうのを修正した。
     - FilmicTonemapperの逆変換について、強度を変更するパラメータを追加した。MToonMaterialSystemより変更。
