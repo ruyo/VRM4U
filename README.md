@@ -81,6 +81,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/03/29
+    - ControlRigのIKがカクつくことがあるのを対応した
+    - BackwardSolveで肘や膝が不安定なのを修正した
+    - MorphRig作成時、途中経過を保存できるようにした（保存オプションを追加。クラッシュ対策）
+    - MorphRig操作時、Trackを未選択でもキーを打てるようにした（全Trackからサーチするオプション追加）
 - 2021/03/24
     - シーケンサーでフェイシャルアニメーションを制御するためのツールを追加した。[解説はこちら](https://ruyo.github.io/VRM4U/07_controlrig_morph/)
 - 2021/03/15
