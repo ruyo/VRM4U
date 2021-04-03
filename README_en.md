@@ -27,7 +27,7 @@ Also it can load models on runtime.
 
 ## Requirement
  - UE4.20 - UE4.26
- - Windows, Android, iOS
+ - Windows, Android, iOS, Mac(by ProjectBuild)
  - **For packaging, please download from UnrealEngine_VRM4UPlugin repository.**
 
 ## SampleMap
