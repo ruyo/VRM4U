@@ -80,6 +80,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/04/07
+    - MaterialAOをデフォルト値を0->1に変更した。（Lit,SSSが従来より やや明るくなる）
+    - 白目の明るさを補正するEyeWhiteを追加した。[機能解説はこちら](https://ruyo.github.io/VRM4U/02_shortcut2/)
+    - Macでのビルドに対応した。[Macでの使い方はこちら](https://ruyo.github.io/VRM4U/03_mac/)
+    - インポートで一時的に利用していたSkeletonクラスを削除した。
 - 2021/03/29
     - ControlRigのIKがカクつくことがあるのを対応した
     - BackwardSolveで肘や膝が不安定なのを修正した
