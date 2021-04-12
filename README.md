@@ -80,6 +80,9 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/04/13
+    - キャラのパース固定機能を追加した。[機能解説はこちら](https://ruyo.github.io/VRM4U/02_pers/)
+    - ベースマテリアルを編集するとエラーが出るのを対処した。attributeノードの繋ぎ方を変更した。
 - 2021/04/07
     - MaterialAOをデフォルト値を0->1に変更した。（Lit,SSSが従来より やや明るくなる）
     - 白目の明るさを補正するEyeWhiteを追加した。[機能解説はこちら](https://ruyo.github.io/VRM4U/02_shortcut2/)
