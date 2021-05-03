@@ -80,6 +80,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/05/04
+    - マテリアル調整ウインドウを追加した。[機能解説はこちら](https://ruyo.github.io/VRM4U/01_material/)
+    - AttachActorのTargetActor判定を緩めた。カテゴリ名をわかりやすくした。
+    - bloom, colorgradationのポストフィルタパラメータを扱いやすくした
 - 2021/04/30
     - シーケンサーからキャラのパース固定機能をプレビューできるようにした
     - パース時のDepth補正オプションを追加した。
