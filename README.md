@@ -83,7 +83,7 @@ https://github.com/ruyo/assimp
 - 2021/05/30
     - マテリアルタイプに SubsurfaceProfileモードを追加した。
     - 法線マップのG反転オプションを有効化した
-    - UE5：EditorUtilityWidgetの中で 視認性が悪いものを対処した。Shadow切り替えメニューを追加した。
+    - UE5：EditorUtilityWidgetの中で 視認性が悪いものを対処した。Shadow切り替えメニューを追加した。[機能解説はこちら](https://ruyo.github.io/VRM4U/51_ue5/)
     - UE5：Pythonスクリプトのうちエラーになるものを対処した。
 - 2021/05/28
     - UE5に対応した。
