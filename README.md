@@ -80,6 +80,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/06/04
+    - FrontFaceCullingのモデルに対応した。
+    - UE5: Morph用WidgetBluePrintでActornoサーチに失敗するのを修正した
+    - UE5: フェイシャルキャプチャ用のPoseAsset生成に失敗するのを修正した。
+    - UE5: トーンマップオプションのうち、利用可能なものを有効化した。
 - 2021/05/30
     - マテリアルタイプに SubsurfaceProfileモードを追加した。
     - 法線マップのG反転オプションを有効化した
