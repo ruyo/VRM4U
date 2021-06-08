@@ -80,6 +80,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/06/09
+    - ControlRigに補助骨ベースを追加した。ねじり補正を有効化した。
+    - ControlRigの膝の動きを修正した。指の操作を追加した。
+    - マテリアル調整ウインドウから、SkyLightScaleを制御できるようにした。
+    - UE4.27preのビルドに対応した。
+    - UE5: 日本語のMorphをWidgetから操作できないのを対処した。（ただキー追加は未対応）
 - 2021/06/04
     - FrontFaceCullingのモデルに対応した。
     - UE5: Morph用WidgetBluePrintでActornoサーチに失敗するのを修正した
