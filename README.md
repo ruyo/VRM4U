@@ -80,6 +80,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/07/02
+    - モバイル用ランタイムロードの下地を追加した
+    - WBPより、BaseColorRateを変更できるようにした
+    - SubsurfaceProfileのデフォルトパラメータを変更した。(BaseColorRate 1.0 -> 0.9)
+    - CharacterBaseのコリジョンを変更した
 - 2021/06/21
     - assimpを更新した(20210616)
     - モデルインポート時のメモリリークを修正した。
