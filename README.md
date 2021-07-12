@@ -80,6 +80,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/07/13
+    - ランタイムロードを最適化、非同期読み込みに対応した
+    - WBPによるMorphTarget指定について、初期設定では単体モデルのみ操作するようにした
+    - SubsurfaceProfileのデフォルトパラメータを変更した（Profile設定）
+    - PostShadowによるToon機能を追加
 - 2021/07/02
     - モバイル用ランタイムロードの下地を追加した
     - WBPより、BaseColorRateを変更できるようにした
