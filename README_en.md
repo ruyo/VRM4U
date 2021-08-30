@@ -47,9 +47,12 @@ Also it can load models on runtime.
 [@ruyo_h](https://twitter.com/ruyo_h)
 
 ## License
-MIT(VRM4U)
 
-3-clause BSD-License(assimp)
+|||
+|----|----|
+|MIT|VRM4U|
+|MIT|[JSON for Modern C++](https://github.com/nlohmann/json)|
+|3-clause BSD-License|[assimp](https://github.com/assimp/assimp), ![assimp](https://github.com/ruyo/assimp)|
 
 ### Source
 https://github.com/ruyo/UnrealEngine_VRM4UPlugin ([Connecting Epic, GitHub Accounts](https://www.unrealengine.com/en-US/blog/updated-authentication-process-for-connecting-epic-github-accounts))
