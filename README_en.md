@@ -26,7 +26,7 @@ Also it can load models on runtime.
     - Available on Forward/Deferred.
 
 ## Requirement
- - UE4.20 - UE4.26
+ - UE4.20 - UE4.27
  - Windows, Android, iOS, Mac(by ProjectBuild)
  - **For packaging, please download from UnrealEngine_VRM4UPlugin repository.**
 
