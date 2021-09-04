@@ -83,6 +83,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/09/04
+    - BlendShapeGroupのマテリアルパラメータを適用できるようにした
+    - Humanoid骨をリネームした場合も、ControlRigを生成できるようにした
+    - MobileHDRが有効な時、Exposure、FilmicTonemapper補正を有効化するようにした
 - 2021/08/31
     - UE4.27のビルド時の警告を対処した。
     - ControlRig: 手指の開閉の動作を操作しやすくした。肘の方向を背骨に追従させるようにした。
