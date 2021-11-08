@@ -83,6 +83,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/11/08
+    - SSS ColorScaleのデフォルト値を修正（Alphaを0→1に変更）
 - 2021/11/07
     - **注意）MToonLitがシーンによってやや暗くなります。負荷削減のためSkyLightを参照しないようにしました。従来に戻すにはマテリアルよりbUseSkyLightDirectをONにしてください**
     - マテリアルを大幅に最適化した
