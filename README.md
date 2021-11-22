@@ -83,6 +83,14 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2021/11/23
+    - Actorの構成によって、MToonAttachActorの位置がずれることがあるのを修正した。
+    - マテリアルアニメーションを設定したモデルでクラッシュする場合があるのを修正した。
+    - assimpを最新版(2021/11/13版)に更新した
+    - VRM1.0βのglTF部分のみ、読み込めるようにした
+    - VRMSpringBoneの初期化で骨が暴れるのを抑制した（Tポーズ位置で初期化するようにした）
+    - ControlRigに指用のコントローラを追加した。
+    - FOV操作用ギズモを、キャラスケールにあわせるようにした。
 - 2021/11/19
     - VRMSpringBoneがWindDirectionalSourceの影響を受けられるようにした。風制御Actorの挙動も合わせた。
     - VRMSpringBoneが暴れないよう、衝突時の押し出し処理を変更した。
