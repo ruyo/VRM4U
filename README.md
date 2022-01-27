@@ -83,6 +83,12 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/01/28
+    - グレイマンからのリアルタイムリターゲット機能を追加した [使い方](https://ruyo.github.io/VRM4U/03_gray/)
+    - リムテクスチャ、UVスクロールマスクテクスチャに対応した。
+    - MToonAttachにて不要なDynamicMaterialが生成されるのを対処した。
+    - FKRig関連のActorをリネーム、整頓した。
+    - Linuxビルドに対応した。
 - 2022/01/20
     - サンプルのモデルがUE4.20～4.25で読めないのを修正した。
     - ue4mannequinにリネームしたSkeletonで、ContorolRigによる視線操作が動かないのを修正した。
