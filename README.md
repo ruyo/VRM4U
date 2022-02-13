@@ -66,7 +66,7 @@ https://speakerdeck.com/ruyo/vrm4u-wakaru
 |||
 |----|----|
 |MIT|VRM4U|
-|MIT|[JSON for Modern C++](https://github.com/nlohmann/json)|
+|MIT|[RapidJSON](https://github.com/Tencent/rapidjson/)|
 |3-clause BSD-License|[assimp](https://github.com/assimp/assimp), [assimp](https://github.com/ruyo/assimp)|
 
 ### ソース
