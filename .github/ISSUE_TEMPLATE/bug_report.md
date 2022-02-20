@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve (日本語 or English)
+about: Create a report to help us improve (by 日本語 or English)
 title: ''
 labels: ''
 assignees: ''
