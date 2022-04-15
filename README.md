@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/04/16
+    - UE5.0 リターゲット用アセットをUE5基準にあわせた。FullIK設定を追加した。[解説はこちら](https://ruyo.github.io/VRM4U/03_gray/)
+    - UE5.0 EpicSkeleton用に生成するIKRigをUE5基準にあわせた。
+    - A-poseを更新した。手指までグレイマンに近い姿勢に置き換えた。
+    - ランタイムリターゲットActor利用時、不要なActorが残ることがあるのを対処。
 - 2022/04/06
     - UE5.0 正式版に対応
 - 2022/04/05
