@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/04/22
+    - UE5.0 UE5のBody用ControlRigをVRM対応したものを追加した。変換用Widgetを整理した
+    - UE5.0 インポート時、サムネイルやコンテンツブラウザの表示が更新されないのを修正した
+    - UE5.0 IKRig自動生成時、Armに肩が入っていたのを、上腕からに修正した
+    - UVRotateの計算方法を UEノードのみで組むよう変更した
 - 2022/04/16
     - UE5.0 リターゲット用アセットをUE5基準にあわせた。FullIK設定を追加した。[解説はこちら](https://ruyo.github.io/VRM4U/03_gray/)
     - UE5.0 EpicSkeleton用に生成するIKRigをUE5基準にあわせた。
