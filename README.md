@@ -83,6 +83,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/05/13
+    - UE5.0 自動生成IKRigのタイプミスを修正した (RightPinky)
+    - UE5.0 Body用ControlRigへのベイクが動作しないのを修正した
+    - FovFix時、Outlineが正しく変形しないことがあるのを修正した
 - 2022/05/02
     - UE5.0 ランタイムロード時、MorphTargetが読み込まれないのを修正した。
     - UE5.0 骨名にスペースがある時、ControlRigが動作しないのを修正した。
