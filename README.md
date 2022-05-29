@@ -83,6 +83,9 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/05/30
+    - Aポーズの左足首が数度だけ左右非対称になっていたのを修正した
+    - PMX向けにControlRigを作成した際、親指が伸びてしまうのを修正した
 - 2022/05/13
     - UE5.0 自動生成IKRigのタイプミスを修正した (RightPinky)
     - UE5.0 Body用ControlRigへのベイクが動作しないのを修正した
