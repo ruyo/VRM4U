@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/08/09
+    - AllRigを追加した（BodyRigとMorphRigを統合したもの）
+    - assimpを更新(5.2.4)
+    - VMCプロトコルでキャラクタを動かす簡易Actorを追加した
+    - VMCプロトコルのBlendShape, Root座標を反映するようにした
 - 2022/07/25
     - アニメーションをBodyRigにベイクした際、FKのControllerにキーが入らないのを修正した
     - BodyRigのGizmoがずれている箇所を修正した
