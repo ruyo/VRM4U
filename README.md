@@ -1,6 +1,7 @@
 # VRM4U
 
 [English Doc](https://github.com/ruyo/VRM4U/blob/master/README_en.md)
+| [Korean Doc](https://github.com/ruyo/VRM4U/blob/master/README_ko.md)
 
 ## はじめに
 VRM4UはUE4で動作する、VRMファイルのインポーターです。
