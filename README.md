@@ -83,6 +83,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/08/28
+    - VrmSpringBoneノードが表示されないことがあるのを修正した
 - 2022/08/09
     - AllRigを追加した（BodyRigとMorphRigを統合したもの）
     - assimpを更新(5.2.4)
