@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/11/23
+    - SunSky利用時、MToonUnlitが真っ黒になるのを修正した（光源が太陽光のような大きい値でもMToonUnlitが動作するようにした）
+    - VMCプロトコルでのパーフェクトシンクを反映できるようにした（対応するBlendShapeGroupが無い場合、直接MorphTargetとして扱うようにした）
+    - VirtualShadowmapBiasが保存されないのを修正した
+    - UE5.1 ControlRigのうち不要なControllerが無効化されないのを修正した（無効なControllerをスケールを0にした）
 - 2022/11/16
     - UE5.1に対応した。ビルドバイナリのみ追加した
 - 2022/11/03
