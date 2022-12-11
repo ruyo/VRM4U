@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2022/12/11
+    - PostToonにDOFがかかるようにした（RenderAfterDOFをOFFにした）
+    - Unlitマテリアルにメインライトカラーを反映できるようにした
+    - DirectionalLightが無い時、ダミーデータを渡すようにした
+    - UE5.1 IKRetarget用のWBPがエラーになるのを修正
 - 2022/11/23
     - SunSky利用時、MToonUnlitが真っ黒になるのを修正した（光源が太陽光のような大きい値でもMToonUnlitが動作するようにした）
     - VMCプロトコルでのパーフェクトシンクを反映できるようにした（対応するBlendShapeGroupが無い場合、直接MorphTargetとして扱うようにした）
