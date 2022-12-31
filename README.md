@@ -84,7 +84,7 @@ https://github.com/ruyo/assimp
 
 ### リリース履歴
 - 2022/12/31
-    - mocopiReceiverを追加した
+    - mocopiReceiverを追加した [解説はこちら](https://ruyo.github.io/VRM4U/08_mocopi/)
     - Captureモジュールを追加、VMCとmocopiの処理を移動させた
     - BVHインポート時、データによってメッシュ位置がずれてしまうのを修正した。
     - BVHインポート時、アニメーションフレームレートを指定できるようにした
