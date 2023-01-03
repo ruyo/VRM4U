@@ -83,6 +83,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2023/01/03
+    - mocopiのパケットが分割受信された際も動作するようにした
+    - VMCからPerfectSyncを受け取れないのを修正した(追加ぶんのBlendShapeGroupがインポートできないのを修正)
+    - assimpを更新した（5.2.5）
 - 2022/12/31
     - mocopiReceiverを追加した [解説はこちら](https://ruyo.github.io/VRM4U/08_mocopi/)
     - Captureモジュールを追加、VMCとmocopiの処理を移動させた
