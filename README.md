@@ -83,6 +83,10 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2023/01/16
+    - mocopiパケットの読み込み時、フレーム情報だけを読取るようにした。
+    - mocopiのモーションをバッファリングできるようにした。
+    - VMC受信したBlendShapeをTakeRecorderで記録できないのを修正した。
 - 2023/01/13
     - WBPからのVMC受信が動作しないのを修正した
     - IKRetargeterパネルに5.0でのみ利用可のコメントを追加した
