@@ -83,6 +83,8 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2023/04/23
+    - UE5.2previewに対応した
 - 2023/03/21
     - main/shadeカラーを同時にスケールできるようにした
     - MatCapにマスク、スケールを追加した
