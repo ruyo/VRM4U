@@ -83,6 +83,11 @@ https://github.com/ruyo/assimp
 ありがとうございます。
 
 ### リリース履歴
+- 2023/09/22
+    - ControlRigテンプレートについて、足首の位置がずれてしまうのを修正
+    - TwoSidedのマテリアルについて法線をカメラ向きに合わせるよう修正
+    - UE5向けのMorphTargetWBPを追加
+    - UE5.3 MorphTargetに対応するCurveをSkeletonに含めるよう修正
 - 2023/09/07
     - UE5.3 正式版に対応
 - 2023/08/25
