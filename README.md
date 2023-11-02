@@ -69,7 +69,7 @@ https://speakerdeck.com/ruyo/vrm4u-wakaru
 |----|----|
 |MIT|VRM4U|
 |MIT|[RapidJSON](https://github.com/Tencent/rapidjson/)|
-|3-clause BSD-License|[assimp](https://github.com/assimp/assimp), [assimp](https://github.com/ruyo/assimp)|
+|3-clause BSD-License|[assimp(orig)](https://github.com/assimp/assimp), [assimp(vrm4u fork)](https://github.com/ruyo/assimp)|
 
 ### ソース
 UE4アカウントの紐づけが必要です。
