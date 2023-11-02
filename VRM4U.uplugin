@@ -1,0 +1,67 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "VRM4U",
+  "Description": "VRM importer and runtime loader for UE4",
+  "Category": "Rendering",
+  "CreatedBy": "ruyo",
+  "CreatedByURL": "ruyo",
+  "DocsURL": "https://github.com/ruyo/VRM4U",
+  "MarketplaceURL": "",
+  "SupportURL": "https://github.com/ruyo/VRM4U",
+  "EnabledByDefault": false,
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "Installed": false,
+  "RequiresBuildPlatform": false,
+  "Modules": [
+    {
+      "Name": "VRM4U",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "VRM4ULoader",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Mac"
+      ]
+    },
+    {
+      "Name": "VRM4UCapture",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "_comment_vrm4u_dummy": "Use Developer instead of UncookedOnly for UE4.23-",
+      "Name": "VRM4UImporter",
+      "Type": "UncookedOnly",
+      "LoadingPhase": "PreDefault",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Mac"
+      ]
+    },
+    {
+      "Name": "VRM4UEditor",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "VRM4UMisc",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "LevelSequenceEditor",
+      "Enabled": true
+    }
+  ],
+  "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+"
+
+}
