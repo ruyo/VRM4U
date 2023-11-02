@@ -5,7 +5,7 @@
 ## はじめに
 VRM4UはUnrealEngine5(UE5, UE4)で動作する、VRMファイルのインポーターです。
 
-開発は[@はるべえ](https://twitter.com/ruyo_h)が個人で行っているものです。
+開発・サポートは [@はるべえ](https://twitter.com/ruyo_h) が個人で行っているものです。
 
 **使い方は [こちらのページにあります](https://ruyo.github.io/VRM4U/)**
 
