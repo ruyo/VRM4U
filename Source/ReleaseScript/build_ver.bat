@@ -2,7 +2,7 @@
 set UE4VER=%1
 set PLATFORM=%2
 set BUILDTYPE=%3
-set ZIPNAME=%5
+set ZIPNAME=../../../../_zip/%5
 ::set PROJECTNAMEEDITOR="MyProjectBuildScriptEtidor"
 set PROJECTNAMEEDITOR=%4
 
@@ -15,8 +15,9 @@ powershell -ExecutionPolicy RemoteSigned .\delIntermediate.ps1
 
 ::cd ../../../Plugins
 
-::git reset HEAD ./
-::git checkout ./
+git reset HEAD ./
+git checkout ./
+
 ::cd VRM4U/Source/ReleaseScript 
 
 powershell -ExecutionPolicy RemoteSigned .\version.ps1 \"%UE4VER%\"
