@@ -7,7 +7,7 @@ set ZIPNAME=../../../../_zip/%5
 set PROJECTNAMEEDITOR=%4
 
 set UE4BASE=D:\Program Files\Epic Games
-set UPROJECT="C:\Users\ruyo\Documents\Unreal Projects\MyProjectBuildScript\MyProjectBuildScript\MyProjectBuildScript.uproject"
+set UPROJECT="C:\Users\ruyo\Documents\Unreal Projects\MyProjectBuildScript\MyProjectBuildScript.uproject"
 set UNREALVERSIONSELECTOR="C:\Program Files (x86)\Epic Games\Launcher\Engine\Binaries\Win64\UnrealVersionSelector.exe"
 
 
