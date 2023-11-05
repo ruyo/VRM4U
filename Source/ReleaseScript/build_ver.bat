@@ -55,8 +55,8 @@ if %UE4VER% == 4.20 set tmpOldFlag=TRUE
 if %UE4VER% == 4.19 set tmpOldFlag=TRUE
 
 if %tmpOldFlag% == TRUE (
-del "../../../Plugins\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
-del "../../../Plugins\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
+del "..\..\..\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
+del "..\..\..\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
 )
 
 set isUE4=FALSE
@@ -71,7 +71,7 @@ if %UE4VER% == 4.20 set isUE4=TRUE
 if %UE4VER% == 4.19 set isUE4=TRUE
 
 if %isUE4% == FALSE (
-del "../../../Plugins\VRM4U\Content/Util/Actor/latest/WBP_MorphTarget.uasset"
+del "..\..\..\VRM4U\Content\Util\Actor\latest\WBP_MorphTarget.uasset"
 )
 
 
@@ -84,12 +84,12 @@ if not %errorlevel% == 0 (
 )
 :: releasetool
 
-cd ../Plugins
+::cd ../Plugins
 
-del *.lib /s
+::del *.lib /s
 
 
-cd ../releasetool
+::cd ../releasetool
 
 powershell -ExecutionPolicy RemoteSigned .\compress.ps1 %ZIPNAME%
 
