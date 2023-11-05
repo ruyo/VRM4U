@@ -70,7 +70,7 @@ if %UE4VER% == 4.21 set isUE4=TRUE
 if %UE4VER% == 4.20 set isUE4=TRUE
 if %UE4VER% == 4.19 set isUE4=TRUE
 
-if %isUE4% == TRUE (
+if %isUE4% == FALSE (
 del "../../../Plugins\VRM4U\Content/Util/Actor/latest/WBP_MorphTarget.uasset"
 )
 
