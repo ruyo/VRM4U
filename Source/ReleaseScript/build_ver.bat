@@ -54,9 +54,25 @@ if %UE4VER% == 4.20 set tmpOldFlag=TRUE
 if %UE4VER% == 4.19 set tmpOldFlag=TRUE
 
 if %tmpOldFlag% == TRUE (
-del "../Plugins\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
-del "../Plugins\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
+del "../../../Plugins\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
+del "../../../Plugins\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
 )
+
+set isUE4=FALSE
+if %UE4VER% == 4.27 set isUE4=TRUE
+if %UE4VER% == 4.26 set isUE4=TRUE
+if %UE4VER% == 4.25 set isUE4=TRUE
+if %UE4VER% == 4.24 set isUE4=TRUE
+if %UE4VER% == 4.23 set isUE4=TRUE
+if %UE4VER% == 4.22 set isUE4=TRUE
+if %UE4VER% == 4.21 set isUE4=TRUE
+if %UE4VER% == 4.20 set isUE4=TRUE
+if %UE4VER% == 4.19 set isUE4=TRUE
+
+if %isUE4% == TRUE (
+del "../../../Plugins\VRM4U\Content/Util/Actor/latest/WBP_MorphTarget.uasset"
+)
+
 
 
 call %BUILD% %PROJECTNAMEEDITOR%       %PLATFORM% %BUILDTYPE% %UPROJECT% -waitmutex
