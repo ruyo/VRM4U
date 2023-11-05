@@ -5,12 +5,9 @@
 ## はじめに
 VRM4UはUnrealEngine5(UE5, UE4)で動作する、VRMファイルのインポーターです。
 
-開発・サポートは [@はるべえ](https://twitter.com/ruyo_h) が個人で行っているものです。
-
 **使い方は [こちらのページにあります](https://ruyo.github.io/VRM4U/)**
 
-※配布用のexe作成、モバイル実行には、ソースリポジトリのデータが必要です。 後述の手順を参照ください。
-
+開発・サポートは [@はるべえ](https://twitter.com/ruyo_h) が個人で対応しています。そのためレスポンスが遅いことがあります。
 
 ## 特徴
 |||
@@ -31,14 +28,22 @@ VRM4UはUnrealEngine5(UE5, UE4)で動作する、VRMファイルのインポー�
      - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
- - UE5.0〜5.3, UE4.20〜UE4.27
- - Windows, Android, iOS, Mac(要プロジェクトビルド)
+ - UE5.3〜5.0, UE4.27〜UE4.20
+ - Windows
+ - Mac(要プロジェクトビルド)
+ - mobile(Android, iOS)
  - UE4.19も動きますが、マテリアルは生成されません。
 
 ## 使い方
-- **配布用のexeを作成したり、モバイルで実行する場合は、後述のソースリポジトリからダウンロードしてください。**
-- エディタでのみ利用する場合は、[releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、
-   「.uproject」とおなじ場所に「Plugins」フォルダを展開してください。
+- [releases](https://github.com/ruyo/VRM4U/releases/latest)より利用するバージョンのプラグインをダウンロードし、「.uproject」とおなじ場所に「Plugins」フォルダを展開、以下のように配置ください
+
+```
+ + MyProject
+   - MyProject.uproject
+   - Plugins
+     - VRM4U
+       - VRM4U.uplugin
+```
 
 ### サンプルマップ
 - VRM4UContent/Maps/VRM4U_sample.umap
@@ -57,8 +62,7 @@ VRM4UはUnrealEngine5(UE5, UE4)で動作する、VRMファイルのインポー�
 ### 仕組み
 詳しく知りたい方はこちら
 
-
-https://speakerdeck.com/ruyo/vrm4u-wakaru
+https://ruyo.github.io/VRM4U/10_detail/
 
 ## 作った人
 [@ruyo_h](https://twitter.com/ruyo_h)
@@ -71,14 +75,25 @@ https://speakerdeck.com/ruyo/vrm4u-wakaru
 |MIT|[RapidJSON](https://github.com/Tencent/rapidjson/)|
 |3-clause BSD-License|[assimp(orig)](https://github.com/assimp/assimp), [assimp(vrm4u fork)](https://github.com/ruyo/assimp)|
 
-### ソース
-UE4アカウントの紐づけが必要です。
+### ソースが必要なケース＆入手方法
 
-ライセンスの都合上、念の為EpicGamesアカウント紐付けにしています。手間ですみません。。
+- Windows向けにエディタ利用・パッケージ作成したい場合
+    - 特別な操作は不要です。zipを展開 or このリポジトリをクローンして利用ください。(assimpはビルド済のlibが入っています)
+- Mac向けにエディタ利用・パッケージ作成したい場合
+    - カスタム版assimpのソース取得＆ビルドが必要です
+- モバイル向けにパッケージ作成したい場合
+    - 一般的な利用方法であれば、特別な操作は不要です。
+    - ランタイムロードを利用する場合は カスタム版assimpのソース取得＆ビルドが必要です。
 
-https://github.com/ruyo/UnrealEngine_VRM4UPlugin （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
+カスタム版assimpは[こちら](https://github.com/ruyo/assimp)より入手ください
 
-https://github.com/ruyo/assimp
+- 2023/11以前のプラグインを利用してパッケージ作成したい場合
+    - こちらより昔のソースを取得ください https://github.com/ruyo/UnrealEngine_VRM4UPlugin
+    -  （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
+
+## 開発支援
+
+VRM4Uの開発を支援したい という奇特な方は[こちら](https://ruyo.booth.pm/items/1707224)からどうぞ
 
 
 公開の体裁を含め 多くの方の情報を参考にさせて頂いています。  

@@ -16,6 +16,12 @@ if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
 )
+call build_ver.bat 5.3 Android Development MyProjectBuildScript VRM4U_5_3_%V_DATE%_android.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+
 
 ::5_2
 call build_ver.bat 5.2 Win64 Development MyProjectBuildScriptEditor VRM4U_5_2_%V_DATE%.zip
@@ -59,11 +65,6 @@ if not %errorlevel% == 0 (
     goto err
 )
 call build_ver.bat 5.0 Win64 Development MyProjectBuildScript VRM4U_5_0_%V_DATE%_gam.zip
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
-call build_ver.bat 5.0 Android Development MyProjectBuildScript VRM4U_5_0_%V_DATE%_android.zip
 if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
