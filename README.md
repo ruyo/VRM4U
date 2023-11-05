@@ -77,17 +77,17 @@ https://ruyo.github.io/VRM4U/10_detail/
 
 ### ソースが必要なケース＆入手方法
 
-- Windows向けにエディタ利用・パッケージ作成したい場合
+- Windows向け
     - 特別な操作は不要です。zipを展開 or このリポジトリをクローンして利用ください。(assimpはビルド済のlibが入っています)
-- Mac向けにエディタ利用・パッケージ作成したい場合
+- Mac向け
     - カスタム版assimpのソース取得＆ビルドが必要です
-- モバイル向けにパッケージ作成したい場合
+- モバイル向け
     - 一般的な利用方法であれば、特別な操作は不要です。
     - ランタイムロードを利用する場合は カスタム版assimpのソース取得＆ビルドが必要です。
 
 カスタム版assimpは[こちら](https://github.com/ruyo/assimp)より入手ください
 
-- 2023/11以前のプラグインを利用してパッケージ作成したい場合
+- 2023/11以前のプラグインを利用する場合
     - こちらより昔のソースを取得ください https://github.com/ruyo/UnrealEngine_VRM4UPlugin
     -  （404エラーページが出る場合は[こちらより紐付けをしてください](https://www.unrealengine.com/ja/blog/updated-authentication-process-for-connecting-epic-github-accounts)）
 
