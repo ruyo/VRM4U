@@ -253,6 +253,8 @@ namespace {
 			pose->SetSkeleton(k);
 			pose->SetPreviewMesh(sk);
 			pose->Modify();
+
+			vrmAssetList->PoseFace = pose;
 		}
 
 		TArray<FString> MorphNameList;
@@ -763,6 +765,8 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 
 		//if (VRMConverter::Options::Get().IsSingleUAssetFile()) {
 			pose = VRM4U_NewObject<UPoseAsset>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+
+			vrmAssetList->PoseBody = pose;
 		//} else {
 		//	FString originalPath = vrmAssetList->Package->GetPathName();
 		//	const FString PackagePath = FPaths::GetPath(originalPath);

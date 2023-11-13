@@ -164,6 +164,12 @@ public:
 	UNodeMappingContainer *HumanoidRig;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
+	UPoseAsset *PoseBody;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
+	UPoseAsset *PoseFace;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
 	TArray<bool> MaterialFlag_Translucent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")

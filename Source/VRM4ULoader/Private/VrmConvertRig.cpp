@@ -324,6 +324,30 @@ public:
 		Retargeter = rig;
 	}
 
+	FName CreateRetargetPose(const FName& NewPoseName, const ERetargetSourceOrTarget SourceOrTarget) const {
+#if VRM4U_USE_EDITOR_RIG
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		return c->CreateRetargetPose(NewPoseName, SourceOrTarget);
+#else
+		return NewPoseName;
+#endif
+	}
+
+	FIKRetargetPose* GetRetargetPosesByName(const ERetargetSourceOrTarget SourceOrTarget, FName poseName) const
+	{
+#if VRM4U_USE_EDITOR_RIG
+		//FScopeLock Lock(&ControllerLock);
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		return &c->GetRetargetPoses(SourceOrTarget)[poseName];
+#else
+		//return SourceOrTarget == ERetargetSourceOrTarget::Source ? Retargeter->SourceRetargetPoses : Retargeter->TargetRetargetPoses;
+		return const_cast<FIKRetargetPose*>(Retargeter->GetRetargetPoseByName(SourceOrTarget, poseName));
+
+#endif
+		//return SourceOrTarget == ERetargetSourceOrTarget::Source ? GetAsset()->SourceRetargetPoses : GetAsset()->TargetRetargetPoses;
+	}
+
+
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 	void SetIKRig(UIKRigDefinition* IKRig) const {
 #if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
@@ -1450,30 +1474,55 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 #else
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
 				c.SetIKRig(ERetargetSourceOrTarget::Target, rig_ik);
-
-				//static ConstructorHelpers::FObjectFinder<UVrmAssetListObject> MatClass(TEXT("Blueprint'/VRM4U/VrmObjectListBP'"));
-
-				//static ConstructorHelpers::FObjectFinder<UMaterialInterface> OpaqueMaterialRef(TEXT("/Paper2D/OpaqueUnlitSpriteMaterial"));
-				//AlternateMaterial = OpaqueMaterialRef.Object;
-
-				//static ConstructorHelpers::FObjectFinder<UIKRigDefinition> test(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin"));
-				//auto r2 = test.Object;
-				
-				FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
-				UObject* u = r.TryLoad();
-				if (u) {
-					auto r2 = Cast<UIKRigDefinition>(u);
-					if (r2) {
-						c.SetIKRig(ERetargetSourceOrTarget::Source, r2);
-					}
-					//c = (UClass*)(Cast<UBlueprint>(u)->GeneratedClass);
-				}
-
-				/// Script / IKRig.IKRigDefinition'/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin'
 			}
 			else {
 				c.SetIKRig(ERetargetSourceOrTarget::Target, rig);
 			}
+
+			FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
+			UObject* u = r.TryLoad();
+			if (u) {
+				auto r2 = Cast<UIKRigDefinition>(u);
+				if (r2) {
+					c.SetIKRig(ERetargetSourceOrTarget::Source, r2);
+				}
+			}
+
+			{
+				//name
+				FName PoseName = "POSE_A";
+				const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
+				FIKRetargetPose NewPose = *c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
+
+				FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
+				const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
+				for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
+				{
+					auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
+
+					// record a global space translation offset for the root bone
+					//if (BoneName == RetargetRootBoneName)
+					{
+					//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
+					//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
+					//	NewPose.SetRootTranslationDelta(GlobalImportedTransform.GetLocation() - GlobalRefTransform.GetLocation());
+					}
+
+					// record a local space delta rotation (if there is one)
+					const FTransform& LocalRefTransform = RefPose[BoneIndex];
+					//const FTransform& LocalImportedTransform = LocalBoneTransformFromPose[PoseTrackIndex];
+					const FTransform& LocalImportedTransform = FTransform::Identity;
+					const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
+					const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
+					constexpr float MinAngleThreshold = 0.05f;
+					if (DeltaAngle >= MinAngleThreshold)
+					{
+						NewPose.SetDeltaRotationForBone(BoneName, DeltaRotation);
+					}
+				}
+
+			}
+
 #endif
 		}
 #endif
