@@ -20,6 +20,8 @@
 #include "Animation/Rig.h"
 #include "Animation/Skeleton.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "UObject/UnrealType.h"
+#include "UObject/UnrealTypePrivate.h"
 
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
@@ -30,10 +32,10 @@
 
 #include "IKRigDefinition.h"
 #include "IKRigSolver.h"
+#include "Retargeter/IKRetargeter.h"
 #if WITH_EDITOR
 #include "RigEditor/IKRigController.h"
 #include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
 #include "Solvers/IKRig_PBIKSolver.h"
 #endif
 
@@ -41,20 +43,20 @@
 
 #include "IKRigDefinition.h"
 #include "IKRigSolver.h"
+#include "Retargeter/IKRetargeter.h"
 #if WITH_EDITOR
 #include "RigEditor/IKRigController.h"
 #include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
 #include "Solvers/IKRig_FBIKSolver.h"
 #endif
 
 #else
 #include "Rig/IKRigDefinition.h"
 #include "Rig/Solvers/IKRigSolver.h"
+#include "Retargeter/IKRetargeter.h"
 #if WITH_EDITOR
 #include "RigEditor/IKRigController.h"
 #include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
 #include "Rig/Solvers/IKRig_FBIKSolver.h"
 #endif
 
@@ -300,6 +302,263 @@ namespace {
 
 }
 
+#define VRM4U_USE_EDITOR_RIG WITH_EDITOR
+
+#if WITH_EDITOR
+#else
+class UIKRetargeterController {
+public:
+	static void setSourceRig(UIKRetargeter* retargeter, UIKRigDefinition* rig){
+		retargeter->SourceIKRigAsset = rig;
+	}
+};
+#endif
+
+
+class SimpleRetargeterController {
+	//friend class UIKRetargeter;
+
+	UIKRetargeter *Retargeter = nullptr;
+public:
+	SimpleRetargeterController(UIKRetargeter* rig) {
+		Retargeter = rig;
+	}
+
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+	void SetIKRig(UIKRigDefinition* IKRig) const {
+#if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		c->SetIKRig(IKRig);
+#else
+#endif
+	}
+#else
+	void SetIKRig(const ERetargetSourceOrTarget SourceOrTarget, UIKRigDefinition* IKRig) const {
+#if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		c->SetIKRig(SourceOrTarget, IKRig);
+#else
+		UIKRetargeterController::setSourceRig(Retargeter, IKRig);
+		/*
+		//FScopeLock Lock(&ControllerLock);
+
+		if (SourceOrTarget == ERetargetSourceOrTarget::Source)
+		{
+			UIKRetargeterController::setSourceRig(setSourceRig, IKRig);
+			//Retargeter->SourceIKRigAsset = IKRig;
+			//Retargeter->SourcePreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
+		}
+		else
+		{
+			//Retargeter->TargetIKRigAsset = IKRig;
+			//Retargeter->TargetPreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
+		}
+
+		// re-ask to fix root height for this mesh
+		if (IKRig)
+		{
+			SetAskedToFixRootHeightForMesh(GetPreviewMesh(SourceOrTarget), false);
+		}
+
+		CleanChainMapping();
+
+		constexpr bool bForceRemap = false;
+		AutoMapChains(EAutoMapChainType::Fuzzy, bForceRemap);
+
+		// update any editors attached to this asset
+		//BroadcastIKRigReplaced(SourceOrTarget);
+		//BroadcastPreviewMeshReplaced(SourceOrTarget);
+		//BroadcastNeedsReinitialized();
+		*/
+#endif
+	}
+#endif
+};
+
+class SimpleRigController {
+
+public:
+	UIKRigDefinition* RigDefinition = nullptr;
+
+	SimpleRigController(UIKRigDefinition* rig) {
+		RigDefinition = rig;
+	}
+
+#if VRM4U_USE_EDITOR_RIG
+
+	UIKRigController* LocalGetController(UIKRigDefinition* rig) {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		return UIKRigController::GetIKRigController(rig);
+#else
+		return UIKRigController::GetController(rig);
+#endif
+	}
+	UIKRigController* LocalGetController(UIKRigDefinition* rig) const {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		return UIKRigController::GetIKRigController(rig);
+#else
+		return UIKRigController::GetController(rig);
+#endif
+	}
+
+
+#endif
+
+
+	void SetSkeletalMesh(USkeletalMesh* sk) {
+
+#if VRM4U_USE_EDITOR_RIG
+		auto *r = LocalGetController(RigDefinition);
+		r->SetSkeletalMesh(sk);
+#else
+		RigDefinition->PreviewSkeletalMesh = sk;
+		const_cast<FIKRigSkeleton*>(&RigDefinition->GetSkeleton())->SetInputSkeleton(sk, RigDefinition->GetSkeleton().ExcludedBones);
+		ResetInitialGoalTransforms();
+#endif
+	}
+
+	bool SetRetargetRoot(const FName RootBoneName) const
+	{
+#if VRM4U_USE_EDITOR_RIG
+		auto* r = LocalGetController(RigDefinition);
+		return r->SetRetargetRoot(RootBoneName);
+#else
+
+		FName NewRootBone = RootBoneName;
+		if (RootBoneName != NAME_None && RigDefinition->GetSkeleton().GetBoneIndexFromName(RootBoneName) == INDEX_NONE)
+		{
+			NewRootBone = NAME_None;
+		}
+
+		//FScopedTransaction Transaction(LOCTEXT("SetRetargetRootBone_Label", "Set Retarget Root Bone"));
+		RigDefinition->Modify();
+
+		*const_cast<FName*>(&RigDefinition->GetRetargetRoot()) = NewRootBone;
+
+		//BroadcastNeedsReinitialized();
+
+		return true;
+#endif
+	}
+
+	FName VRMAddRetargetChain(FName name, FName begin, FName end) {
+		FBoneChain c;
+		FBoneReference r1, r2;
+		r1.BoneName = begin;
+		r2.BoneName = end;
+
+		auto k = RigDefinition->GetPreviewMesh()->GetSkeleton();
+
+		r1.Initialize(k);
+		r2.Initialize(k);
+
+		c.ChainName = name;
+		c.StartBone = r1;
+		c.EndBone = r2;
+
+#if VRM4U_USE_EDITOR_RIG
+		auto* r = LocalGetController(RigDefinition);
+		r->AddRetargetChain(c);
+		return NAME_None;
+#else
+		if (c.StartBone.BoneName != NAME_None && RigDefinition->GetSkeleton().GetBoneIndexFromName(c.StartBone.BoneName) == INDEX_NONE)
+		{
+			//UE_LOG(LogIKRigEditor, Warning, TEXT("Could not create retarget chain. Start Bone does not exist, %s."), *c.StartBone.BoneName.ToString());
+			return NAME_None; // bone doesn't exist
+		}
+
+		if (c.EndBone.BoneName != NAME_None && RigDefinition->GetSkeleton().GetBoneIndexFromName(c.EndBone.BoneName) == INDEX_NONE)
+		{
+			//UE_LOG(LogIKRigEditor, Warning, TEXT("Could not create retarget chain. End Bone does not exist, %s."), *c.EndBone.BoneName.ToString());
+			return NAME_None; // bone doesn't exist
+		}
+
+		FBoneChain ChainToAdd = c;
+
+		// if no name specified, use a default
+		if (ChainToAdd.ChainName == NAME_None)
+		{
+			const FName DefaultChainName = FName("DefaultChainName");
+			ChainToAdd.ChainName = DefaultChainName;
+		}
+
+		ChainToAdd.ChainName = GetUniqueRetargetChainName(c.ChainName);
+
+		//FScopedTransaction Transaction(LOCTEXT("AddRetargetChain_Label", "Add Retarget Chain"));
+		RigDefinition->Modify();
+
+		const int32 NewChainIndex = const_cast<TArray<FBoneChain>*>(&RigDefinition->GetRetargetChains())->Emplace(ChainToAdd);
+
+		//RetargetChainAdded.Broadcast(RigDefinition);
+		//BroadcastNeedsReinitialized();
+
+		return NAME_None;// RigDefinition->RetargetDefinition.BoneChains[NewChainIndex].ChainName;
+#endif
+	}
+	void LocalSolverSetup(UVrmAssetListObject *vrmAssetList) {
+#if VRM4U_USE_EDITOR_RIG
+		auto* r = LocalGetController(RigDefinition);
+		::LocalSolverSetup(r, vrmAssetList);
+#else
+#endif
+	}
+
+
+	FTransform GetRefPoseTransformOfBone(const FName BoneName) const
+	{
+		const int32 BoneIndex = RigDefinition->GetSkeleton().GetBoneIndexFromName(BoneName);
+		if (BoneIndex == INDEX_NONE)
+		{
+			//UE_LOG(LogIKRigEditor, Warning, TEXT("Tried to get the ref pose of bone that is not loaded into this rig."));
+			return FTransform::Identity;
+		}
+
+		return RigDefinition->GetSkeleton().RefPoseGlobal[BoneIndex];
+	}
+	void ResetInitialGoalTransforms() const
+	{
+		for (UIKRigEffectorGoal* Goal : RigDefinition->GetGoalArray())
+		{
+			// record the current delta rotation
+			const FQuat DeltaRotation = Goal->CurrentTransform.GetRotation() * Goal->InitialTransform.GetRotation().Inverse();
+			// update the initial transform based on the new ref pose
+			const FTransform InitialTransform = GetRefPoseTransformOfBone(Goal->BoneName);
+			Goal->InitialTransform = InitialTransform;
+			// restore the current transform
+			Goal->CurrentTransform.SetRotation(Goal->InitialTransform.GetRotation() * DeltaRotation);
+		}
+	}
+	FName GetUniqueRetargetChainName(const FName NameToMakeUnique) const
+	{
+		auto IsNameBeingUsed = [this](const FName NameToTry)->bool
+			{
+				for (const FBoneChain& Chain : RigDefinition->GetRetargetChains())
+				{
+					if (Chain.ChainName == NameToTry)
+					{
+						return true;
+					}
+				}
+				return false;
+			};
+
+		// check if name is already unique
+		if (!IsNameBeingUsed(NameToMakeUnique))
+		{
+			return NameToMakeUnique;
+		}
+
+		// keep concatenating an incremented integer suffix until name is unique
+		int32 Number = NameToMakeUnique.GetNumber() + 1;
+		while (IsNameBeingUsed(FName(NameToMakeUnique, Number)))
+		{
+			Number++;
+		}
+
+		return FName(NameToMakeUnique, Number);
+	}
+};
+
 
 bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
@@ -333,8 +592,8 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 #if	UE_VERSION_OLDER_THAN(4,20,0)
 #else
-#if WITH_EDITOR
 
+#if WITH_EDITOR
 	auto* k = VRMGetSkeleton(vrmAssetList->SkeletalMesh);
 
 	UNodeMappingContainer* mc = nullptr;
@@ -859,7 +1118,6 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 		mc->PostEditChange();
 		vrmAssetList->HumanoidRig = mc;
 	}
-
 #endif // editor
 #endif //420
 
@@ -972,31 +1230,22 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 	if (vrmAssetList && VRMConverter::Options::Get().IsGenerateRigIK()) {
 		// ikrig
-#if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 		const VRM::VRMMetadata* meta = reinterpret_cast<VRM::VRMMetadata*>(aiData->mVRMMeta);
 		USkeletalMesh* sk = vrmAssetList->SkeletalMesh;
-
-		auto LocalGetController = [](UIKRigDefinition* rig) {
-#if	UE_VERSION_OLDER_THAN(5,2,0)
-			return UIKRigController::GetIKRigController(rig);
-#else
-			return UIKRigController::GetController(rig);
-#endif
-		};
-
 
 		UIKRigDefinition* rig = nullptr;
 		{
 			FString name = FString(TEXT("IK_")) + vrmAssetList->BaseFileName + TEXT("_VrmHumanoid");
 			rig = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
-			UIKRigController* rigcon = LocalGetController(rig);
-			rigcon->SetSkeletalMesh(sk);
+			SimpleRigController rigcon(rig);
+			rigcon.SetSkeletalMesh(sk);
 
 			if (vrmAssetList->VrmMetaObject->humanoidBoneTable.Num() == 0) {
 				// immediate generate bone table
+				/*
 				if (mc) {
 					for (auto& boneMap : VRMUtil::table_ue4_vrm) {
 						FString s;
@@ -1011,10 +1260,11 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 						}
 					}
 				}
+				*/
 			}
 			{
 				auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
-				VRMAddRetargetChain(rigcon, TEXT("root"), s, s);
+				rigcon.VRMAddRetargetChain(TEXT("root"), s, s);
 			}
 			for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 				if (modelName.Key == "" || modelName.Value == "") {
@@ -1032,7 +1282,7 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 				switch (type) {
 				case 0:
-					VRMAddRetargetChain(rigcon, *modelName.Key, *modelName.Value, *modelName.Value);
+					rigcon.VRMAddRetargetChain(*modelName.Key, *modelName.Value, *modelName.Value);
 					break;
 				case 1:
 				{
@@ -1043,7 +1293,7 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 					if (s) {
 						// spine chain
-						VRMAddRetargetChain(rigcon, *modelName.Key, *modelName.Value, **s);
+						rigcon.VRMAddRetargetChain(*modelName.Key, *modelName.Value, **s);
 					}
 				}
 					break;
@@ -1053,7 +1303,7 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 
 				if (modelName.Key == TEXT("hips")) {
-					rigcon->SetRetargetRoot(*modelName.Value);
+					rigcon.SetRetargetRoot(*modelName.Value);
 				}
 			}
 		}
@@ -1064,12 +1314,12 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 			FString name = FString(TEXT("IK_")) + vrmAssetList->BaseFileName + TEXT("_MannequinBone");
 			rig_epic = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
-			UIKRigController* rigcon = LocalGetController(rig_epic);
-			rigcon->SetSkeletalMesh(sk);
+			SimpleRigController rigcon = SimpleRigController(rig_epic);
+			rigcon.SetSkeletalMesh(sk);
 
 			{
 				auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
-				VRMAddRetargetChain(rigcon, TEXT("root"), s, s);
+				rigcon.VRMAddRetargetChain(TEXT("root"), s, s);
 			}
 			for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 				if (modelName.Key == "" || modelName.Value == "") {
@@ -1080,9 +1330,9 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 						continue;
 					}
 					if (a.BoneVRM.ToLower() == modelName.Key.ToLower()) {
-						VRMAddRetargetChain(rigcon, *a.BoneUE4, *modelName.Value, *modelName.Value);
+						rigcon.VRMAddRetargetChain(*a.BoneUE4, *modelName.Value, *modelName.Value);
 						if (modelName.Key == TEXT("hips")) {
-							rigcon->SetRetargetRoot(*modelName.Value);
+							rigcon.SetRetargetRoot(*modelName.Value);
 						}
 						break;
 					}
@@ -1095,12 +1345,12 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 			FString name = FString(TEXT("IK_")) + vrmAssetList->BaseFileName + TEXT("_Mannequin");
 			rig_ik = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
-			UIKRigController* rigcon = LocalGetController(rig_ik);
-			rigcon->SetSkeletalMesh(sk);
+			SimpleRigController rigcon = SimpleRigController(rig_ik);
+			rigcon.SetSkeletalMesh(sk);
 
 			{
 				auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
-				VRMAddRetargetChain(rigcon, TEXT("Root"), s, s);
+				rigcon.VRMAddRetargetChain(TEXT("Root"), s, s);
 			}
 			struct TT {
 				FString chain;
@@ -1167,17 +1417,17 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 							}
 						}
 					}
-					VRMAddRetargetChain(rigcon, *t.chain, *conv.s1, *s2);
+					rigcon.VRMAddRetargetChain(*t.chain, *conv.s1, *s2);
 				}
 			}
-			LocalSolverSetup(rigcon, vrmAssetList);
+			rigcon.LocalSolverSetup(vrmAssetList);
 
 			for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 				if (modelName.Key == "" || modelName.Value == "") {
 					continue;
 				}
 				if (modelName.Key == TEXT("hips")) {
-					rigcon->SetRetargetRoot(*modelName.Value);
+					rigcon.SetRetargetRoot(*modelName.Value);
 				}
 			}
 		} // skeleton ik
@@ -1188,26 +1438,45 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 			FString name = FString(TEXT("RTG_")) + vrmAssetList->BaseFileName;
 			ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
-			UIKRetargeterController* c = UIKRetargeterController::GetController(ikr);
+			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
-				c->SetSourceIKRig(rig_ik);
+				c.SetSourceIKRig(rig_ik);
 			}
 			else {
-				c->SetSourceIKRig(rig);
+				c.SetSourceIKRig(rig);
 			}
 #else
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
-				c->SetIKRig(ERetargetSourceOrTarget::Source, rig_ik);
+				c.SetIKRig(ERetargetSourceOrTarget::Target, rig_ik);
+
+				//static ConstructorHelpers::FObjectFinder<UVrmAssetListObject> MatClass(TEXT("Blueprint'/VRM4U/VrmObjectListBP'"));
+
+				//static ConstructorHelpers::FObjectFinder<UMaterialInterface> OpaqueMaterialRef(TEXT("/Paper2D/OpaqueUnlitSpriteMaterial"));
+				//AlternateMaterial = OpaqueMaterialRef.Object;
+
+				//static ConstructorHelpers::FObjectFinder<UIKRigDefinition> test(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin"));
+				//auto r2 = test.Object;
+				
+				FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
+				UObject* u = r.TryLoad();
+				if (u) {
+					auto r2 = Cast<UIKRigDefinition>(u);
+					if (r2) {
+						c.SetIKRig(ERetargetSourceOrTarget::Source, r2);
+					}
+					//c = (UClass*)(Cast<UBlueprint>(u)->GeneratedClass);
+				}
+
+				/// Script / IKRig.IKRigDefinition'/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin'
 			}
 			else {
-				c->SetIKRig(ERetargetSourceOrTarget::Source, rig);
+				c.SetIKRig(ERetargetSourceOrTarget::Target, rig);
 			}
 #endif
 		}
 #endif
-#endif // editor
 	} // ikrig
 
 	return true;
