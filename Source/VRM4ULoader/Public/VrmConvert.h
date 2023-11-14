@@ -67,6 +67,7 @@ public:
 
 	bool ConvertHumanoid(UVrmAssetListObject *vrmAssetList);
 	bool ConvertRig(UVrmAssetListObject *vrmAssetList);
+	bool ConvertIKRig(UVrmAssetListObject* vrmAssetList);
 	bool ConvertPose(UVrmAssetListObject* vrmAssetList);
 
 	UPackage *CreatePackageFromImportMode(UPackage *p, const FString &name);
