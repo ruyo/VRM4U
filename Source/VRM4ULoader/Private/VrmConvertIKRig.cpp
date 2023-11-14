@@ -262,8 +262,249 @@ namespace {
 	}
 #endif
 #endif
-
 }
+
+
+namespace {
+	struct RetargetParts {
+		FString BoneUE4;
+		FString BoneVRM;
+		FString BoneModel;
+
+		FRotator rot;
+	};
+
+	class RetargetData {
+
+	public:
+		TArray<RetargetParts> retargetTable;
+		
+		void setup(UVrmAssetListObject* vrmAssetList);
+	};
+
+	void RetargetData::setup(UVrmAssetListObject* vrmAssetList) {
+
+		if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
+			{
+				RetargetParts t;
+				t.BoneUE4 = TEXT("UpperArm_R");
+				t.rot = FRotator(50, 0, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("UpperArm_L");
+				t.rot = FRotator(-50, 0, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("lowerarm_r");
+				t.rot = FRotator(-10, -30, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("lowerarm_l");
+				t.rot = FRotator(10, 30, 0);
+				retargetTable.Push(t);
+			}
+			{
+				RetargetParts t;
+				t.BoneUE4 = TEXT("Hand_R");
+				t.rot = FRotator(10, 0, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("Hand_L");
+				t.rot = FRotator(-10, 0, 0);
+				retargetTable.Push(t);
+			}
+
+			{
+				RetargetParts t;
+				t.BoneUE4 = TEXT("pinky_01_r");
+				t.rot = FRotator(10, 12, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("pinky_01_l");
+				t.rot = FRotator(-10, -12, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("ring_01_r");
+				t.rot = FRotator(10, 6, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("ring_01_l");
+				t.rot = FRotator(-10, -6, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("index_01_r");
+				t.rot = FRotator(10, -6, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("index_01_l");
+				t.rot = FRotator(-10, 6, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("middle_01_r");
+				t.rot = FRotator(10, 0, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("middle_01_l");
+				t.rot = FRotator(-10, 0, 0);
+				retargetTable.Push(t);
+
+
+				t.BoneUE4 = TEXT("thumb_01_r");
+				t.rot = FRotator(10, 0, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("thumb_01_l");
+				t.rot = FRotator(-10, 0, 0);
+				retargetTable.Push(t);
+
+				{
+					FString tmpTable[] = {
+						//"index_01_r",
+						"index_02_r",
+						"index_03_r",
+						//"middle_01_r",
+						"middle_02_r",
+						"middle_03_r",
+						//"pinky_01_r",
+						"pinky_02_r",
+						"pinky_03_r",
+						//"ring_01_r",
+						"ring_02_r",
+						"ring_03_r",
+						//"thumb_01_r",
+						//"thumb_02_r",
+						//"thumb_03_r",
+					};
+					for (auto& a : tmpTable) {
+						t.BoneUE4 = a;
+						t.rot = FRotator(10, 0, 0);
+						retargetTable.Push(t);
+
+						t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+						t.rot = FRotator(-10, 0, 0);
+						retargetTable.Push(t);
+					}
+				}
+				{
+					FString tmpTable[] = {
+						//"thumb_01_r",
+						"thumb_02_r",
+						"thumb_03_r",
+					};
+					for (auto& a : tmpTable) {
+						t.BoneUE4 = a;
+						t.rot = FRotator(0, 10, 0);
+						retargetTable.Push(t);
+
+						t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+						t.rot = FRotator(0, -10, 0);
+						retargetTable.Push(t);
+					}
+				}
+			}
+		} // vrm, bvh
+
+		if (VRMConverter::Options::Get().IsPMXModel()) {
+			{
+				RetargetParts t;
+				t.BoneUE4 = TEXT("lowerarm_r");
+				t.rot = FRotator(0, -30, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("Hand_R");
+				t.rot = FRotator(10, 0, 0);
+				retargetTable.Push(t);
+			}
+			{
+				RetargetParts t;
+				t.BoneUE4 = TEXT("lowerarm_l");
+				t.rot = FRotator(-0, 30, 0);
+				retargetTable.Push(t);
+
+				t.BoneUE4 = TEXT("Hand_L");
+				t.rot = FRotator(-10, 0, 0);
+				retargetTable.Push(t);
+			}
+		}
+		// foot
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("Thigh_R");
+			t.rot = FRotator(-5, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Thigh_L");
+			t.rot = FRotator(5, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("calf_r");
+			t.rot = FRotator(0, 0, 5);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("calf_l");
+			t.rot = FRotator(0, 0, 5);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Foot_R");
+			t.rot = FRotator(5, 0, -5);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Foot_L");
+			t.rot = FRotator(-5, 0, -5);
+			retargetTable.Push(t);
+		}
+
+		for (auto& a : retargetTable) {
+			bool bFound = false;
+			//vrm
+			for (auto& t : VRMUtil::table_ue4_vrm) {
+				if (t.BoneUE4.Compare(a.BoneUE4) != 0) {
+					continue;
+				}
+				auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(t.BoneVRM);
+				if (m) {
+					bFound = true;
+					a.BoneVRM = t.BoneVRM;
+					a.BoneModel = *m;
+				}
+				break;
+			}
+			if (bFound) {
+				continue;
+			}
+			//pmx
+			for (auto& t : VRMUtil::table_ue4_pmx) {
+				if (t.BoneUE4.Compare(a.BoneUE4) != 0) {
+					continue;
+				}
+				FString pmxBone;
+				VRMUtil::GetReplacedPMXBone(pmxBone, t.BoneVRM);
+
+				FString target[2] = {
+					pmxBone,
+					t.BoneVRM,
+				};
+				bool finish = false;
+				for (int i = 0; i < 2; ++i) {
+					auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(target[i]);
+					if (m) {
+						bFound = true;
+						a.BoneVRM = target[i];
+						a.BoneModel = *m;
+					}
+					finish = true;
+					break;
+				}
+
+				if (finish) break;
+			}
+			if (bFound) {
+				continue;
+			}
+		}
+	}
+}
+
 
 #define VRM4U_USE_EDITOR_RIG WITH_EDITOR
 
@@ -777,6 +1018,10 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			FString name = FString(TEXT("RTG_")) + vrmAssetList->BaseFileName;
 			ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
+#if WITH_EDITOR
+			ikr->TargetMeshOffset.Set(100, 0, 0);
+#endif
+
 			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
@@ -803,20 +1048,63 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 
-			{
+			if (vrmAssetList && vrmAssetList->VrmMetaObject) {
+
+				auto & humanoidBoneTable = vrmAssetList->VrmMetaObject->humanoidBoneTable;
+				TArray<FString> KeyArray;
+				TArray<FString> ValueArray;
+				humanoidBoneTable.GenerateKeyArray(KeyArray);
+				humanoidBoneTable.GenerateValueArray(ValueArray);
+
+				auto FindKeyByValue = [humanoidBoneTable](const FString& SearchValue)
+					{
+						for (const auto& Pair : humanoidBoneTable)
+						{
+							if (Pair.Value.Compare(SearchValue, ESearchCase::IgnoreCase) == 0)
+							{
+								return Pair.Key;
+							}
+						}
+						return FString("");
+					};
+
+				RetargetData retargetData;
+				retargetData.setup(vrmAssetList);
+
+				auto FindRotData = [retargetData](const FString& boneVRM, FRotator &rot) {
+					for (auto& a : retargetData.retargetTable) {
+						if (a.BoneVRM.Compare(boneVRM, ESearchCase::IgnoreCase)) continue;
+
+						rot = a.rot;
+						return true;
+					}
+					return false;
+				};
+
 				//name
 				FName PoseName = "POSE_A";
 				const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
-				FIKRetargetPose NewPose = *c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
+				FIKRetargetPose *NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
 
 				FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 				const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
+				const FName RetargetRootBoneName = rig_ik->GetRetargetRoot();
 				for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 				{
 					auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
 
+					auto str = FindKeyByValue(BoneName.ToString());
+					if (str == "") {
+						continue;
+					}
+					FRotator rot;
+					if (FindRotData(*str, rot) == false) {
+						continue;
+					}
+					
+
 					// record a global space translation offset for the root bone
-					//if (BoneName == RetargetRootBoneName)
+					if (BoneName == RetargetRootBoneName)
 					{
 					//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
 					//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
@@ -824,15 +1112,30 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					}
 
 					// record a local space delta rotation (if there is one)
+
 					const FTransform& LocalRefTransform = RefPose[BoneIndex];
-					//const FTransform& LocalImportedTransform = LocalBoneTransformFromPose[PoseTrackIndex];
-					const FTransform& LocalImportedTransform = FTransform::Identity;
-					const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
+					const FTransform& LocalImportedTransform = FTransform(rot, FVector(0,0,0), FVector(1, 1, 1));
+					//const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
+
+					FQuat DeltaRotation = FQuat(rot);
+					if (VRMConverter::Options::Get().IsVRM10Model()) {
+						// p, y, r
+						DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Pitch, -rot.Roll));
+						//DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Roll, rot.Yaw));
+						////DeltaRotation = FQuat(FRotator(rot.Roll, rot.Pitch, rot.Yaw));
+						////DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Roll, rot.Pitch));
+						//DeltaRotation = FQuat(FRotator(rot.Roll, rot.Yaw, rot.Pitch));
+						////DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Yaw, rot.Roll));
+						//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
+						DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
+					}
+
 					const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
 					constexpr float MinAngleThreshold = 0.05f;
 					if (DeltaAngle >= MinAngleThreshold)
 					{
-						NewPose.SetDeltaRotationForBone(BoneName, DeltaRotation);
+						NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
+						NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
 					}
 				}
 
