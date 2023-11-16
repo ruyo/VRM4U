@@ -529,11 +529,16 @@ public:
 	}
 
 	FName CreateRetargetPose(const FName& NewPoseName, const ERetargetSourceOrTarget SourceOrTarget) const {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		return NAME_None;
+#else
+
 #if VRM4U_USE_EDITOR_RIG
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
 		return c->CreateRetargetPose(NewPoseName, SourceOrTarget);
 #else
 		return NewPoseName;
+#endif
 #endif
 	}
 
@@ -553,6 +558,9 @@ public:
 
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
+	void SetIKRig(UIKRigDefinition* IKRig) const {
+	}
+#elif	UE_VERSION_OLDER_THAN(5,3,0)
 	void SetIKRig(UIKRigDefinition* IKRig) const {
 #if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
@@ -649,7 +657,12 @@ public:
 	{
 #if VRM4U_USE_EDITOR_RIG
 		auto* r = LocalGetController(RigDefinition);
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		r->SetRetargetRoot(RootBoneName);
+		return true;
+#else
 		return r->SetRetargetRoot(RootBoneName);
+#endif
 #else
 
 		FName NewRootBone = RootBoneName;
@@ -734,6 +747,9 @@ public:
 
 	FTransform GetRefPoseTransformOfBone(const FName BoneName) const
 	{
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		return FTransform::Identity;
+#else
 		const int32 BoneIndex = RigDefinition->GetSkeleton().GetBoneIndexFromName(BoneName);
 		if (BoneIndex == INDEX_NONE)
 		{
@@ -742,6 +758,7 @@ public:
 		}
 
 		return RigDefinition->GetSkeleton().RefPoseGlobal[BoneIndex];
+#endif
 	}
 	void ResetInitialGoalTransforms() const
 	{
@@ -1025,6 +1042,8 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
+
+#elif	UE_VERSION_OLDER_THAN(5,3,0)
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
 				c.SetSourceIKRig(rig_ik);
 			}
