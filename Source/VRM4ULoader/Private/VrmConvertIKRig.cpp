@@ -634,6 +634,8 @@ public:
 
 
 	void SetSkeletalMesh(USkeletalMesh* sk) {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
 
 #if VRM4U_USE_EDITOR_RIG
 		auto *r = LocalGetController(RigDefinition);
@@ -643,18 +645,17 @@ public:
 		const_cast<FIKRigSkeleton*>(&RigDefinition->GetSkeleton())->SetInputSkeleton(sk, RigDefinition->GetSkeleton().ExcludedBones);
 		ResetInitialGoalTransforms();
 #endif
+#endif
 	}
 
 	bool SetRetargetRoot(const FName RootBoneName) const
 	{
-#if VRM4U_USE_EDITOR_RIG
-		auto* r = LocalGetController(RigDefinition);
 #if	UE_VERSION_OLDER_THAN(5,2,0)
-		r->SetRetargetRoot(RootBoneName);
 		return true;
 #else
+#if VRM4U_USE_EDITOR_RIG
+		auto* r = LocalGetController(RigDefinition);
 		return r->SetRetargetRoot(RootBoneName);
-#endif
 #else
 
 		FName NewRootBone = RootBoneName;
@@ -672,9 +673,13 @@ public:
 
 		return true;
 #endif
+#endif
 	}
 
 	FName VRMAddRetargetChain(FName name, FName begin, FName end) {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+		return NAME_None;
+#else
 		FBoneChain c;
 		FBoneReference r1, r2;
 		r1.BoneName = begin;
@@ -726,6 +731,7 @@ public:
 		//BroadcastNeedsReinitialized();
 
 		return NAME_None;// RigDefinition->RetargetDefinition.BoneChains[NewChainIndex].ChainName;
+#endif
 #endif
 	}
 	void LocalSolverSetup(UVrmAssetListObject *vrmAssetList) {
