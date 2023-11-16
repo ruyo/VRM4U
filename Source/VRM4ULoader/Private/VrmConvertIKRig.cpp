@@ -557,10 +557,10 @@ public:
 	}
 
 
-#if	UE_VERSION_OLDER_THAN(5,2,0)
+#if	UE_VERSION_OLDER_THAN(5,1,0)
 	void SetIKRig(UIKRigDefinition* IKRig) const {
 	}
-#elif	UE_VERSION_OLDER_THAN(5,3,0)
+#elif	UE_VERSION_OLDER_THAN(5,2,0)
 	void SetIKRig(UIKRigDefinition* IKRig) const {
 #if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
@@ -1041,9 +1041,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
-#if	UE_VERSION_OLDER_THAN(5,2,0)
+#if	UE_VERSION_OLDER_THAN(5,1,0)
 
-#elif	UE_VERSION_OLDER_THAN(5,3,0)
+#elif	UE_VERSION_OLDER_THAN(5,2,0)
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
 				c.SetSourceIKRig(rig_ik);
 			}
