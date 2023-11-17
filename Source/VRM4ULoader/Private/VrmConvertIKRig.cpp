@@ -21,7 +21,6 @@
 #include "Animation/Skeleton.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/UnrealType.h"
-#include "UObject/UnrealTypePrivate.h"
 
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
@@ -30,6 +29,7 @@
 
 #elif UE_VERSION_OLDER_THAN(5,2,0)
 
+#include "UObject/UnrealTypePrivate.h"
 #include "IKRigDefinition.h"
 #include "IKRigSolver.h"
 #include "Retargeter/IKRetargeter.h"
@@ -41,6 +41,7 @@
 
 #elif UE_VERSION_OLDER_THAN(5,3,0)
 
+#include "UObject/UnrealTypePrivate.h"
 #include "IKRigDefinition.h"
 #include "IKRigSolver.h"
 #include "Retargeter/IKRetargeter.h"
@@ -51,6 +52,8 @@
 #endif
 
 #else
+
+#include "UObject/UnrealTypePrivate.h"
 #include "Rig/IKRigDefinition.h"
 #include "Rig/Solvers/IKRigSolver.h"
 #include "Retargeter/IKRetargeter.h"
