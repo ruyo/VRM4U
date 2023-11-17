@@ -508,6 +508,9 @@ namespace {
 
 #define VRM4U_USE_EDITOR_RIG WITH_EDITOR
 
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
+
 #if WITH_EDITOR
 #else
 class UIKRetargeterController {
@@ -516,6 +519,7 @@ public:
 		retargeter->SourceIKRigAsset = rig;
 	}
 };
+#endif
 #endif
 
 
@@ -542,7 +546,8 @@ public:
 #else
 		return NewPoseName;
 #endif
-#endif
+
+#endif // 5.2
 	}
 
 	FIKRetargetPose* GetRetargetPosesByName(const ERetargetSourceOrTarget SourceOrTarget, FName poseName) const
@@ -606,6 +611,9 @@ public:
 #endif
 };
 #endif // 5.0
+
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
 
 class SimpleRigController {
 
@@ -806,6 +814,7 @@ public:
 	}
 };
 
+#endif // 5.0
 
 bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
