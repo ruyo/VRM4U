@@ -1032,6 +1032,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 		} // skeleton ik
 
 
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
+
 		UIKRetargeter* ikr = nullptr;
 		{
 			FString name = FString(TEXT("RTG_")) + vrmAssetList->BaseFileName;
@@ -1042,8 +1045,6 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #endif
 
 
-#if	UE_VERSION_OLDER_THAN(5,2,0)
-#else
 			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
@@ -1155,8 +1156,8 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 			}
 
-#endif
 		}
+#endif // 5.2
 #endif
 	} // ikrig
 
