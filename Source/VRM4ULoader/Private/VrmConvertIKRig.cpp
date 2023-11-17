@@ -519,6 +519,9 @@ public:
 #endif
 
 
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
+
 class SimpleRetargeterController {
 	//friend class UIKRetargeter;
 
@@ -602,6 +605,7 @@ public:
 	}
 #endif
 };
+#endif // 5.0
 
 class SimpleRigController {
 
@@ -1037,11 +1041,11 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			ikr->TargetMeshOffset.Set(100, 0, 0);
 #endif
 
-			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
-
 #else
+			SimpleRetargeterController c = SimpleRetargeterController(ikr);
+
 			if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
 				c.SetIKRig(ERetargetSourceOrTarget::Target, rig_ik);
 			}
