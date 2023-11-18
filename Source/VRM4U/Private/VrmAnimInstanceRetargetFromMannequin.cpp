@@ -22,7 +22,6 @@
 
 
 namespace {
-	// for UE4.19-4.22
 	template<class BaseType, class PoseType>
 	static void ConvertToLocalPoses2(const BaseType &basePose, PoseType& OutPose)
 	{
@@ -58,50 +57,57 @@ namespace {
 
 FVrmAnimInstanceRetargetFromMannequinProxy::FVrmAnimInstanceRetargetFromMannequinProxy()
 {
-	if (Node_SpringBone.Get() == nullptr) {
-		Node_SpringBone = MakeShareable(new FAnimNode_VrmSpringBone());
-	}
-	if (Node_Constraint.Get() == nullptr) {
-		Node_Constraint = MakeShareable(new FAnimNode_VrmConstraint());
-	}
 }
 
 FVrmAnimInstanceRetargetFromMannequinProxy::FVrmAnimInstanceRetargetFromMannequinProxy(UAnimInstance* InAnimInstance)
 	: FAnimInstanceProxy(InAnimInstance)
 {
+
+}
+
+
+void FVrmAnimInstanceRetargetFromMannequinProxy::Initialize(UAnimInstance* InAnimInstance) {
+	Super::Initialize(InAnimInstance);
+}
+
+void FVrmAnimInstanceRetargetFromMannequinProxy::CustomInitialize() {
+
 	if (Node_SpringBone.Get() == nullptr) {
 		Node_SpringBone = MakeShareable(new FAnimNode_VrmSpringBone());
 	}
 	if (Node_Constraint.Get() == nullptr) {
 		Node_Constraint = MakeShareable(new FAnimNode_VrmConstraint());
 	}
-	
+
+	if (Node_Retarget.Get() == nullptr) {
+		Node_Retarget = MakeShareable(new FAnimNode_RetargetPoseFromMesh());
+		FAnimationInitializeContext InitContext(this);
+		Node_Retarget->Initialize_AnyThread(InitContext);
+	}
 }
 
-
-void FVrmAnimInstanceRetargetFromMannequinProxy::Initialize(UAnimInstance* InAnimInstance) {
-}
 bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) {
 
-	if (bCopyStop) {
-		return false;
-	}
+	//Output.Pose.CopyBonesFrom(CachedPose);
 
-	if (bAnimStop && bUseAnimStop) {
-		Output.Pose.CopyBonesFrom(CachedPose);
-		return true;
-	}
-
-
-	//Output.ResetToRefPose();
-
-	UVrmAnimInstanceCopy *animInstance = Cast<UVrmAnimInstanceCopy>(GetAnimInstanceObject());
+	UVrmAnimInstanceRetargetFromMannequin* animInstance = Cast<UVrmAnimInstanceRetargetFromMannequin>(GetAnimInstanceObject());
 	if (animInstance == nullptr) {
 		return false;
 	}
 	if (animInstance->DstVrmAssetList == nullptr) {
-	//if (animInstance->SrcVrmAssetList == nullptr || animInstance->DstVrmAssetList == nullptr) {
-			return false;
+		if (IsInGameThread())
+		{
+			//FMessageLog("AnimBlueprintLog").Warning(
+			// FText::Format(LOCTEXT("AnimInstance_SlotNode", "SLOTNODE: '{0}' in animation instance class {1} already exists. Remove duplicates from the animation graph for this class."),
+			// FText::FromString(SlotNodeName.ToString()), FText::FromString(ClassNameString)));
+			//FMessageLog("AnimBlueprintLog").Warning(FText::Format("UVrmAnimInstanceRetargetFromMannequin")));
+		}
+		else
+		{
+			//UE_LOG(LogAnimation, Warning, TEXT("SLOTNODE: '%s' in animation instance class %s already exists. Remove duplicates from the animation graph for this class."), *SlotNodeName.ToString(), *ClassNameString);
+		}
+		UE_LOG(LogAnimation, Warning, TEXT("UVrmAnimInstanceRetargetFromMannequin:: no DestVrmAssetList"));
+		return false;
 	}
 
 	const UVrmMetaObject *dstMeta = animInstance->DstVrmAssetList->VrmMetaObject;
@@ -112,76 +118,41 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 	}
 
 	if (dstMeta == nullptr) {
+		UE_LOG(LogAnimation, Warning, TEXT("UVrmAnimInstanceRetargetFromMannequin:: no DstMeta"));
 		return false;
 	}
-
-
-	auto srcSkeletalMeshComp = animInstance->SrcSkeletalMeshComponent;
-	auto srcAsSkinnedMeshComp = animInstance->SrcAsSkinnedMeshComponent;
-
-	if (srcAsSkinnedMeshComp == nullptr) {
-		if (srcSkeletalMeshComp == nullptr || srcSkeletalMeshComp->GetAnimInstance() == nullptr) {
-			return false;
-		}
-	}
-	if (VRMGetSkinnedAsset(srcAsSkinnedMeshComp) == nullptr) {
-		return false;
-	}
-
-	// ref pose
-	const auto &dstRefSkeletonTransform = VRMGetRefSkeleton( VRMGetSkinnedAsset(GetSkelMeshComponent()) ).GetRefBonePose();
-	const auto &srcRefSkeletonTransform = VRMGetRefSkeleton( VRMGetSkinnedAsset(srcAsSkinnedMeshComp) ).GetRefBonePose();
-
-	auto &pose = Output.Pose;
 
 	// morph copy
-	if (srcSkeletalMeshComp && srcSkeletalMeshComp->GetAnimInstance()){
-		EAnimCurveType types[] = {
-			EAnimCurveType::AttributeCurve,
-			EAnimCurveType::MaterialCurve,
-			EAnimCurveType::MorphTargetCurve,
-		};
+	if (animInstance->SrcSkeletalMeshComponent){
+		if (animInstance->SrcSkeletalMeshComponent->GetAnimInstance()) {
+			EAnimCurveType types[] = {
+				EAnimCurveType::AttributeCurve,
+				EAnimCurveType::MaterialCurve,
+				EAnimCurveType::MorphTargetCurve,
+			};
 
-		for (int i = 0; i < 3; ++i) {
-			const TMap<FName, float>& t = srcSkeletalMeshComp->GetAnimInstance()->GetAnimationCurveList(types[i]);
-			for (auto& a : t) {
-				GetSkelMeshComponent()->SetMorphTarget(a.Key, a.Value, true);
+			for (int i = 0; i < 3; ++i) {
+				const TMap<FName, float>& t = animInstance->SrcSkeletalMeshComponent->GetAnimInstance()->GetAnimationCurveList(types[i]);
+				for (auto& a : t) {
+					GetSkelMeshComponent()->SetMorphTarget(a.Key, a.Value, true);
+				}
 			}
 		}
 	}
-
-	float HeightScale = 1.f;
-	bool bUniqueRootBone = true;
-	int BoneCount = 0;
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
 #else
 
 	//retarget
-	if (bUseRetargeter && Retargeter && srcSkeletalMeshComp) {
-		if (Node_Retarget.Get() == nullptr) {
-			Node_Retarget = MakeShareable(new FAnimNode_RetargetPoseFromMesh());
-		}
+	if (bUseRetargeter && Retargeter && Node_Retarget.Get()) {
 
-		if (Node_Constraint.Get()) {
-			auto& ret = *Node_Retarget.Get();
+		if (Node_Retarget.Get()) {
+			auto node = Node_Retarget.Get();
 
-			ret.IKRetargeterAsset = Retargeter.Get();
-			ret.SourceMeshComponent = srcSkeletalMeshComp;
+			FAnimationCacheBonesContext c(this);
+			node->CacheBones_AnyThread(c);
 
-			FAnimationInitializeContext InitContext(this);
-
-			if (ret.GetRetargetProcessor() == nullptr) {
-				ret.Initialize_AnyThread(InitContext);
-			}
-
-			{
-				FComponentSpacePoseContext InputCSPose(this);
-				InputCSPose.Pose.InitPose(Output.Pose);
-				ret.EvaluateComponentSpace_AnyThread(InputCSPose);
-				ConvertToLocalPoses2(InputCSPose.Pose, Output.Pose);
-			}
-
+			node->Evaluate_AnyThread(Output);
 		}
 	} else {
 		Node_Retarget = nullptr;
@@ -208,13 +179,10 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 			}
 
 			if (Node_Constraint.Get()) {
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 				if (animInstance->PendingDynamicResetTeleportType != ETeleportType::None)
 				{
 					Node_Constraint->ResetDynamics(animInstance->PendingDynamicResetTeleportType);
 				}
-#endif
 
 				auto& constraint = *Node_Constraint.Get();
 
@@ -228,16 +196,7 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 					constraint.ComponentPose.SetLinkNode(&constraint);
 				}
 
-				if (0) {
-					++CalcCount;
-					FComponentSpacePoseContext InputCSPose(this);
-					for (int i = 0; i < 20; ++i) {
-						InputCSPose.Pose.InitPose(Output.Pose);
-						constraint.EvaluateComponentSpace_AnyThread(InputCSPose);
-						ConvertToLocalPoses2(InputCSPose.Pose, Output.Pose);
-					}
-				}
-				else {
+				{
 					FComponentSpacePoseContext InputCSPose(this);
 					InputCSPose.Pose.InitPose(Output.Pose);
 					constraint.EvaluateComponentSpace_AnyThread(InputCSPose);
@@ -271,13 +230,10 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 			}
 
 			if (Node_SpringBone.Get()) {
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 				if(animInstance->PendingDynamicResetTeleportType != ETeleportType::None)
 				{
 					Node_SpringBone->ResetDynamics(animInstance->PendingDynamicResetTeleportType);
 				}
-#endif
 
 				auto& springBone = *Node_SpringBone.Get();
 
@@ -317,28 +273,41 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 		Node_SpringBone = nullptr;
 	}
 
-
-	if (bUseAnimStop) {
-		CachedPose.CopyBonesFrom(Output.Pose);
-	}
-
 	return true;
 }
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-void FVrmAnimInstanceRetargetFromMannequinProxy::UpdateAnimationNode(float DeltaSeconds) {
-	CurrentDeltaTime = DeltaSeconds;
-}
-#else
 void FVrmAnimInstanceRetargetFromMannequinProxy::UpdateAnimationNode(const FAnimationUpdateContext& InContext) {
 	CurrentDeltaTime = InContext.GetDeltaTime();
+	CustomInitialize();
+
 }
-#endif
+
+void FVrmAnimInstanceRetargetFromMannequinProxy::PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds) {
+	Super::PreUpdate(InAnimInstance, DeltaSeconds);
+
+
+	if (Node_Retarget.Get()) {
+		auto node = Node_Retarget.Get();
+
+		node->IKRetargeterAsset = Retargeter.Get();
+		//node->SourceMeshComponent = InAnimInstance->SrcSkeletalMeshComponent; // null ok
+
+		FAnimationInitializeContext InitContext(this);
+
+		if (node->GetRetargetProcessor() == nullptr) {
+			node->Initialize_AnyThread(InitContext);
+		}
+
+		node->PreUpdate(InAnimInstance);
+	}
+}
 
 /////
 
 UVrmAnimInstanceRetargetFromMannequin::UVrmAnimInstanceRetargetFromMannequin(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
+	bUsingCopyPoseFromMesh = true;
+
 }
 
 FAnimInstanceProxy* UVrmAnimInstanceRetargetFromMannequin::CreateAnimInstanceProxy() {
@@ -357,13 +326,8 @@ void UVrmAnimInstanceRetargetFromMannequin::NativeInitializeAnimation() {
 void UVrmAnimInstanceRetargetFromMannequin::NativeUpdateAnimation(float DeltaSeconds) {
 }
 void UVrmAnimInstanceRetargetFromMannequin::NativePostEvaluateAnimation() {
-	myProxy->bUseAnimStop = bUseAnimStop;
-	myProxy->bAnimStop = bAnimStop;
-	myProxy->bIgnoreCenterLocation = bIgnoreCenterLocation;
-	myProxy->CenterLocationScaleByHeightScale = CenterLocationScaleByHeightScale;
-	myProxy->CenterLocationOffset= CenterLocationOffset;
-	myProxy->bCopyStop = bCopyStop;
 }
+
 void UVrmAnimInstanceRetargetFromMannequin::NativeUninitializeAnimation() {
 	if (GetOwningComponent()) {
 		GetOwningComponent()->ClearMorphTargets();
@@ -417,16 +381,18 @@ void UVrmAnimInstanceRetargetFromMannequin::NativeBeginPlay() {
 	}
 }
 
-void UVrmAnimInstanceRetargetFromMannequin::SetSkeletalMeshCopyData(UVrmAssetListObject *dstAssetList,
-	USkeletalMeshComponent *srcSkeletalMesh, USkinnedMeshComponent* srcSkinnedMesh) {
+void UVrmAnimInstanceRetargetFromMannequin::PreUpdateAnimation(float DeltaSeconds) {
+	Super::PreUpdateAnimation(DeltaSeconds);
+}
 
-	SrcSkeletalMeshComponent = srcSkeletalMesh;
-	SrcAsSkinnedMeshComponent = srcSkinnedMesh;
+void UVrmAnimInstanceRetargetFromMannequin::SetRetargetData(bool bUseRetargeter, UIKRetargeter* IKRetargeter) {
+	myProxy->Retargeter = IKRetargeter;
+	myProxy->bUseRetargeter = bUseRetargeter;
+}
+
+
+void UVrmAnimInstanceRetargetFromMannequin::SetVrmAssetList(UVrmAssetListObject *dstAssetList) {
 	DstVrmAssetList = dstAssetList;
-
-	if (SrcAsSkinnedMeshComponent == nullptr) {
-		SrcAsSkinnedMeshComponent = SrcSkeletalMeshComponent;
-	}
 }
 
 void UVrmAnimInstanceRetargetFromMannequin::SetSkeletalMeshCopyDataForCustomSpring(UVrmMetaObject *dstMetaForCustomSpring) {

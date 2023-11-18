@@ -39,14 +39,10 @@ public:
 	//TWeakObjectPtr<USkeletalMeshComponent> RetargetSourceMeshComponent = nullptr;
 	TAssetPtr<UIKRetargeter> Retargeter;
 	TSharedPtr<FAnimNode_RetargetPoseFromMesh> Node_Retarget;
+
+	void CustomInitialize();
 #endif
 
-	bool bUseAnimStop = false;
-	bool bAnimStop = false;
-	bool bIgnoreCenterLocation = false;
-	FVector CenterLocationScaleByHeightScale = { 1.f, 1.f, 1.f };
-	FVector CenterLocationOffset = {0.f, 0.f, 0.f};
-	bool bCopyStop = false;
 	FCompactHeapPose CachedPose;
 
 	FVrmAnimInstanceRetargetFromMannequinProxy();
@@ -55,11 +51,10 @@ public:
 
 	virtual void Initialize(UAnimInstance* InAnimInstance) override;
 	virtual bool Evaluate(FPoseContext& Output) override;
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-	virtual void UpdateAnimationNode(float DeltaSeconds) override;
-#else
+
 	virtual void UpdateAnimationNode(const FAnimationUpdateContext& InContext);
-#endif
+
+	virtual void PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds);
 };
 
 /**
@@ -129,9 +124,13 @@ public:
 
 	// Executed when begin play is called on the owning component
 	virtual void NativeBeginPlay()override;
+	virtual void PreUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
-	void SetSkeletalMeshCopyData(UVrmAssetListObject *dstAssetList, USkeletalMeshComponent *srcSkeletalMesh, USkinnedMeshComponent* srcSkinnedMesh);
+	void SetRetargetData(bool bUseRetargeter, UIKRetargeter *IKRetargeter);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void SetVrmAssetList(UVrmAssetListObject *dstAssetList);
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	void SetSkeletalMeshCopyDataForCustomSpring(UVrmMetaObject *dstMetaForCustomSpring);
