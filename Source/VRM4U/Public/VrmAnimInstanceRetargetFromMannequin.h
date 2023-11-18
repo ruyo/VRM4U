@@ -2,6 +2,7 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimInstanceProxy.h"
@@ -9,10 +10,10 @@
 #include "Misc/EngineVersionComparison.h"
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
-#else
-#include "Retargeter/IKRetargeter.h"
+static_assert(0, "Available for UE5.3+. delete h/cpp files");
 #endif
 
+#include "Retargeter/IKRetargeter.h"
 #include "VrmAnimInstanceRetargetFromMannequin.generated.h"
 
 class UVrmAssetListObject;
