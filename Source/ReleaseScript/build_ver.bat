@@ -59,19 +59,32 @@ del "..\..\..\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
 del "..\..\..\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
 )
 
+
+set /a UEVersion=%UE4VER%
+for /f %%i in ('wsl echo "%UEVersion% * 100"') do set UEVersion100=%%i
+for /f "tokens=1 delims=." %%a in ("%UEVersion%") do set UEMajorVersion=%%a
+
+
 set isUE4=FALSE
-if %UE4VER% == 4.27 set isUE4=TRUE
-if %UE4VER% == 4.26 set isUE4=TRUE
-if %UE4VER% == 4.25 set isUE4=TRUE
-if %UE4VER% == 4.24 set isUE4=TRUE
-if %UE4VER% == 4.23 set isUE4=TRUE
-if %UE4VER% == 4.22 set isUE4=TRUE
-if %UE4VER% == 4.21 set isUE4=TRUE
-if %UE4VER% == 4.20 set isUE4=TRUE
-if %UE4VER% == 4.19 set isUE4=TRUE
+if %UEMajorVersion% == 4 (
+    set isUE4=TRUE
+)
 
 if %isUE4% == FALSE (
 del "..\..\..\VRM4U\Content\Util\Actor\latest\WBP_MorphTarget.uasset"
+)
+
+set isRetargeterEnable=TRUE
+if %UEMajorVersion% == 4 (
+    set isRetargeterEnable=FALSE
+)
+if %UE4VER% == 5.0 set isRetargeterEnable=FALSE
+if %UE4VER% == 5.1 set isRetargeterEnable=FALSE
+if %UE4VER% == 5.2 set isRetargeterEnable=FALSE
+
+if %isRetargeterEnable% == FALSE (
+del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAnimInstanceRetargetFromMannequin.cpp"
+del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAnimInstanceRetargetFromMannequin.h"
 )
 
 
