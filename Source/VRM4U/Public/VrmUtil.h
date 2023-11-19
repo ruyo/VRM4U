@@ -510,9 +510,11 @@ public:
 			return BoneUE4.Compare(a.BoneUE4, ESearchCase::IgnoreCase) == 0;
 		}
 	};
-
+	class UVrmAssetListObject* vrmAssetList = nullptr;
 	TArray<RetargetParts> retargetTable;
+
 	void Setup(class UVrmAssetListObject* vrmAssetList, bool bVRM, bool bBVH, bool bPMX);
+	void UpdateBoneName();
 	void Remove(FString BoneUE4);
 };
 

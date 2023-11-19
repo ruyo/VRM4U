@@ -959,6 +959,45 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 						}
 					}
 
+					retargetData.UpdateBoneName();
+
+					for (auto& a : retargetData.retargetTable) {
+						int32 BoneIndex = VRMGetRefSkeleton(sk).FindBoneIndex(*a.BoneModel);
+						if (BoneIndex < 0) continue;
+
+						FTransform dstTrans;
+						auto dstIndex = BoneIndex;
+						
+						const auto BoneTrans = VRMGetRefSkeleton(sk).GetRefBonePose()[dstIndex];
+
+						while (dstIndex >= 0)
+						{
+							dstIndex = VRMGetRefSkeleton(sk).GetParentIndex(dstIndex);
+							if (dstIndex < 0) {
+								break;
+							}
+							dstTrans = VRMGetRefSkeleton(sk).GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
+						}
+
+						// p, y, r
+						//a.rot = (FRotator(a.rot.Yaw, a.rot.Pitch, a.rot.Roll));
+
+						auto q = (dstTrans.GetRotation().Inverse() * FQuat(a.rot) * dstTrans.GetRotation());
+						//auto q = (dstTrans.GetRotation() * FQuat(a.rot) * dstTrans.GetRotation().Inverse());
+
+						//a.rot = (FRotator(a.rot.Yaw, a.rot.Pitch, -a.rot.Roll));
+						//DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Roll, rot.Yaw));
+						////DeltaRotation = FQuat(FRotator(rot.Roll, rot.Pitch, rot.Yaw));
+						////DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Roll, rot.Pitch));
+						//DeltaRotation = FQuat(FRotator(rot.Roll, rot.Yaw, rot.Pitch));
+						////DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Yaw, rot.Roll));
+
+						q = BoneTrans.GetRotation() * q;
+						//q = q * BoneTrans.GetRotation();
+						a.rot = q.Rotator();
+					}
+
+
 					TMap<FString, VRMRetargetData::RetargetParts> mapTable;
 					for (auto &a : retargetData.retargetTable) {
 						bool bFound = false;

@@ -597,8 +597,8 @@ void VRMRetargetData::Remove(FString BoneUE4) {
 	}
 }
 
-void VRMRetargetData::Setup(UVrmAssetListObject* vrmAssetList, bool bVRM, bool bBVH, bool bPMX) {
-
+void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool bBVH, bool bPMX) {
+	vrmAssetList = InVrmAssetList;
 	if (bVRM || bBVH) {
 		{
 			RetargetParts t;
@@ -778,6 +778,10 @@ void VRMRetargetData::Setup(UVrmAssetListObject* vrmAssetList, bool bVRM, bool b
 		t.rot = FRotator(-5, 0, -5);
 		retargetTable.Push(t);
 	}
+}
+
+void VRMRetargetData::UpdateBoneName() {
+
 
 	for (auto& a : retargetTable) {
 		bool bFound = false;

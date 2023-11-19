@@ -902,6 +902,18 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 					FQuat DeltaRotation = FQuat(rot);
 					if (VRMConverter::Options::Get().IsVRM10Model()) {
+
+						FTransform dstTrans;
+						auto dstIndex = BoneIndex;
+						while (dstIndex >= 0)
+						{
+							dstIndex = RefSkeleton.GetParentIndex(dstIndex);
+							if (dstIndex < 0) {
+								break;
+							}
+							dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
+						}
+
 						// p, y, r
 						DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Pitch, -rot.Roll));
 						//DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Roll, rot.Yaw));
@@ -910,7 +922,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						//DeltaRotation = FQuat(FRotator(rot.Roll, rot.Yaw, rot.Pitch));
 						////DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Yaw, rot.Roll));
 						//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
-						DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
+						//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
+						//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
+						DeltaRotation = dstTrans.GetRotation().Inverse() * DeltaRotation * dstTrans.GetRotation();
 					}
 
 					const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
