@@ -496,3 +496,24 @@ public:
 	static bool IsNoSafeName(const FString& str);
 	static FString GetSafeNewName(const FString& str);
 };
+
+class VRM4U_API VRMRetargetData {
+public:
+
+	struct RetargetParts {
+		FString BoneUE4;
+		FString BoneVRM;
+		FString BoneModel;
+
+		FRotator rot;
+		bool operator==(const RetargetParts& a) const{
+			return BoneUE4.Compare(a.BoneUE4, ESearchCase::IgnoreCase) == 0;
+		}
+	};
+
+	TArray<RetargetParts> retargetTable;
+	void Setup(class UVrmAssetListObject* vrmAssetList, bool bVRM, bool bBVH, bool bPMX);
+	void Remove(FString BoneUE4);
+};
+
+

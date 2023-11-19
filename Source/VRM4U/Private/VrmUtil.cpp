@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 
-
 void FImportOptionData::init() {
 }
 
@@ -587,3 +586,245 @@ void VRMAddRetargetChain(UIKRigController* con, FName name, FName begin, FName e
 }
 
 #endif
+
+
+void VRMRetargetData::Remove(FString BoneUE4) {
+	for (auto r : retargetTable) {
+		if (BoneUE4.Compare(r.BoneUE4, ESearchCase::IgnoreCase) == 0) {
+			retargetTable.Remove(r);
+			return;
+		}
+	}
+}
+
+void VRMRetargetData::Setup(UVrmAssetListObject* vrmAssetList, bool bVRM, bool bBVH, bool bPMX) {
+
+	if (bVRM || bBVH) {
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("UpperArm_R");
+			t.rot = FRotator(50, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("UpperArm_L");
+			t.rot = FRotator(-50, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("lowerarm_r");
+			t.rot = FRotator(0, -30, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("lowerarm_l");
+			t.rot = FRotator(0, 30, 0);
+			retargetTable.Push(t);
+		}
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("Hand_R");
+			t.rot = FRotator(0, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Hand_L");
+			t.rot = FRotator(0, 0, 0);
+			retargetTable.Push(t);
+		}
+
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("pinky_01_r");
+			t.rot = FRotator(18, 12, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("pinky_01_l");
+			t.rot = FRotator(-18, -12, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("ring_01_r");
+			t.rot = FRotator(18, 6, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("ring_01_l");
+			t.rot = FRotator(-18, -6, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("index_01_r");
+			t.rot = FRotator(20, -6, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("index_01_l");
+			t.rot = FRotator(-20, 6, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("middle_01_r");
+			t.rot = FRotator(20, 0, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("middle_01_l");
+			t.rot = FRotator(-20, 0, 0);
+			retargetTable.Push(t);
+
+
+			t.BoneUE4 = TEXT("thumb_01_r");
+			t.rot = FRotator(0, 8, 20);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("thumb_01_l");
+			t.rot = FRotator(0, -8, 20);
+			retargetTable.Push(t);
+
+			{
+				FString tmpTable[] = {
+					//"index_01_r",
+					"index_02_r",
+					"index_03_r",
+					//"middle_01_r",
+					"middle_02_r",
+					"middle_03_r",
+				};
+				for (auto& a : tmpTable) {
+					t.BoneUE4 = a;
+					t.rot = FRotator(20, 0, 0);
+					retargetTable.Push(t);
+
+					t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+					t.rot = FRotator(-20, 0, 0);
+					retargetTable.Push(t);
+				}
+			}
+			{
+
+				FString tmpTable[] = {
+					"ring_02_r",
+					"ring_03_r",
+					//"pinky_01_r",
+					"pinky_02_r",
+					"pinky_03_r",
+				};
+				for (auto& a : tmpTable) {
+					t.BoneUE4 = a;
+					t.rot = FRotator(18, 0, 0);
+					retargetTable.Push(t);
+
+					t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+					t.rot = FRotator(-18, 0, 0);
+					retargetTable.Push(t);
+				}
+			}
+			{
+				FString tmpTable[] = {
+					//"thumb_01_r",
+					"thumb_02_r",
+					"thumb_03_r",
+				};
+				for (auto& a : tmpTable) {
+					t.BoneUE4 = a;
+					t.rot = FRotator(0, 10, 0);
+					retargetTable.Push(t);
+
+					t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+					t.rot = FRotator(0, -10, 0);
+					retargetTable.Push(t);
+				}
+			}
+		}
+	} // vrm, bvh
+
+	if (bPMX) {
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("lowerarm_r");
+			t.rot = FRotator(0, -30, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Hand_R");
+			t.rot = FRotator(10, 0, 0);
+			retargetTable.Push(t);
+		}
+		{
+			RetargetParts t;
+			t.BoneUE4 = TEXT("lowerarm_l");
+			t.rot = FRotator(-0, 30, 0);
+			retargetTable.Push(t);
+
+			t.BoneUE4 = TEXT("Hand_L");
+			t.rot = FRotator(-10, 0, 0);
+			retargetTable.Push(t);
+		}
+	}
+	// foot
+	{
+		RetargetParts t;
+		t.BoneUE4 = TEXT("Thigh_R");
+		t.rot = FRotator(-5, 0, 0);
+		retargetTable.Push(t);
+
+		t.BoneUE4 = TEXT("Thigh_L");
+		t.rot = FRotator(5, 0, 0);
+		retargetTable.Push(t);
+
+		t.BoneUE4 = TEXT("calf_r");
+		t.rot = FRotator(0, 0, 5);
+		retargetTable.Push(t);
+
+		t.BoneUE4 = TEXT("calf_l");
+		t.rot = FRotator(0, 0, 5);
+		retargetTable.Push(t);
+
+		t.BoneUE4 = TEXT("Foot_R");
+		t.rot = FRotator(5, 0, -5);
+		retargetTable.Push(t);
+
+		t.BoneUE4 = TEXT("Foot_L");
+		t.rot = FRotator(-5, 0, -5);
+		retargetTable.Push(t);
+	}
+
+	for (auto& a : retargetTable) {
+		bool bFound = false;
+		//vrm
+		for (auto& t : VRMUtil::table_ue4_vrm) {
+			if (t.BoneUE4.Compare(a.BoneUE4) != 0) {
+				continue;
+			}
+			auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(t.BoneVRM);
+			if (m) {
+				bFound = true;
+				a.BoneVRM = t.BoneVRM;
+				a.BoneModel = *m;
+			}
+			break;
+		}
+		if (bFound) {
+			continue;
+		}
+		//pmx
+		for (auto& t : VRMUtil::table_ue4_pmx) {
+			if (t.BoneUE4.Compare(a.BoneUE4) != 0) {
+				continue;
+			}
+			FString pmxBone;
+			VRMUtil::GetReplacedPMXBone(pmxBone, t.BoneVRM);
+
+			FString target[2] = {
+				pmxBone,
+				t.BoneVRM,
+			};
+			bool finish = false;
+			for (int i = 0; i < 2; ++i) {
+				auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(target[i]);
+				if (m) {
+					bFound = true;
+					a.BoneVRM = target[i];
+					a.BoneModel = *m;
+				}
+				finish = true;
+				break;
+			}
+
+			if (finish) break;
+		}
+		if (bFound) {
+			continue;
+		}
+	}
+}

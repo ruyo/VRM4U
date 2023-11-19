@@ -845,133 +845,37 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 				skc->SetComponentSpaceTransformsDoubleBuffering(false);
 
 				{
-					struct RetargetParts {
-						FString BoneUE4;
-						FString BoneVRM;
-						FString BoneModel;
+					VRMRetargetData retargetData;
+					retargetData.Setup(vrmAssetList,
+						VRMConverter::Options::Get().IsVRMModel(),
+						VRMConverter::Options::Get().IsBVHModel(),
+						VRMConverter::Options::Get().IsPMXModel());
 
-						FRotator rot;
-					};
+					// default A-pose
+					//retargetTable = retargetData.retargetTable;
 
-					TArray<RetargetParts> retargetTable;
+					//TArray<VRMRetargetData::RetargetParts> retargetTable;
 					if (VRMConverter::Options::Get().IsVRMModel() || VRMConverter::Options::Get().IsBVHModel()) {
-						if (poseType_hand== PoseType::TYPE_A) {
-							{
-								RetargetParts t;
-								t.BoneUE4 = TEXT("UpperArm_R");
-								t.rot = FRotator(50, 0, 0);
-								retargetTable.Push(t);
 
-								t.BoneUE4 = TEXT("UpperArm_L");
-								t.rot = FRotator(-50, 0, 0);
-								retargetTable.Push(t);
-							}
-							{
-								RetargetParts t;
-								t.BoneUE4 = TEXT("lowerarm_r");
-								t.rot = FRotator(-10, -30, 0);
-								retargetTable.Push(t);
+						if (poseType_hand == PoseType::TYPE_T) {
+							TArray<FString> strTable = {
+								TEXT("Thigh_R"),
+								TEXT("Thigh_L"),
+								TEXT("calf_r"),
+								TEXT("calf_l"),
+								TEXT("Foot_R"),
+								TEXT("Foot_L") 
+							};
 
-								t.BoneUE4 = TEXT("lowerarm_l");
-								t.rot = FRotator(10, 30, 0);
-								retargetTable.Push(t);
-							}
-							{
-								RetargetParts t;
-								t.BoneUE4 = TEXT("Hand_R");
-								t.rot = FRotator(10, 0, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("Hand_L");
-								t.rot = FRotator(-10, 0, 0);
-								retargetTable.Push(t);
-							}
-
-							{
-								RetargetParts t;
-								t.BoneUE4 = TEXT("pinky_01_r");
-								t.rot = FRotator(10, 12, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("pinky_01_l");
-								t.rot = FRotator(-10, -12, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("ring_01_r");
-								t.rot = FRotator(10, 6, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("ring_01_l");
-								t.rot = FRotator(-10, -6, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("index_01_r");
-								t.rot = FRotator(10, -6, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("index_01_l");
-								t.rot = FRotator(-10, 6, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("middle_01_r");
-								t.rot = FRotator(10, 0, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("middle_01_l");
-								t.rot = FRotator(-10, 0, 0);
-								retargetTable.Push(t);
-								
-
-								t.BoneUE4 = TEXT("thumb_01_r");
-								t.rot = FRotator(10, 0, 0);
-								retargetTable.Push(t);
-
-								t.BoneUE4 = TEXT("thumb_01_l");
-								t.rot = FRotator(-10, 0, 0);
-								retargetTable.Push(t);
-
-								{
-									FString tmpTable[] = {
-										//"index_01_r",
-										"index_02_r",
-										"index_03_r",
-										//"middle_01_r",
-										"middle_02_r",
-										"middle_03_r",
-										//"pinky_01_r",
-										"pinky_02_r",
-										"pinky_03_r",
-										//"ring_01_r",
-										"ring_02_r",
-										"ring_03_r",
-										//"thumb_01_r",
-										//"thumb_02_r",
-										//"thumb_03_r",
-									};
-									for (auto& a : tmpTable) {
-										t.BoneUE4 = a;
-										t.rot = FRotator(10, 0, 0);
-										retargetTable.Push(t);
-
-										t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
-										t.rot = FRotator(-10, 0, 0);
-										retargetTable.Push(t);
-									}
-								}
-								{
-									FString tmpTable[] = {
-										//"thumb_01_r",
-										"thumb_02_r",
-										"thumb_03_r",
-									};
-									for (auto& a : tmpTable) {
-										t.BoneUE4 = a;
-										t.rot = FRotator(0, 10, 0);
-										retargetTable.Push(t);
-
-										t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
-										t.rot = FRotator(0, -10, 0);
-										retargetTable.Push(t);
+							// 手の情報を消す
+							bool bLoop = true;
+							while (bLoop) {
+								bLoop = false;
+								for (auto r : retargetData.retargetTable) {
+									if (strTable.Find(r.BoneUE4) < 0) {
+										retargetData.Remove(r.BoneUE4);
+										bLoop = true;
+										break;
 									}
 								}
 							}
@@ -993,77 +897,70 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 							}
 							if (degRot) {
 								{
-									RetargetParts t;
+									VRMRetargetData::RetargetParts t;
 									t.BoneUE4 = TEXT("UpperArm_R");
 									t.rot = FRotator(-degRot, 0, 0);
-									retargetTable.Push(t);
+									retargetData.Remove(t.BoneUE4);
+									retargetData.retargetTable.Push(t);
 								}
 								{
-									RetargetParts t;
+									VRMRetargetData::RetargetParts t;
 									t.BoneUE4 = TEXT("UpperArm_L");
 									t.rot = FRotator(degRot, 0, 0);
-									retargetTable.Push(t);
+									retargetData.Remove(t.BoneUE4);
+									retargetData.retargetTable.Push(t);
 								}
 							}
 						}
 						if (poseType_hand == PoseType::TYPE_A) {
 							{
-								RetargetParts t;
+								VRMRetargetData::RetargetParts t;
 								t.BoneUE4 = TEXT("lowerarm_r");
 								t.rot = FRotator(0, -30, 0);
-								retargetTable.Push(t);
+								retargetData.Remove(t.BoneUE4);
+								retargetData.retargetTable.Push(t);
 							}
 							{
-								RetargetParts t;
+								VRMRetargetData::RetargetParts t;
 								t.BoneUE4 = TEXT("Hand_R");
 								t.rot = FRotator(10, 0, 0);
-								retargetTable.Push(t);
+								retargetData.Remove(t.BoneUE4);
+								retargetData.retargetTable.Push(t);
 							}
 							{
-								RetargetParts t;
+								VRMRetargetData::RetargetParts t;
 								t.BoneUE4 = TEXT("lowerarm_l");
 								t.rot = FRotator(-0, 30, 0);
-								retargetTable.Push(t);
+								retargetData.Remove(t.BoneUE4);
+								retargetData.retargetTable.Push(t);
 							}
 							{
-								RetargetParts t;
+								VRMRetargetData::RetargetParts t;
 								t.BoneUE4 = TEXT("Hand_L");
 								t.rot = FRotator(-10, 0, 0);
-								retargetTable.Push(t);
+								retargetData.Remove(t.BoneUE4);
+								retargetData.retargetTable.Push(t);
 							}
 						}
 					}
-					if (poseType_foot == PoseType::TYPE_A) {
-						{
-							RetargetParts t;
-							t.BoneUE4 = TEXT("Thigh_R");
-							t.rot = FRotator(-5, 0, 0);
-							retargetTable.Push(t);
+					if (poseType_foot == PoseType::TYPE_T) {
+						// 足の情報を消す
+						TArray<FString> strTable = {
+							TEXT("Thigh_R"),
+							TEXT("Thigh_L"),
+							TEXT("calf_r"),
+							TEXT("calf_l"),
+							TEXT("Foot_R"),
+							TEXT("Foot_L")
+						};
 
-							t.BoneUE4 = TEXT("Thigh_L");
-							t.rot = FRotator(5, 0, 0);
-							retargetTable.Push(t);
-
-							t.BoneUE4 = TEXT("calf_r");
-							t.rot = FRotator(0, 0, 5);
-							retargetTable.Push(t);
-
-							t.BoneUE4 = TEXT("calf_l");
-							t.rot = FRotator(0, 0, 5);
-							retargetTable.Push(t);
-
-							t.BoneUE4 = TEXT("Foot_R");
-							t.rot = FRotator(5, 0, -5);
-							retargetTable.Push(t);
-
-							t.BoneUE4 = TEXT("Foot_L");
-							t.rot = FRotator(-5, 0, -5);
-							retargetTable.Push(t);
+						for (auto s : strTable) {
+							retargetData.Remove(s);
 						}
 					}
 
-					TMap<FString, RetargetParts> mapTable;
-					for (auto &a : retargetTable) {
+					TMap<FString, VRMRetargetData::RetargetParts> mapTable;
+					for (auto &a : retargetData.retargetTable) {
 						bool bFound = false;
 						//vrm
 						for (auto &t : VRMUtil::table_ue4_vrm) {
