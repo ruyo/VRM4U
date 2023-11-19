@@ -299,65 +299,65 @@ namespace {
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("lowerarm_r");
-				t.rot = FRotator(-10, -30, 0);
+				t.rot = FRotator(0, -30, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("lowerarm_l");
-				t.rot = FRotator(10, 30, 0);
+				t.rot = FRotator(0, 30, 0);
 				retargetTable.Push(t);
 			}
 			{
 				RetargetParts t;
 				t.BoneUE4 = TEXT("Hand_R");
-				t.rot = FRotator(10, 0, 0);
+				t.rot = FRotator(0, 0, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("Hand_L");
-				t.rot = FRotator(-10, 0, 0);
+				t.rot = FRotator(0, 0, 0);
 				retargetTable.Push(t);
 			}
 
 			{
 				RetargetParts t;
 				t.BoneUE4 = TEXT("pinky_01_r");
-				t.rot = FRotator(10, 12, 0);
+				t.rot = FRotator(18, 12, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("pinky_01_l");
-				t.rot = FRotator(-10, -12, 0);
+				t.rot = FRotator(-18, -12, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("ring_01_r");
-				t.rot = FRotator(10, 6, 0);
+				t.rot = FRotator(18, 6, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("ring_01_l");
-				t.rot = FRotator(-10, -6, 0);
+				t.rot = FRotator(-18, -6, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("index_01_r");
-				t.rot = FRotator(10, -6, 0);
+				t.rot = FRotator(20, -6, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("index_01_l");
-				t.rot = FRotator(-10, 6, 0);
+				t.rot = FRotator(-20, 6, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("middle_01_r");
-				t.rot = FRotator(10, 0, 0);
+				t.rot = FRotator(20, 0, 0);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("middle_01_l");
-				t.rot = FRotator(-10, 0, 0);
+				t.rot = FRotator(-20, 0, 0);
 				retargetTable.Push(t);
 
 
 				t.BoneUE4 = TEXT("thumb_01_r");
-				t.rot = FRotator(10, 0, 0);
+				t.rot = FRotator(0, 8, 20);
 				retargetTable.Push(t);
 
 				t.BoneUE4 = TEXT("thumb_01_l");
-				t.rot = FRotator(-10, 0, 0);
+				t.rot = FRotator(0, -8, 20);
 				retargetTable.Push(t);
 
 				{
@@ -368,23 +368,33 @@ namespace {
 						//"middle_01_r",
 						"middle_02_r",
 						"middle_03_r",
-						//"pinky_01_r",
-						"pinky_02_r",
-						"pinky_03_r",
-						//"ring_01_r",
-						"ring_02_r",
-						"ring_03_r",
-						//"thumb_01_r",
-						//"thumb_02_r",
-						//"thumb_03_r",
 					};
 					for (auto& a : tmpTable) {
 						t.BoneUE4 = a;
-						t.rot = FRotator(10, 0, 0);
+						t.rot = FRotator(20, 0, 0);
 						retargetTable.Push(t);
 
 						t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
-						t.rot = FRotator(-10, 0, 0);
+						t.rot = FRotator(-20, 0, 0);
+						retargetTable.Push(t);
+					}
+				}
+				{
+
+					FString tmpTable[] = {
+						"ring_02_r",
+						"ring_03_r",
+						//"pinky_01_r",
+						"pinky_02_r",
+						"pinky_03_r",
+					};
+					for (auto& a : tmpTable) {
+						t.BoneUE4 = a;
+						t.rot = FRotator(18, 0, 0);
+						retargetTable.Push(t);
+
+						t.BoneUE4 = a.Replace(TEXT("_r"), TEXT("_l"));
+						t.rot = FRotator(-18, 0, 0);
 						retargetTable.Push(t);
 					}
 				}
