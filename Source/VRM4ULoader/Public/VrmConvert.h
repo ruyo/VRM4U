@@ -101,7 +101,7 @@ public:
 		bool IsVRM10RemoveLocalRotation() const;
 		bool IsVRM10Bindpose() const;
 
-		bool IsStrictBoneNameMode() const;
+		bool IsForceOriginalBoneName() const;
 		bool IsGenerateHumanoidRenamedMesh() const;
 
 		bool IsGenerateIKBone() const;

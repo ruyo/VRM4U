@@ -135,8 +135,10 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 
 				if (node >= 0 && node < (int)origBone.Size()) {
 					FString str = UTF8_TO_TCHAR(origBone[node]["name"].GetString());
-					if (VRMConverter::Options::Get().IsStrictBoneNameMode()) {
-						str = VRMUtil::GetSafeNewName(str);
+
+					if (VRMConverter::Options::Get().IsForceOriginalBoneName()) {
+					}else{
+						str = VRMUtil::MakeName(str, true);
 					}
 
 					MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = str;
@@ -151,8 +153,9 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				continue;
 			}
 			FString str = UTF8_TO_TCHAR(a.nodeName.C_Str());
-			if (VRMConverter::Options::Get().IsStrictBoneNameMode()) {
-				str = VRMUtil::GetSafeNewName(str);
+			if (VRMConverter::Options::Get().IsForceOriginalBoneName()) {
+			} else {
+				str = VRMUtil::MakeName(str, true);
 			}
 			MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(a.humanBoneName.C_Str())) = str;
 		}

@@ -345,7 +345,7 @@ public:
 	bool bVrm10Bindpose = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
-	bool bStrictBoneName = false;
+	bool bForceOriginalBoneName = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bGenerateHumanoidRenamedMesh = false;
@@ -495,6 +495,8 @@ public:
 
 	static bool IsNoSafeName(const FString& str);
 	static FString GetSafeNewName(const FString& str);
+
+	static FString MakeName(const FString& str, bool IsJoint = false);
 };
 
 class VRM4U_API VRMRetargetData {

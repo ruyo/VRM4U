@@ -7,6 +7,7 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/UObjectHash.h"
 #include "UObject/UObjectIterator.h"
+#include "InterchangeHelper.h"
 
 #include "Modules/ModuleManager.h"
 
@@ -111,5 +112,9 @@ bool VRMUtil::IsNoSafeName(const FString& str) {
 FString VRMUtil::GetSafeNewName(const FString& str) {
 
 	return LocalGetSafeNewName(str);
+}
+
+FString VRMUtil::MakeName(const FString& str, bool IsJoint) {
+	return UE::Interchange::MakeName(str, IsJoint);
 }
 

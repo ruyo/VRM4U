@@ -45,6 +45,7 @@ public class VRM4U : ModuleRules
                 "RenderCore",
                 "AnimGraphRuntime",
 				"LiveLinkInterface",
+				"InterchangeCore",
 
                 // ... add other public dependencies that you statically link with here ...
 			}

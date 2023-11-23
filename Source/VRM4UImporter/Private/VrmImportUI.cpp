@@ -35,7 +35,7 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bVrm10Bindpose);
 
-	c(bStrictBoneName);
+	c(bForceOriginalBoneName);
 
 	c(bGenerateHumanoidRenamedMesh);
 
