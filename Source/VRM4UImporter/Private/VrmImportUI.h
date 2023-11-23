@@ -92,8 +92,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Eable MorphTarget Normal(TangentZDelta)"))
 	bool bEnableMorphTargetNormal = false;
 
-#define VRM4U_MorphStrictMode false
-
 #if UE_VERSION_OLDER_THAN(4,26,0)
 	static const bool VRM4U_UseBC7 = false;
 #else
@@ -101,9 +99,9 @@ public:
 #endif
 
 
-	/** Use Strict MorphTarget Name Mode */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Normalize morphtarget name"))
-	bool bStrictMorphTargetNameMode = VRM4U_MorphStrictMode;
+	/** Force Original MorphTarget Name Mode */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Force original morphtarget name"))
+	bool bForceOriginalMorphTargetName = false;
 
 	/** Use Strict MorphTarget Name Mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Remove BlendShapeGroup prefix for old VRM file"))

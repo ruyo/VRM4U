@@ -49,7 +49,7 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bEnableMorphTargetNormal);
 
-	c(bStrictMorphTargetNameMode);
+	c(bForceOriginalMorphTargetName);
 
 	c(bRemoveBlendShapeGroupPrefix);
 

@@ -220,8 +220,9 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 						if (targetShape.shapeIndex < (int)tmp.Size()) {
 							targetShape.morphTargetName = tmp[targetShape.shapeIndex].GetString();
 
-							if (VRMConverter::Options::Get().IsStrictMorphTargetNameMode()) {
-								targetShape.morphTargetName = VRMConverter::NormalizeFileName(targetShape.morphTargetName);
+							if (VRMConverter::Options::Get().IsForceOriginalMorphTargetName()) {
+							}else{
+								targetShape.morphTargetName = VRMUtil::MakeName(targetShape.morphTargetName);
 							}
 						}
 					}
@@ -255,8 +256,9 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				bind.meshID = aiGroup.bind[b].meshID;
 				bind.shapeIndex = aiGroup.bind[b].shapeIndex;
 
-				if (VRMConverter::Options::Get().IsStrictMorphTargetNameMode()) {
-					bind.morphTargetName = VRMConverter::NormalizeFileName(bind.morphTargetName);
+				if (VRMConverter::Options::Get().IsForceOriginalMorphTargetName()) {
+				}else{
+					bind.morphTargetName = VRMUtil::MakeName(bind.morphTargetName);
 				}
 			}
 		}

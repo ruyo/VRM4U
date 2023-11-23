@@ -265,8 +265,9 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 
 			FString morphName = UTF8_TO_TCHAR(aiA.mName.C_Str());
 			FString morphNameOrg = morphName;
-			if (VRMConverter::Options::Get().IsStrictMorphTargetNameMode()) {
-				morphName = VRMUtil::GetSafeNewName(morphName);
+			if (VRMConverter::Options::Get().IsForceOriginalMorphTargetName()) {
+			}else{
+				morphName = VRMUtil::MakeName(morphName);
 				//morphName = VRMConverter::NormalizeFileName(morphName);
 
 				if (morphName != morphNameOrg) {

@@ -283,11 +283,11 @@ bool VRMConverter::Options::IsEnableMorphTargetNormal() const {
 #endif
 }
 
-bool VRMConverter::Options::IsStrictMorphTargetNameMode() const {
+bool VRMConverter::Options::IsForceOriginalMorphTargetName() const {
 #if WITH_EDITOR
 	if (ImportOption == nullptr) return false;
 
-	return ImportOption->bStrictMorphTargetNameMode;
+	return ImportOption->bForceOriginalMorphTargetName;
 #else
 	return false;
 #endif

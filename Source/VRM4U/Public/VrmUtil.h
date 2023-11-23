@@ -362,7 +362,7 @@ public:
 
 	bool bEnableMorphTargetNormal = false;
 	
-	bool bStrictMorphTargetNameMode = false;
+	bool bForceOriginalMorphTargetName = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bRemoveBlendShapeGroupPrefix = false;

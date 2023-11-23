@@ -94,7 +94,7 @@ public:
 
 		bool IsEnableMorphTargetNormal() const;
 
-		bool IsStrictMorphTargetNameMode() const;
+		bool IsForceOriginalMorphTargetName() const;
 
 		bool IsRemoveBlendShapeGroupPrefix() const;
 
