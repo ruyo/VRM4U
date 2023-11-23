@@ -7,7 +7,12 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/UObjectHash.h"
 #include "UObject/UObjectIterator.h"
+#include "Misc/EngineVersionComparison.h"
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#else
 #include "InterchangeHelper.h"
+#endif
 
 #include "Modules/ModuleManager.h"
 
@@ -110,11 +115,26 @@ bool VRMUtil::IsNoSafeName(const FString& str) {
 
 
 FString VRMUtil::GetSafeNewName(const FString& str) {
-
 	return LocalGetSafeNewName(str);
 }
 
 FString VRMUtil::MakeName(const FString& str, bool IsJoint) {
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+
+	const TCHAR* InvalidChar = IsJoint ? INVALID_OBJECTNAME_CHARACTERS TEXT("+ ") : INVALID_OBJECTNAME_CHARACTERS;
+	FString TmpName = str;
+	while (*InvalidChar)
+	{
+		TmpName.ReplaceCharInline(*InvalidChar, TCHAR('_'), ESearchCase::CaseSensitive);
+		++InvalidChar;
+	}
+	return TmpName;
+
+
+#else
+
 	return UE::Interchange::MakeName(str, IsJoint);
+#endif
 }
 
