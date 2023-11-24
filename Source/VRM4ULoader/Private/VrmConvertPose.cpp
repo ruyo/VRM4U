@@ -331,7 +331,6 @@ namespace {
 			DataController.InitializeModel();
 			DataController.NotifyPopulated();
 
-
 			FFrameRate f(1, 1);
 			DataController.SetFrameRate(f);
 			//DataController.SetFrameRate(FCommonFrameRates::FPS_30());
@@ -339,9 +338,6 @@ namespace {
 
 			DataController.UpdateWithSkeleton(k);
 #endif
-
-
-
 
 #if UE_VERSION_OLDER_THAN(5,2,0)
 			auto GetCurves = [ase] ()-> TArray<FFloatCurve> &{
@@ -714,7 +710,12 @@ namespace {
 
 		if (SmartNamePoseList.Num() > 0) {
 			pose->CreatePoseFromAnimation(ase, &SmartNamePoseList);
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#else
+			pose->UpdatePoseFromAnimation(ase);
+#endif
 			// for additive
+			pose->ConvertSpace(false, 0);
 			pose->ConvertSpace(true, 0);
 
 		}

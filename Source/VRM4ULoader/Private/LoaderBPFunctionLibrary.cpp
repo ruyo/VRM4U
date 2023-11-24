@@ -776,12 +776,12 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 		LogAndUpdate(TEXT("ConvertRig"));
 		ret &= vc.ConvertIKRig(out);
 		LogAndUpdate(TEXT("ConvertIKRig"));
-		ret &= vc.ConvertPose(out);
-		LogAndUpdate(TEXT("ConvertPose"));
 		if (out->bSkipMorphTarget == false) {
 			ret &= vc.ConvertMorphTarget(out);
 			LogAndUpdate(TEXT("ConvertMorphTarget"));
 		}
+		ret &= vc.ConvertPose(out);
+		LogAndUpdate(TEXT("ConvertPose"));
 		ret &= vc.ConvertHumanoid(out);
 		LogAndUpdate(TEXT("ConvertHumanoid"));
 		UpdateProgress(80);

@@ -399,7 +399,10 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 
 	for (auto name : MorphNameList) {
 		FCurveMetaData* FoundCurveMetaData = VRMGetSkeleton(sk)->GetCurveMetaData(*name);
-		if (FoundCurveMetaData) continue;
+		if (FoundCurveMetaData) {
+			FoundCurveMetaData->Type.bMorphtarget = true;
+			continue;
+		}
 
 		VRMGetSkeleton(sk)->AccumulateCurveMetaData(*name, false, true);
 	}
