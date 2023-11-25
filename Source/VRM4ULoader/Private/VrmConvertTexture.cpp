@@ -432,6 +432,19 @@ namespace {
 				{TEXT("mtoon_tex_OutlineWidthTexture"),	vrmMat.textureProperties._OutlineWidthTexture},
 				{TEXT("mtoon_tex_UvAnimMaskTexture"),	vrmMat.textureProperties._UvAnimMaskTexture},
 			};
+
+			if (VRMConverter::Options::Get().IsVRM10Model()) {
+				FSoftObjectPath r(TEXT("/VRM4U/MaterialUtil/T_DummyBlack.T_DummyBlack"));
+				UObject* u = r.TryLoad();
+				if (u) {
+					auto r2 = Cast<UTexture2D>(u);
+					if (r2) {
+						LocalTextureSet(dm, "mtoon_tex_EmissionMap", r2);
+					}
+				}
+			}
+
+
 			int count = 0;
 			for (auto &t : tableParam) {
 				++count;
