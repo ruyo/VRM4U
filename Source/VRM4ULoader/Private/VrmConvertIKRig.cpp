@@ -907,20 +907,13 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						auto dstIndex = BoneIndex;
 						while (dstIndex >= 0)
 						{
+							dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
 							dstIndex = RefSkeleton.GetParentIndex(dstIndex);
 							if (dstIndex < 0) {
 								break;
 							}
-							dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
 						}
 
-						// p, y, r
-						//DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Pitch, -rot.Roll));
-						//DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Roll, rot.Yaw));
-						////DeltaRotation = FQuat(FRotator(rot.Roll, rot.Pitch, rot.Yaw));
-						////DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Roll, rot.Pitch));
-						//DeltaRotation = FQuat(FRotator(rot.Roll, rot.Yaw, rot.Pitch));
-						////DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Yaw, rot.Roll));
 						//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
 						//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
 						//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
