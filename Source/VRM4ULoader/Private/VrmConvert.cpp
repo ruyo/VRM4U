@@ -729,9 +729,6 @@ bool VRMConverter::GetMatParam(VRM::VRMMaterial &m, int matNo) const {
 
 	// float
 	{
-		//auto t = mat["pbrMetallicRoughness"]["baseColorFactor"].GetArray();
-		//m.floatProperties._Color, t);
-
 		//m.floatProperties._Cutoff;
 		m.floatProperties._BumpScale = 1.f;
 		m.floatProperties._ReceiveShadowRate = 1.f;

@@ -4,13 +4,31 @@
 
 bool VrmJson::init(const uint8_t* pData, size_t size) {
 
+	if (size < 4 || pData == nullptr) {
+		return false;
+	}
+
 	int c = 0;
 	size_t c_start = 0;
-	for (; c_start < size; ++c_start) {
-		if (pData[c_start] == '{') {
-			break;
+	{
+		std::vector<char> str = { 'J','S','O','N' };
+
+		for (; c_start < size - str.size(); ++c_start) {
+			bool bFound = false;
+
+			for (int i = 0; i < 4; ++i) {
+				if (str[i] != pData[c_start + i]) {
+					continue;
+				}
+				bFound = true;
+			}
+			if (bFound) {
+				c_start += 4;
+				break;
+			}
 		}
 	}
+
 	size_t c_end = c_start;
 	for (; c_end < size; ++c_end) {
 		if (pData[c_end] == '{') {

@@ -915,7 +915,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						}
 
 						// p, y, r
-						DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Pitch, -rot.Roll));
+						//DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Pitch, -rot.Roll));
 						//DeltaRotation = FQuat(FRotator(rot.Pitch, rot.Roll, rot.Yaw));
 						////DeltaRotation = FQuat(FRotator(rot.Roll, rot.Pitch, rot.Yaw));
 						////DeltaRotation = FQuat(FRotator(rot.Yaw, rot.Roll, rot.Pitch));
