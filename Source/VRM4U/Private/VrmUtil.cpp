@@ -778,6 +778,8 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 		t.rot = FRotator(-5, 0, -5);
 		retargetTable.Push(t);
 	}
+
+	UpdateBoneName();
 }
 
 void VRMRetargetData::UpdateBoneName() {
