@@ -120,8 +120,9 @@ FString VRMUtil::GetSafeNewName(const FString& str) {
 
 FString VRMUtil::MakeName(const FString& str, bool IsJoint) {
 
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-
+#if	UE_VERSION_OLDER_THAN(4,22,0)
+	return GetSafeNewName(str);
+#elif	UE_VERSION_OLDER_THAN(5,3,0)
 	const TCHAR* InvalidChar = IsJoint ? INVALID_OBJECTNAME_CHARACTERS TEXT("+ ") : INVALID_OBJECTNAME_CHARACTERS;
 	FString TmpName = str;
 	while (*InvalidChar)
@@ -130,10 +131,7 @@ FString VRMUtil::MakeName(const FString& str, bool IsJoint) {
 		++InvalidChar;
 	}
 	return TmpName;
-
-
 #else
-
 	return UE::Interchange::MakeName(str, IsJoint);
 #endif
 }
