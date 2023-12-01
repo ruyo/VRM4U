@@ -133,7 +133,8 @@ namespace {
 				for (auto& t : assetList->VrmMetaObject->humanoidBoneTable) {
 					if (t.Key.ToLower() == a[i].ToLower()) {
 
-#if	UE_VERSION_OLDER_THAN(5,2,0)
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#elif	UE_VERSION_OLDER_THAN(5,2,0)
 						auto* goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *t.Value);
 						if (goal) {
 							rigcon->ConnectGoalToSolver(*goal, sol_index);
