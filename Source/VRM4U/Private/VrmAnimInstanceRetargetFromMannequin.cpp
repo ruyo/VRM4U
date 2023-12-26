@@ -2,6 +2,10 @@
 
 
 #include "VrmAnimInstanceRetargetFromMannequin.h"
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#else
+
 #include "VrmMetaObject.h"
 #include "VrmAssetListObject.h"
 #include "VrmUtil.h"
@@ -14,11 +18,7 @@
 //#include "BoneControllers/AnimNode_SplineIK.h"
 #include "AnimNode_VrmSpringBone.h"
 #include "AnimNode_VrmConstraint.h"
-
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-#else
 #include "AnimNodes/AnimNode_RetargetPoseFromMesh.h"
-#endif
 
 
 namespace {
@@ -434,3 +434,4 @@ void UVrmAnimInstanceRetargetFromMannequin::SetVrmSpringBoneIgnoreWingBone(const
 }
 
 
+#endif // 5.3
