@@ -749,6 +749,12 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 				{TEXT("LeftClavicle"),		TEXT("leftShoulder"),	TEXT("leftShoulder"),},
 				{TEXT("RightClavicle"),		TEXT("rightShoulder"),	TEXT("rightShoulder"),},
+
+				{TEXT("LeftHandIK"),		TEXT("ik_hand_l"),	TEXT("ik_hand_l"),},
+				{TEXT("RightHandIK"),		TEXT("ik_hand_r"),	TEXT("ik_hand_r"),},
+				{TEXT("HandGunIK"),			TEXT("ik_hand_gun"),	TEXT("ik_hand_gun"),},
+				{TEXT("FootRootIK"),		TEXT("ik_foot_root"),	TEXT("ik_foot_root"),},
+				{TEXT("HandRootIK"),		TEXT("ik_hand_root"),	TEXT("ik_hand_root"),},
 			};
 
 			for (auto& t : table) {
@@ -764,7 +770,18 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						conv.s2 = modelName.Value;
 					}
 				}
+				if (conv.s1 == "" || conv.s2 == "") {
+					// for ik bone
+					if (sk->RefSkeleton.FindBoneIndex(*t.s1) >= 0) {
+						conv.s1 = t.s1;
+					}
+					if (sk->RefSkeleton.FindBoneIndex(*t.s2) >= 0) {
+						conv.s2 = t.s2;
+					}
+				}
+				if (conv.s1 == "" || conv.s2 == "") continue;
 
+				/*
 				FString baseBone;
 				for (auto& a : VRMUtil::table_ue4_vrm) {
 					if (a.BoneUE4 == "" || a.BoneVRM == "") {
@@ -774,7 +791,10 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						baseBone = a.BoneUE4;
 					}
 				}
-				if (baseBone != "" && conv.s1 != "" && conv.s2 != "") {
+				if (baseBone == "") continue;
+				*/
+
+				{
 					FString s2 = conv.s2;
 					if (t.chain == TEXT("Spine")) {
 						// neck parent
