@@ -16,7 +16,7 @@ args = parser.parse_args()
 print(args.vrm)
 
 with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
-    slow_task_root.make_dialog(True)
+    slow_task_root.make_dialog()
 
     reg = unreal.AssetRegistryHelpers.get_asset_registry()
 
@@ -72,34 +72,35 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
     bonePin = None
     controlPin = None
 
-    while(len(hierarchy.get_bones()) > 0):
-        e = hierarchy.get_bones()[-1]
-        h_con.remove_all_parents(e)
-        #h_con.remove_element(e)
-
-    h_con.import_bones(unreal.ControlRigBlueprintLibrary.get_preview_mesh(rig).skeleton)
+    with unreal.ScopedSlowTask(1, "Replace Bone") as slow_task:
+        slow_task.make_dialog()
+        while(len(hierarchy.get_bones()) > 0):
+            e = hierarchy.get_bones()[-1]
+            h_con.remove_all_parents(e)
+        h_con.import_bones(unreal.ControlRigBlueprintLibrary.get_preview_mesh(rig).skeleton)
 
     ##
-
-    for n in node:
-        pins = n.get_pins()
-        for pin in pins:
-            if (pin.is_array()):
-                if (pin.get_array_size() > 40):
-                    # long bone list
-                    typePin = pin.get_sub_pins()[0].find_sub_pin('Type')
-                    if (typePin != None):
-                        if (typePin.get_default_value() == 'Bone'):
-                            bonePin = pin
-                            continue
-                        if (typePin.get_default_value() == 'Control'):
-                            if ('Name="pelvis"' in r_con.get_pin_default_value(n.find_pin('Items').get_pin_path())):
-                                controlPin = pin
+    with unreal.ScopedSlowTask(1, "Replace Bone to Controller") as slow_task:
+        slow_task.make_dialog()
+        for n in node:
+            pins = n.get_pins()
+            for pin in pins:
+                if (pin.is_array()):
+                    if (pin.get_array_size() > 40):
+                        # long bone list
+                        typePin = pin.get_sub_pins()[0].find_sub_pin('Type')
+                        if (typePin != None):
+                            if (typePin.get_default_value() == 'Bone'):
+                                bonePin = pin
                                 continue
-                for item in pin.get_sub_pins():
-                    checkAndSwapPinBoneToContorl(item)
-            else:
-                checkAndSwapPinBoneToContorl(pin)
+                            if (typePin.get_default_value() == 'Control'):
+                                if ('Name="pelvis"' in r_con.get_pin_default_value(n.find_pin('Items').get_pin_path())):
+                                    controlPin = pin
+                                    continue
+                    for item in pin.get_sub_pins():
+                        checkAndSwapPinBoneToContorl(item)
+                else:
+                    checkAndSwapPinBoneToContorl(pin)
 
 
     for e in hierarchy.get_controls():
@@ -455,7 +456,7 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
     #r_con.add_array_pin(bonePin.get_pin_path(), default_value=tmp)
 
     with unreal.ScopedSlowTask(len(swapBoneTable), "Replace Name") as slow_task:
-        slow_task.make_dialog(True)
+        slow_task.make_dialog()
 
         for e in swapBoneTable:
             slow_task.enter_progress_frame(1)

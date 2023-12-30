@@ -14,7 +14,7 @@ args = parser.parse_args()
 ######
 
 with unreal.ScopedSlowTask(1, "Convert MorphTarget") as slow_task_root:
-    slow_task_root.make_dialog(True)
+    slow_task_root.make_dialog()
 
     rigs = unreal.ControlRigBlueprint.get_currently_open_rig_blueprints()
     print(rigs)
@@ -207,22 +207,24 @@ with unreal.ScopedSlowTask(1, "Convert MorphTarget") as slow_task_root:
         hierarchy.set_control_shape_transform(k, shape_t, True)
 
     # curve Control array
-    with unreal.ScopedSlowTask(1, "Add Control") as slow_task:
-        slow_task.make_dialog(True)
+    with unreal.ScopedSlowTask(len(items_forControl)*len(morphListRenamed), "Add Control") as slow_task:
+        slow_task.make_dialog()
         for  v in items_forControl:
             c.clear_array_pin(v.get_pin_path(), False)
             for morph in morphListRenamed:
+                slow_task.enter_progress_frame(1)
                 tmp = '(Type=Control,Name='
                 tmp += "{}".format(morph)
                 tmp += ')'
                 c.add_array_pin(v.get_pin_path(), default_value=tmp, setup_undo_redo=False)
 
     # curve Float array
-    with unreal.ScopedSlowTask(1, "Add Curve") as slow_task:
-        slow_task.make_dialog(True)
+    with unreal.ScopedSlowTask(len(items_forCurve)*len(morphList), "Add Curve") as slow_task:
+        slow_task.make_dialog()
         for  v in items_forCurve:
             c.clear_array_pin(v.get_pin_path(), False)
             for morph in morphList:
+                slow_task.enter_progress_frame(1)
                 tmp = '(Type=Curve,Name='
                 tmp += "{}".format(morph)
                 tmp += ')'
