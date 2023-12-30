@@ -383,12 +383,6 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
         if (metaTable == None):
             metaTable = 'None'
         
-        #print(table[0][1])
-        #print('<<')
-        #print(controlName)
-        #print('<<<')
-        #print(metaTable)
-
         r_con.set_pin_default_value(namePin.get_pin_path(), metaTable, True, False)
         #for e in meta.humanoid_bone_table:
 
@@ -460,47 +454,51 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
     #tmp += ')'
     #r_con.add_array_pin(bonePin.get_pin_path(), default_value=tmp)
 
-    for e in swapBoneTable:
-        try:
-            i = 0
-            humanoidBoneToModel[e[1]]
-        except:
-            i = -1
-        if (i < 0):
-            # no bone
-            continue
-        #e[0] -> grayman
-        #e[1] -> humanoid
-        #humanoidBoneToModel[e[1]] -> modelBone
+    with unreal.ScopedSlowTask(len(swapBoneTable), "Replace Name") as slow_task:
+        slow_task.make_dialog(True)
 
-        bone = unreal.RigElementKey(unreal.RigElementType.BONE, humanoidBoneToModel[e[1]])
-        space = unreal.RigElementKey(unreal.RigElementType.NULL, "{}_s".format(e[0]))
+        for e in swapBoneTable:
+            slow_task.enter_progress_frame(1)
+            try:
+                i = 0
+                humanoidBoneToModel[e[1]]
+            except:
+                i = -1
+            if (i < 0):
+                # no bone
+                continue
+            #e[0] -> grayman
+            #e[1] -> humanoid
+            #humanoidBoneToModel[e[1]] -> modelBone
 
-        #print('aaa')
-        #print(bone)
-        #print(space)
+            bone = unreal.RigElementKey(unreal.RigElementType.BONE, humanoidBoneToModel[e[1]])
+            space = unreal.RigElementKey(unreal.RigElementType.NULL, "{}_s".format(e[0]))
 
-        #p = hierarchy.get_first_parent(humanoidBoneToModel[result[0][1]])
+            #print('aaa')
+            #print(bone)
+            #print(space)
 
-        t = hierarchy.get_global_transform(bone)
-        #print(t)
-        hierarchy.set_global_transform(space, t, True)
+            #p = hierarchy.get_first_parent(humanoidBoneToModel[result[0][1]])
 
-        if (bonePin != None and controlPin !=None):
-        
-            tmp = '(Type=Control,Name='
-            tmp += "{}".format(e[0])
-            tmp += ')'
-            r_con.add_array_pin(controlPin.get_pin_path(), default_value=tmp, setup_undo_redo=False)
+            t = hierarchy.get_global_transform(bone)
+            #print(t)
+            hierarchy.set_global_transform(space, t, True)
 
-            tmp = '(Type=Bone,Name='
-            tmp += "\"{}\"".format(humanoidBoneToModel[e[1]])
-            tmp += ')'
-            r_con.add_array_pin(bonePin.get_pin_path(), default_value=tmp, setup_undo_redo=False)
+            if (bonePin != None and controlPin !=None):
+            
+                tmp = '(Type=Control,Name='
+                tmp += "{}".format(e[0])
+                tmp += ')'
+                r_con.add_array_pin(controlPin.get_pin_path(), default_value=tmp, setup_undo_redo=False)
 
-            # for bone name space
-            namePin = bonePin.get_sub_pins()[-1].find_sub_pin('Name')
-            r_con.set_pin_default_value(namePin.get_pin_path(), "{}".format(humanoidBoneToModel[e[1]]), True, False)
+                tmp = '(Type=Bone,Name='
+                tmp += "\"{}\"".format(humanoidBoneToModel[e[1]])
+                tmp += ')'
+                r_con.add_array_pin(bonePin.get_pin_path(), default_value=tmp, setup_undo_redo=False)
+
+                # for bone name space
+                namePin = bonePin.get_sub_pins()[-1].find_sub_pin('Name')
+                r_con.set_pin_default_value(namePin.get_pin_path(), "{}".format(humanoidBoneToModel[e[1]]), True, False)
 
 
     # skip invalid bone, controller

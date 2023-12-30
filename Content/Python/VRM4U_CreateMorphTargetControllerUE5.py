@@ -84,8 +84,7 @@ with unreal.ScopedSlowTask(1, "Convert MorphTarget") as slow_task_root:
         space = key
 
 
-    a:unreal.RigUnit_CollectionItems = unreal.RigUnit_CollectionItems()
-
+    #a:unreal.RigUnit_CollectionItems = unreal.RigUnit_CollectionItems()
     #print(a)
 
     # 配列ノード追加
@@ -159,10 +158,10 @@ with unreal.ScopedSlowTask(1, "Convert MorphTarget") as slow_task_root:
         try:
             control = hierarchy.find_control(key)
             if (control.get_editor_property('index') < 0):
-                k = h_con.add_control(name_c, space, settings, unreal.RigControlValue())
+                k = h_con.add_control(name_c, space, settings, unreal.RigControlValue(), setup_undo=False)
                 control = hierarchy.find_control(k)
         except:
-            k = h_con.add_control(name_c, space, settings, unreal.RigControlValue())
+            k = h_con.add_control(name_c, space, settings, unreal.RigControlValue(), setup_undo=False)
             control = hierarchy.find_control(k)
 
         shape_t = unreal.Transform(location=[0.0, 0.0, 0.0], rotation=[0.0, 0.0, 0.0], scale=[0.001, 0.001, 0.001])
@@ -198,32 +197,36 @@ with unreal.ScopedSlowTask(1, "Convert MorphTarget") as slow_task_root:
         try:
             control = hierarchy.find_control(key)
             if (control.get_editor_property('index') < 0):
-                k = h_con.add_control(name_c, space, settings, unreal.RigControlValue())
+                k = h_con.add_control(name_c, space, settings, unreal.RigControlValue(), setup_undo=False)
                 control = hierarchy.find_control(k)
         except:
-            k = h_con.add_control(name_c, space, settings, unreal.RigControlValue())
+            k = h_con.add_control(name_c, space, settings, unreal.RigControlValue(), setup_undo=False)
             control = hierarchy.find_control(k)
 
         shape_t = unreal.Transform(location=[0.0, 0.0, 0.0], rotation=[0.0, 0.0, 0.0], scale=[0.001, 0.001, 0.001])
         hierarchy.set_control_shape_transform(k, shape_t, True)
 
     # curve Control array
-    for  v in items_forControl:
-        c.clear_array_pin(v.get_pin_path(), False)
-        for morph in morphListRenamed:
-            tmp = '(Type=Control,Name='
-            tmp += "{}".format(morph)
-            tmp += ')'
-            c.add_array_pin(v.get_pin_path(), default_value=tmp, setup_undo_redo=False)
+    with unreal.ScopedSlowTask(1, "Add Control") as slow_task:
+        slow_task.make_dialog(True)
+        for  v in items_forControl:
+            c.clear_array_pin(v.get_pin_path(), False)
+            for morph in morphListRenamed:
+                tmp = '(Type=Control,Name='
+                tmp += "{}".format(morph)
+                tmp += ')'
+                c.add_array_pin(v.get_pin_path(), default_value=tmp, setup_undo_redo=False)
 
     # curve Float array
-    for  v in items_forCurve:
-        c.clear_array_pin(v.get_pin_path(), False)
-        for morph in morphList:
-            tmp = '(Type=Curve,Name='
-            tmp += "{}".format(morph)
-            tmp += ')'
-            c.add_array_pin(v.get_pin_path(), default_value=tmp, setup_undo_redo=False)
+    with unreal.ScopedSlowTask(1, "Add Curve") as slow_task:
+        slow_task.make_dialog(True)
+        for  v in items_forCurve:
+            c.clear_array_pin(v.get_pin_path(), False)
+            for morph in morphList:
+                tmp = '(Type=Curve,Name='
+                tmp += "{}".format(morph)
+                tmp += ')'
+                c.add_array_pin(v.get_pin_path(), default_value=tmp, setup_undo_redo=False)
 
 
 
