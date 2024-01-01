@@ -26,4 +26,12 @@ public:
 
 	void RenderPre(FRDGBuilder& GraphBuilder);
 	void RenderPost(FRDGBuilder& GraphBuilder);
+
+	void PostOpaque(FPostOpaqueRenderParameters& Parameters);
+
+	void OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTextureRenderTarget2D* RenderTarget = nullptr;
 };
