@@ -110,6 +110,8 @@ public:
 protected:
 	virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;
 
+	virtual bool CanRunParallelWork() const { return false; }
+
 	FVrmAnimInstanceRetargetFromMannequinProxy *myProxy = nullptr;
 	bool bIgnoreVRMSwingBone = false;
 	bool bIgnoreWindDirectionalSource = false;

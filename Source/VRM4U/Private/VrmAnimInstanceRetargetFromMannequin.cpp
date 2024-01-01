@@ -19,6 +19,7 @@
 #include "AnimNode_VrmSpringBone.h"
 #include "AnimNode_VrmConstraint.h"
 #include "AnimNodes/AnimNode_RetargetPoseFromMesh.h"
+#include "Rig/Solvers/IKRigSolver.h"
 
 
 namespace {
@@ -307,7 +308,7 @@ UVrmAnimInstanceRetargetFromMannequin::UVrmAnimInstanceRetargetFromMannequin(con
 	:Super(ObjectInitializer)
 {
 	bUsingCopyPoseFromMesh = true;
-
+	bUseMultiThreadedAnimationUpdate = false;
 }
 
 FAnimInstanceProxy* UVrmAnimInstanceRetargetFromMannequin::CreateAnimInstanceProxy() {
