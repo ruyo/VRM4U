@@ -1,0 +1,4 @@
+void MyShaderPS(float4 SvPosition : SV_POSITION, out float4 OutSceneColor : SV_Target0)
+{
+    OutSceneColor = float4(SomeParameter.xxx, 0);
+}

@@ -36,6 +36,11 @@
       "LoadingPhase": "Default"
     },
     {
+      "Name": "VRM4URender",
+      "Type": "Runtime",
+      "LoadingPhase": "PostConfigInit"
+    },
+    {
       "_comment_vrm4u_dummy": "Use Developer instead of UncookedOnly for UE4.23-",
       "Name": "VRM4UImporter",
       "Type": "UncookedOnly",
