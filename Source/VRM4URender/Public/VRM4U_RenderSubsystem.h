@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/EngineSubsystem.h"
 #include "Misc/EngineVersionComparison.h"
+#include "VrmSceneViewExtension.h"
 #include "VRM4U_RenderSubsystem.generated.h"
 
 
@@ -14,6 +15,39 @@
 #error "please remove VRM4U_AnimSubsystem.h/cpp  for <=UE4.21"
 
 #endif
+
+UENUM()
+enum EVRM4U_CaptureSource : int
+{
+	ColorTexturePostOpaque,
+	ColorTextureOverlay,
+	DepthTexture,
+	NormalTexture,
+	VelocityTexture,
+	SmallDepthTexture,
+
+	SceneColorTexturePostOpaque,
+	SceneColorTextureOverlay,
+	SceneDepthTexture,
+	ScenePartialDepthTexture,
+
+	// GBuffer
+	GBufferATexture,
+	GBufferBTexture,
+	GBufferCTexture,
+	GBufferDTexture,
+	GBufferETexture,
+	GBufferFTexture,
+	GBufferVelocityTexture,
+
+	// SSAO
+	ScreenSpaceAOTexture,
+
+	// Custom Depth / Stencil
+	CustomDepthTexture,
+
+	CaptureSource_MAX,
+};
 
 UCLASS()
 class VRM4URENDER_API UVRM4U_RenderSubsystem : public UEngineSubsystem
@@ -27,11 +61,26 @@ public:
 	void RenderPre(FRDGBuilder& GraphBuilder);
 	void RenderPost(FRDGBuilder& GraphBuilder);
 
-	void PostOpaque(FPostOpaqueRenderParameters& Parameters);
+	void OnPostOpaque(FPostOpaqueRenderParameters& Parameters);
+	void OnOverlay(FPostOpaqueRenderParameters& Parameters);
 
 	void OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
 
+	TSharedPtr<class FVrmSceneViewExtension, ESPMode::ThreadSafe> SceneViewExtension;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<TObjectPtr<UTextureRenderTarget2D>, TEnumAsByte<EVRM4U_CaptureSource> > CaptureList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTextureRenderTarget2D* RenderTarget = nullptr;
+	TObjectPtr<UTextureRenderTarget2D> target;
+
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void AddCaptureTexture(UTextureRenderTarget2D *Texture, EVRM4U_CaptureSource CaptureSource);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void RemoveCaptureTexture(UTextureRenderTarget2D* Texture);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void RemoveAllCaptureTexture();
 };

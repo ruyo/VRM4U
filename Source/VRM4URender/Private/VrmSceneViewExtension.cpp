@@ -1,0 +1,103 @@
+// VRM4U Copyright (c) 2021-2023 Haruyoshi Yamamoto. This software is released under the MIT License.
+
+#include "VrmSceneViewExtension.h"
+#include "Misc/EngineVersionComparison.h"
+#include "Runtime/Renderer/Private/SceneTextures.h"
+#include "Runtime/Renderer/Private/SceneRendering.h"
+#include "PostProcess/PostProcessMaterialInputs.h"
+#include "VRM4U_RenderSubsystem.h"
+
+FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
+}
+
+
+
+void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
+}
+void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) {
+
+	//const FSceneView& View = Views[0];
+
+	check(View.bIsViewInfo);
+	const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(View).GetSceneTextures();
+
+}
+void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, FAfterPassCallbackDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
+	if (Pass == EPostProcessingPass::FXAA)
+	{
+		InOutPassCallbacks.Add(
+			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
+	}
+}
+
+FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessMaterialInputs& InOutInputs) {
+
+	{
+		FRDGTextureRef DstRDGTex = nullptr;
+		FRDGTextureRef SrcRDGTex = nullptr;
+
+		{
+			UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
+			if (s->target) {
+				DstRDGTex = RegisterExternalTexture(GraphBuilder, s->target->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+			}
+
+		}
+
+		if (DstRDGTex) {
+			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
+			FScreenPassTexture SrcTex = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
+
+			AddDrawTexturePass(
+				GraphBuilder,
+				View,
+				SrcTex,
+				DstTex
+			);
+		}
+	}
+
+	if (InOutInputs.OverrideOutput.IsValid())
+	{
+		return InOutInputs.OverrideOutput;
+	}
+	else
+	{
+		/** We don't want to modify scene texture in any way. We just want it to be passed back onto the next stage. */
+		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
+		return SceneTexture;
+	}
+}
+
+
+
+void FVrmSceneViewExtension::PostRenderView_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView) {
+	check(InView.bIsViewInfo);
+	const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(InView).GetSceneTextures();
+
+	FRDGTextureRef DstRDGTex = nullptr;
+	FRDGTextureRef SrcRDGTex = nullptr;
+
+	{
+		UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
+		if (s->target) {
+			DstRDGTex = RegisterExternalTexture(GraphBuilder, s->target->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+		}
+
+	}
+
+	//DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+	SrcRDGTex = SceneTextures.Color.Resolve;
+
+	if (DstRDGTex && SrcRDGTex) {
+		FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
+		FScreenPassTexture SrcTex(SrcRDGTex);
+
+		AddDrawTexturePass(
+			GraphBuilder,
+			InView,
+			SrcTex,
+			DstTex
+		);
+	}
+}
