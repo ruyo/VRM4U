@@ -24,12 +24,12 @@ enum EVRM4U_CaptureSource : int
 	DepthTexture,
 	NormalTexture,
 	VelocityTexture,
-	SmallDepthTexture,
+	//SmallDepthTexture,
 
 	SceneColorTexturePostOpaque,
 	SceneColorTextureOverlay,
 	SceneDepthTexture,
-	ScenePartialDepthTexture,
+	//ScenePartialDepthTexture,
 
 	// GBuffer
 	GBufferATexture,

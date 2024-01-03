@@ -4,8 +4,15 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneTextures.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
-#include "PostProcess/PostProcessMaterialInputs.h"
 #include "VRM4U_RenderSubsystem.h"
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#include "PostProcess/PostProcessing.h"
+#include "PostProcess/PostProcessMaterial.h"
+#else
+#include "PostProcess/PostProcessMaterialInputs.h"
+#endif
+
 
 FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
 }
@@ -30,9 +37,15 @@ void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass P
 	}
 }
 
-FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessMaterialInputs& InOutInputs) {
+FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
 
 	{
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+		decltype(auto) View = static_cast<const FViewInfo&>(InView);
+#else
+		decltype(auto) View = InView;
+#endif
+
 		FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
 
@@ -73,6 +86,14 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 
 void FVrmSceneViewExtension::PostRenderView_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView) {
 	check(InView.bIsViewInfo);
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+	decltype(auto) View = static_cast<const FViewInfo&>(InView);
+#else
+	decltype(auto) View = InView;
+#endif
+
+
 	const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(InView).GetSceneTextures();
 
 	FRDGTextureRef DstRDGTex = nullptr;
@@ -95,7 +116,7 @@ void FVrmSceneViewExtension::PostRenderView_RenderThread(FRDGBuilder& GraphBuild
 
 		AddDrawTexturePass(
 			GraphBuilder,
-			InView,
+			View,
 			SrcTex,
 			DstTex
 		);

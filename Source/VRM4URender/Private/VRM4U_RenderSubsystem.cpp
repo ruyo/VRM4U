@@ -59,9 +59,9 @@ void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameter
         case EVRM4U_CaptureSource::VelocityTexture:
             SrcRDGTex = Parameters.VelocityTexture;
             break;
-        case EVRM4U_CaptureSource::SmallDepthTexture:
-            SrcRDGTex = Parameters.SmallDepthTexture;
-            break;
+        //case EVRM4U_CaptureSource::SmallDepthTexture:
+        //    SrcRDGTex = Parameters.SmallDepthTexture;
+        //    break;
         default:
             break;
         }
@@ -74,9 +74,9 @@ void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameter
         case EVRM4U_CaptureSource::SceneDepthTexture:
             SrcRDGTex = Parameters.SceneTexturesUniformParams->GetParameters()->SceneDepthTexture;
             break;
-        case EVRM4U_CaptureSource::ScenePartialDepthTexture:
-            SrcRDGTex = Parameters.SceneTexturesUniformParams->GetParameters()->ScenePartialDepthTexture;
-            break;
+        //case EVRM4U_CaptureSource::ScenePartialDepthTexture:
+        //    SrcRDGTex = Parameters.SceneTexturesUniformParams->GetParameters()->ScenePartialDepthTexture;
+        //    break;
 
             // GBuffer
         case EVRM4U_CaptureSource::GBufferATexture:
