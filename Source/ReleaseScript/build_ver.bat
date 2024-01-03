@@ -57,6 +57,8 @@ if %UE4VER% == 4.19 set tmpOldFlag=TRUE
 if %tmpOldFlag% == TRUE (
 del "..\..\..\VRM4U\Source\VRM4U\Private\VRM4U_AnimSubsystem.cpp"
 del "..\..\..\VRM4U\Source\VRM4U\Public\VRM4U_AnimSubsystem.h"
+del "..\..\..\VRM4U\Source\VRM4URender\Private\VRM4U_RenderSubsystem.cpp"
+del "..\..\..\VRM4U\Source\VRM4URender\Public\VRM4U_RenderSubsystem.h"
 )
 
 
