@@ -11,7 +11,6 @@ public class VRM4URender : ModuleRules
 			new string[] {
 				"Core",
 				"CoreUObject",
-                "ApplicationCore",
                 "Engine",
 				"Projects",
 				"RenderCore",
@@ -20,21 +19,5 @@ public class VRM4URender : ModuleRules
                 //"ShaderCore",
                 "Renderer",
             });
-
-		PrivateIncludePathModuleNames.AddRange(
-			new string[] {
-				"AssetTools",
-				"AssetRegistry",
-            });
-
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[] {
-				"AssetTools",
-				"AssetRegistry"
-			});
-
-        PrivateIncludePaths.AddRange(
-        new string[] {
-        });
     }
 }
