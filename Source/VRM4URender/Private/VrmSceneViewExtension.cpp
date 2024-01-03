@@ -17,17 +17,18 @@
 FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
 }
 
-
-
 void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
+
+	decltype(auto) View = InView;
+	check(View.bIsViewInfo);
+	const FSceneTextures& st = static_cast<const FViewInfo&>(View).GetSceneTextures();
+	//SceneTextures.
 }
 void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) {
 
 	//const FSceneView& View = Views[0];
-
-	check(View.bIsViewInfo);
-	const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(View).GetSceneTextures();
-
+	//check(View.bIsViewInfo);
+	//const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(View).GetSceneTextures();
 }
 void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, FAfterPassCallbackDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
 	if (Pass == EPostProcessingPass::FXAA)
@@ -39,7 +40,9 @@ void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass P
 
 FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
 
-	{
+	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
+	if (s && s->CaptureList.Num()){
+	
 #if	UE_VERSION_OLDER_THAN(5,3,0)
 		decltype(auto) View = static_cast<const FViewInfo&>(InView);
 #else
@@ -49,12 +52,14 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 		FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
 
-		{
-			UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
-			if (s->target) {
-				DstRDGTex = RegisterExternalTexture(GraphBuilder, s->target->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+		for (auto c : s->CaptureList) {
+			switch (c.Value) {
+			case EVRM4U_CaptureSource::FinalColor:
+				DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+				break;
+			default:
+				break;
 			}
-
 		}
 
 		if (DstRDGTex) {
@@ -82,43 +87,3 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 	}
 }
 
-
-
-void FVrmSceneViewExtension::PostRenderView_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView) {
-	check(InView.bIsViewInfo);
-
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-	decltype(auto) View = static_cast<const FViewInfo&>(InView);
-#else
-	decltype(auto) View = InView;
-#endif
-
-
-	const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(InView).GetSceneTextures();
-
-	FRDGTextureRef DstRDGTex = nullptr;
-	FRDGTextureRef SrcRDGTex = nullptr;
-
-	{
-		UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
-		if (s->target) {
-			DstRDGTex = RegisterExternalTexture(GraphBuilder, s->target->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-		}
-
-	}
-
-	//DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-	SrcRDGTex = SceneTextures.Color.Resolve;
-
-	if (DstRDGTex && SrcRDGTex) {
-		FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
-		FScreenPassTexture SrcTex(SrcRDGTex);
-
-		AddDrawTexturePass(
-			GraphBuilder,
-			View,
-			SrcTex,
-			DstTex
-		);
-	}
-}

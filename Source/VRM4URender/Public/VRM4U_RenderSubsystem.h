@@ -19,6 +19,8 @@
 UENUM()
 enum EVRM4U_CaptureSource : int
 {
+	FinalColor,
+
 	ColorTexturePostOpaque,
 	ColorTextureOverlay,
 	DepthTexture,
@@ -46,7 +48,7 @@ enum EVRM4U_CaptureSource : int
 	// Custom Depth / Stencil
 	CustomDepthTexture,
 
-	CaptureSource_MAX,
+	//CaptureSource_MAX,
 };
 
 UCLASS()
@@ -63,17 +65,12 @@ public:
 
 	void OnPostOpaque(FPostOpaqueRenderParameters& Parameters);
 	void OnOverlay(FPostOpaqueRenderParameters& Parameters);
-
 	void OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
 
 	TSharedPtr<class FVrmSceneViewExtension, ESPMode::ThreadSafe> SceneViewExtension;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<TObjectPtr<UTextureRenderTarget2D>, TEnumAsByte<EVRM4U_CaptureSource> > CaptureList;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UTextureRenderTarget2D> target;
-
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	void AddCaptureTexture(UTextureRenderTarget2D *Texture, EVRM4U_CaptureSource CaptureSource);
@@ -83,4 +80,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	void RemoveAllCaptureTexture();
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void ResetSceneTextureExtentHistory();
 };

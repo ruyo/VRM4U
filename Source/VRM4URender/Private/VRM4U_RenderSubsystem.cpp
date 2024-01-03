@@ -11,20 +11,20 @@
 #include "ScreenPass.h"
 #include "Runtime/Renderer/Private/SceneTextures.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#include "SceneRenderTargetParameters.h"
 
 
 void UVRM4U_RenderSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
 	Super::Initialize(Collection);
 
-    //SceneViewExtension = FSceneViewExtensions::NewExtension<FVrmSceneViewExtension>();
-    //GetRendererModule().RegisterPostOpaqueRenderDelegate(FPostOpaqueRenderDelegate::CreateUObject(this, &UVRM4U_RenderSubsystem::OnPostOpaque));
-    //GetRendererModule().RegisterOverlayRenderDelegate(FPostOpaqueRenderDelegate::CreateUObject(this, &UVRM4U_RenderSubsystem::OnOverlay));
+    SceneViewExtension = FSceneViewExtensions::NewExtension<FVrmSceneViewExtension>();
+    GetRendererModule().RegisterPostOpaqueRenderDelegate(FPostOpaqueRenderDelegate::CreateUObject(this, &UVRM4U_RenderSubsystem::OnPostOpaque));
+    GetRendererModule().RegisterOverlayRenderDelegate(FPostOpaqueRenderDelegate::CreateUObject(this, &UVRM4U_RenderSubsystem::OnOverlay));
     
     //GetRendererModule().GetResolvedSceneColorCallbacks().AddUObject(this, &UVRM4U_RenderSubsystem::OnResolvedSceneColor_RenderThread);
 }
 
 void UVRM4U_RenderSubsystem::OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures) {
-    //SceneTextures.Color.Resolve
 }
 
 void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameters) {
@@ -126,7 +126,6 @@ void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameter
 void UVRM4U_RenderSubsystem::OnOverlay(FPostOpaqueRenderParameters& Parameters) {
     if (CaptureList.Num() == 0) return;
 
-
     for (auto c : CaptureList) {
         FRDGTextureRef DstRDGTex = nullptr;
         FRDGTextureRef SrcRDGTex = nullptr;
@@ -149,7 +148,6 @@ void UVRM4U_RenderSubsystem::OnOverlay(FPostOpaqueRenderParameters& Parameters) 
             break;
         }
 
-
         if (DstRDGTex && SrcRDGTex) {
             FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
             FScreenPassTexture SrcTex(SrcRDGTex);
@@ -158,8 +156,7 @@ void UVRM4U_RenderSubsystem::OnOverlay(FPostOpaqueRenderParameters& Parameters) 
                 *(Parameters.GraphBuilder),
                 *Parameters.View,
                 SrcTex,
-                DstTex
-            );
+                DstTex);
         }
     }
 }
@@ -169,11 +166,8 @@ void UVRM4U_RenderSubsystem::RenderPre(FRDGBuilder& GraphBuilder) {
 void UVRM4U_RenderSubsystem::RenderPost(FRDGBuilder& GraphBuilder) {
 }
 
-
 void UVRM4U_RenderSubsystem::AddCaptureTexture(UTextureRenderTarget2D* Texture, EVRM4U_CaptureSource CaptureSource) {
-
     if (Texture == nullptr) return;
-
     CaptureList.Add(Texture, CaptureSource);
 }
 
@@ -185,3 +179,7 @@ void UVRM4U_RenderSubsystem::RemoveAllCaptureTexture() {
     CaptureList.Empty();
 }
 
+
+void UVRM4U_RenderSubsystem::ResetSceneTextureExtentHistory() {
+    ::ResetSceneTextureExtentHistory();
+}
