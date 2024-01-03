@@ -19,10 +19,9 @@ FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister
 
 void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
 
-	decltype(auto) View = InView;
-	check(View.bIsViewInfo);
-	const FSceneTextures& st = static_cast<const FViewInfo&>(View).GetSceneTextures();
-	//SceneTextures.
+	//decltype(auto) View = InView;
+	//check(View.bIsViewInfo);
+	//const FSceneTextures& st = static_cast<const FViewInfo&>(View).GetSceneTextures();
 }
 void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) {
 
