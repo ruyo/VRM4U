@@ -89,6 +89,14 @@ del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAnimInstanceRetargetFromMannequin.cp
 del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAnimInstanceRetargetFromMannequin.h"
 )
 
+set isRenderModuleEnable=TRUE
+if %UE4VER% == 5.0 set isRenderModuleEnable=FALSE
+if %isUE4% == TRUE set isRenderModuleEnable=FALSE
+
+if %isRenderModuleEnable% == FALSE (
+del "..\..\..\VRM4U\Source\VRM4URender\VRM4URender.Build.cs"
+)
+
 
 
 call %BUILD% %PROJECTNAMEEDITOR%       %PLATFORM% %BUILDTYPE% %UPROJECT% -waitmutex
