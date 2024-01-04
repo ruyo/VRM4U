@@ -20,7 +20,8 @@ if ($a.EngineAssociation -eq '5.0' -or $a.EngineAssociation -eq '4.27' -or $a.En
     $b = Get-Content ../../../VRM4U/VRM4U.uplugin -Encoding UTF8 | ConvertFrom-Json
     $b
 
-    $b.Modules.RemoveAt(3)
+    $ModuleArrayList = [System.Collections.ArrayList]$b.Modules
+    $ModuleArrayList.RemoveAt(3)
 
     $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
 }
