@@ -11,16 +11,12 @@ set UPROJECT="C:\Users\ruyo\Documents\Unreal Projects\MyProjectBuildScript\MyPro
 set UNREALVERSIONSELECTOR="C:\Program Files (x86)\Epic Games\Launcher\Engine\Binaries\Win64\UnrealVersionSelector.exe"
 
 
-powershell -ExecutionPolicy RemoteSigned .\delIntermediate.ps1
-
-::cd ../../../Plugins
-
 git reset HEAD ./
 git checkout ./
 
-::cd VRM4U/Source/ReleaseScript 
-
 powershell -ExecutionPolicy RemoteSigned .\version.ps1 \"%UE4VER%\"
+
+powershell -ExecutionPolicy RemoteSigned .\delIntermediate.ps1
 
 
 set UE4PATH=UE_%UE4VER%
@@ -30,24 +26,7 @@ set BUILD="%UE4BASE%\%UE4PATH%\Engine\Build\BatchFiles\Build.bat"
 set REBUILD="%UE4BASE%\%UE4PATH%\Engine\Build\BatchFiles\Rebuild.bat"
 set PROJECTNAME="../../../../MyProjectBuildScript.uproject"
 
-
-if %UE4VER% == 5.0EA (
-  call "D:\Program Files\Epic Games\UE_5.0EA\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe" -projectfiles -project=%UPROJECT% -game -rocket -progress
-) else (
-  call %UNREALVERSIONSELECTOR% /projectfiles %UPROJECT%
-)
-
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
-
-if %PLATFORM% == Android (
-    echo android
-) else (
-    echo not android
-    call %CLEAN% %PROJECTNAMEEDITOR% %PLATFORM% %BUILDTYPE% %UPROJECT% -waitmutex
-)
+::: delete
 
 set tmpOldFlag=FALSE
 if %UE4VER% == 4.21 set tmpOldFlag=TRUE
@@ -98,6 +77,25 @@ del "..\..\..\VRM4U\Source\VRM4URender\VRM4URender.Build.cs"
 )
 
 
+::::::::::::::::::::::::::: generate
+
+if %UE4VER% == 5.0EA (
+  call "D:\Program Files\Epic Games\UE_5.0EA\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe" -projectfiles -project=%UPROJECT% -game -rocket -progress
+) else (
+  call %UNREALVERSIONSELECTOR% /projectfiles %UPROJECT%
+)
+
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+
+if %PLATFORM% == Android (
+    echo android
+) else (
+    echo not android
+    call %CLEAN% %PROJECTNAMEEDITOR% %PLATFORM% %BUILDTYPE% %UPROJECT% -waitmutex
+)
 
 call %BUILD% %PROJECTNAMEEDITOR%       %PLATFORM% %BUILDTYPE% %UPROJECT% -waitmutex
 
