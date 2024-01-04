@@ -22,6 +22,7 @@ if ($a.EngineAssociation -eq '5.0' -or $a.EngineAssociation -eq '4.27' -or $a.En
 
     $ModuleArrayList = [System.Collections.ArrayList]$b.Modules
     $ModuleArrayList.RemoveAt(3)
+    $b.Modules = $ModuleArrayList
 
     $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
 }
