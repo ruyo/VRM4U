@@ -14,6 +14,19 @@ if ($a.EngineAssociation -eq '4.23' -or $a.EngineAssociation -eq '4.22' -or $a.E
     $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
 }
 
+if ($a.EngineAssociation -eq '4.27' -or $a.EngineAssociation -eq '4.26' -or $a.EngineAssociation -eq '4.25' -or $a.EngineAssociation -eq '4.24' -or $a.EngineAssociation -eq '4.23' -or $a.EngineAssociation -eq '4.22' -or $a.EngineAssociation -eq '4.21')
+{
+
+    $b = Get-Content ../../../VRM4U/VRM4U.uplugin -Encoding UTF8 | ConvertFrom-Json
+    $b
+
+    $PluginArrayList = [System.Collections.ArrayList]$b.Plugins
+    $PluginArrayList.RemoveAt(1)
+    $b.Plugins = $PluginArrayList
+
+    $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
+}
+
 if ($a.EngineAssociation -eq '5.0' -or $a.EngineAssociation -eq '4.27' -or $a.EngineAssociation -eq '4.26' -or $a.EngineAssociation -eq '4.25' -or $a.EngineAssociation -eq '4.24' -or $a.EngineAssociation -eq '4.23' -or $a.EngineAssociation -eq '4.22' -or $a.EngineAssociation -eq '4.21')
 {
 
