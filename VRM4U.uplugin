@@ -65,8 +65,12 @@
     {
       "Name": "LevelSequenceEditor",
       "Enabled": true
+    },
+    {
+      "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+",
+      "Name": "IKRig",
+      "Enabled": true
     }
   ],
-  "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+"
 
 }
