@@ -13,6 +13,9 @@
 #include "Runtime/Renderer/Private/SceneRendering.h"
 #include "SceneRenderTargetParameters.h"
 
+#if WITH_EDITOR
+#include "LevelEditor.h"
+#endif
 
 void UVRM4U_RenderSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
 	Super::Initialize(Collection);
@@ -37,6 +40,15 @@ void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameter
         for (auto k : keys) {
             if (IsValid(k) == false) {
                 CaptureList.Remove(k);
+                continue;
+            }
+            if (k->GetRenderTargetResource() == nullptr) {
+                CaptureList.Remove(k);
+                continue;
+            }
+            if (k->GetRenderTargetResource()->GetTexture2DRHI() == nullptr) {
+                CaptureList.Remove(k);
+                continue;
             }
         }
     }
@@ -45,6 +57,13 @@ void UVRM4U_RenderSubsystem::OnPostOpaque(FPostOpaqueRenderParameters& Parameter
     FRDGTextureRef SrcRDGTex = nullptr;
 
     for (auto c : CaptureList) {
+        if (c.Key == nullptr) {
+            continue;
+        }
+        if (c.Key->GetRenderTargetResource() == nullptr) {
+            continue;
+        }
+
         DstRDGTex = RegisterExternalTexture(*(Parameters.GraphBuilder), c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
         switch (c.Value) {
         case EVRM4U_CaptureSource::ColorTexturePostOpaque:
@@ -127,6 +146,13 @@ void UVRM4U_RenderSubsystem::OnOverlay(FPostOpaqueRenderParameters& Parameters) 
     if (CaptureList.Num() == 0) return;
 
     for (auto c : CaptureList) {
+        if (c.Key == nullptr) {
+            continue;
+        }
+        if (c.Key->GetRenderTargetResource() == nullptr) {
+            continue;
+        }
+
         FRDGTextureRef DstRDGTex = nullptr;
         FRDGTextureRef SrcRDGTex = nullptr;
 
@@ -161,6 +187,16 @@ void UVRM4U_RenderSubsystem::OnOverlay(FPostOpaqueRenderParameters& Parameters) 
     }
 }
 
+#if WITH_EDITOR
+void UVRM4U_RenderSubsystem::OnMapChange(UWorld* World, EMapChangeType ChangeType) {
+    if (ChangeType == EMapChangeType::TearDownWorld)
+    {
+        CaptureList.Empty();
+    }
+}
+#endif
+
+
 void UVRM4U_RenderSubsystem::RenderPre(FRDGBuilder& GraphBuilder) {
 }
 void UVRM4U_RenderSubsystem::RenderPost(FRDGBuilder& GraphBuilder) {
@@ -168,7 +204,31 @@ void UVRM4U_RenderSubsystem::RenderPost(FRDGBuilder& GraphBuilder) {
 
 void UVRM4U_RenderSubsystem::AddCaptureTexture(UTextureRenderTarget2D* Texture, EVRM4U_CaptureSource CaptureSource) {
     if (Texture == nullptr) return;
-    CaptureList.Add(Texture, CaptureSource);
+
+    CaptureList.FindOrAdd(Texture) = CaptureSource;
+
+#if WITH_EDITOR
+    if (HandleTearDown.IsValid() == false){
+        if (CaptureList.Num() == 1) {
+            if (FModuleManager::Get().IsModuleLoaded("LevelEditor"))
+            {
+                FLevelEditorModule& LevelEditor = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
+
+                
+                HandleTearDown = LevelEditor.OnMapChanged().AddUObject(this, &UVRM4U_RenderSubsystem::OnMapChange);
+                        /*
+                    HandleTearDown = LevelEditor.OnMapChanged().AddLambda([&](UWorld* World, EMapChangeType ChangeType)
+                    {
+                        if (ChangeType == EMapChangeType::TearDownWorld)
+                        {
+                            CaptureList.Empty();
+                        }
+                    });
+                    */
+            }
+        }
+    }
+#endif
 }
 
 void UVRM4U_RenderSubsystem::RemoveCaptureTexture(UTextureRenderTarget2D* Texture) {

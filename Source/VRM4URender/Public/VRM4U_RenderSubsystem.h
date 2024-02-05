@@ -6,7 +6,13 @@
 #include "Subsystems/EngineSubsystem.h"
 #include "Misc/EngineVersionComparison.h"
 #include "VrmSceneViewExtension.h"
+
+#if WITH_EDITOR
+#include "UnrealEdMisc.h"
+#endif
+
 #include "VRM4U_RenderSubsystem.generated.h"
+
 
 
 #if	UE_VERSION_OLDER_THAN(4,22,0)
@@ -19,8 +25,6 @@
 UENUM()
 enum EVRM4U_CaptureSource : int
 {
-	FinalColor,
-
 	ColorTexturePostOpaque,
 	ColorTextureOverlay,
 	DepthTexture,
@@ -56,6 +60,8 @@ class VRM4URENDER_API UVRM4U_RenderSubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 
+	FDelegateHandle HandleTearDown;
+
 public:
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -66,6 +72,10 @@ public:
 	void OnPostOpaque(FPostOpaqueRenderParameters& Parameters);
 	void OnOverlay(FPostOpaqueRenderParameters& Parameters);
 	void OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures);
+
+#if WITH_EDITOR
+	void OnMapChange(UWorld* World, EMapChangeType ChangeType);
+#endif
 
 	TSharedPtr<class FVrmSceneViewExtension, ESPMode::ThreadSafe> SceneViewExtension;
 

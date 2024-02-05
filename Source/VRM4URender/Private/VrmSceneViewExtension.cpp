@@ -52,13 +52,13 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 		FRDGTextureRef SrcRDGTex = nullptr;
 
 		for (auto c : s->CaptureList) {
-			switch (c.Value) {
-			case EVRM4U_CaptureSource::FinalColor:
-				DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-				break;
-			default:
-				break;
-			}
+			//switch (c.Value) {
+			//case EVRM4U_CaptureSource::FinalColor:
+			//	DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+			//	break;
+			//default:
+			//	break;
+			//}
 		}
 
 		if (DstRDGTex) {
