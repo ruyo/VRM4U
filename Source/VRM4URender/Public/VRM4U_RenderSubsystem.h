@@ -61,6 +61,8 @@ class VRM4URENDER_API UVRM4U_RenderSubsystem : public UEngineSubsystem
 	GENERATED_BODY()
 
 	FDelegateHandle HandleTearDown;
+	bool bInitPIE = false;
+	bool bIsPlay = false;
 
 public:
 
@@ -75,6 +77,8 @@ public:
 
 #if WITH_EDITOR
 	void OnMapChange(UWorld* World, EMapChangeType ChangeType);
+
+	void OnPIEEvent(bool bPIEBegin, bool bPIEEnd);
 #endif
 
 	TSharedPtr<class FVrmSceneViewExtension, ESPMode::ThreadSafe> SceneViewExtension;

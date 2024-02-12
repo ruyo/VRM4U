@@ -26,5 +26,9 @@ public class VRM4URender : ModuleRules
                 //"ShaderCore",
                 "Renderer",
             });
-    }
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
+	}
 }
