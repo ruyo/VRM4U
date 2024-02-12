@@ -53,10 +53,14 @@ namespace{
 					SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
 
 					FRHITexture* SceneTexture = SrcRDGTex->GetRHI()->GetTexture2D();
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+					PixelShader->SetParameters(RHICmdList, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
+#else
 					FRHIBatchedShaderParameters& BatchedParameters = RHICmdList.GetScratchShaderParameters();
 					PixelShader->SetParameters(BatchedParameters, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
 					RHICmdList.SetBatchedShaderParameters(RHICmdList.GetBoundPixelShader(), BatchedParameters);
-
+#endif
 					IRendererModule* RendererModule = &FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
 					RendererModule->DrawRectangle(
 						RHICmdList,
