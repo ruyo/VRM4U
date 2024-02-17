@@ -185,6 +185,19 @@ T* VRM4U_NewObject(UPackage* Outer, FName Name, EObjectFlags Flags = RF_NoFlags,
 	if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 		pkg = VRM4U_CreatePackage(Outer, Name);
 	}
-
-	return NewObject<T>(pkg, Name, Flags, Template, bCopyTransientsFromClassDefaults, InInstanceGraph);
+	decltype(auto) r = NewObject<T>(pkg, Name, Flags, Template, bCopyTransientsFromClassDefaults, InInstanceGraph);
+	r->MarkPackageDirty();
+	return r;
 }
+
+template< class T >
+T* VRM4U_DuplicateObject(const T *src, UPackage* Outer, FName Name) {
+	UPackage* pkg = Outer;
+	if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
+		pkg = VRM4U_CreatePackage(Outer, Name);
+	}
+	decltype(auto) r = DuplicateObject<T>(src, pkg, Name);
+	r->MarkPackageDirty();
+	return r;
+}
+//	ss = DuplicateObject<USkeletalMesh>(src_sk, p, *name_mesh)
