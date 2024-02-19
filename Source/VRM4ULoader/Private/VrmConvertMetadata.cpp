@@ -624,7 +624,7 @@ bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, cons
 		{
 			TMap<FString, FString> BoneTable;
 
-			UVrmMetaObject* m2 = DuplicateObject<UVrmMetaObject>(m, package, *(FString(TEXT("VM_")) + vrmAssetList->BaseFileName + TEXT("_ue4mannequin_VrmMeta")));
+			UVrmMetaObject* m2 = VRM4U_DuplicateObject<UVrmMetaObject>(m, package, *(FString(TEXT("VM_")) + vrmAssetList->BaseFileName + TEXT("_ue4mannequin_VrmMeta")));
 			vrmAssetList->VrmMannequinMetaObject = m2;
 			for (auto& a : m2->humanoidBoneTable) {
 				auto c = VRMUtil::table_ue4_vrm.FindByPredicate([a](const VRMUtil::VRMBoneTable& data) {
@@ -662,7 +662,7 @@ bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, cons
 		{
 			TMap<FString, FString> BoneTable;
 
-			UVrmMetaObject* m3 = DuplicateObject<UVrmMetaObject>(m, package, *(FString(TEXT("VM_")) + vrmAssetList->BaseFileName + TEXT("_humanoid_VrmMeta")));
+			UVrmMetaObject* m3 = VRM4U_DuplicateObject<UVrmMetaObject>(m, package, *(FString(TEXT("VM_")) + vrmAssetList->BaseFileName + TEXT("_humanoid_VrmMeta")));
 			vrmAssetList->VrmHumanoidMetaObject = m3;
 			for (auto& a : m3->humanoidBoneTable) {
 				if (a.Value != "") {
