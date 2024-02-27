@@ -199,6 +199,9 @@ void FVrmAsyncLoadAction::UpdateOperation(FLatentResponse& Response)
 
 
 		TFunction< void() > f = [&] {
+			if (param.dataSize > 0) {
+				return;
+			}
 			if (FFileHelper::LoadFileToArray(localAsset.vrmLocalRes, *param.filepath)) {
 				param.pData = localAsset.vrmLocalRes.GetData();
 				param.dataSize = localAsset.vrmLocalRes.Num();
@@ -228,7 +231,7 @@ void FVrmAsyncLoadAction::UpdateOperation(FLatentResponse& Response)
 		++SequenceCount;
 
 		localAsset.Importer = new Assimp::Importer();
-		localAsset.ScenePtr = localAsset.Importer->ReadFileFromMemory(localAsset.vrmLocalRes.GetData(), localAsset.vrmLocalRes.Num(),
+		localAsset.ScenePtr = localAsset.Importer->ReadFileFromMemory(param.pData, param.dataSize,
 			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes,
 			"vrm");
 		return;
