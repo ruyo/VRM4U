@@ -32,8 +32,8 @@ void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphB
 void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, FAfterPassCallbackDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
 	if (Pass == EPostProcessingPass::FXAA)
 	{
-		InOutPassCallbacks.Add(
-			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
+		//InOutPassCallbacks.Add(
+		//	FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
 	}
 }
 
