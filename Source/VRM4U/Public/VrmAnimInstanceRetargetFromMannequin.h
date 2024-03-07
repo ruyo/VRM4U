@@ -9,7 +9,7 @@
 #include "Animation/AnimNodeBase.h"
 #include "Misc/EngineVersionComparison.h"
 
-#if	UE_VERSION_OLDER_THAN(5,3,0)
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 static_assert(0, "Available for UE5.3+. delete h/cpp files");
 #endif
 
@@ -35,7 +35,7 @@ public:
 	int CalcCount = 0;
 	TSharedPtr<FAnimNode_VrmSpringBone> Node_SpringBone;
 	TSharedPtr<FAnimNode_VrmConstraint> Node_Constraint;
-#if	UE_VERSION_OLDER_THAN(5,3,0)
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 	//TWeakObjectPtr<USkeletalMeshComponent> RetargetSourceMeshComponent = nullptr;
 	TAssetPtr<UIKRetargeter> Retargeter;

@@ -3,7 +3,7 @@
 
 #include "VrmAnimInstanceRetargetFromMannequin.h"
 
-#if	UE_VERSION_OLDER_THAN(5,3,0)
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 
 #include "VrmMetaObject.h"
@@ -19,7 +19,10 @@
 #include "AnimNode_VrmSpringBone.h"
 #include "AnimNode_VrmConstraint.h"
 #include "AnimNodes/AnimNode_RetargetPoseFromMesh.h"
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#else
 #include "Rig/Solvers/IKRigSolver.h"
+#endif
 
 
 namespace {
@@ -141,7 +144,7 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 		}
 	}
 
-#if	UE_VERSION_OLDER_THAN(5,3,0)
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 
 	//retarget

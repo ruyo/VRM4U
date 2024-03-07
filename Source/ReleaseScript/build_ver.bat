@@ -61,7 +61,6 @@ if %UEMajorVersion% == 4 (
 )
 if %UE4VER% == 5.0 set isRetargeterEnable=FALSE
 if %UE4VER% == 5.1 set isRetargeterEnable=FALSE
-if %UE4VER% == 5.2 set isRetargeterEnable=FALSE
 
 if %isRetargeterEnable% == FALSE (
 del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAnimInstanceRetargetFromMannequin.cpp"
