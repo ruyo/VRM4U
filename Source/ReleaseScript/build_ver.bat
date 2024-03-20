@@ -11,8 +11,7 @@ set UPROJECT="C:\Users\ruyo\Documents\Unreal Projects\MyProjectBuildScript\MyPro
 set UNREALVERSIONSELECTOR="C:\Program Files (x86)\Epic Games\Launcher\Engine\Binaries\Win64\UnrealVersionSelector.exe"
 
 
-git reset HEAD ./
-git checkout ./
+git reset --hard HEAD
 
 powershell -ExecutionPolicy RemoteSigned .\version.ps1 \"%UE4VER%\"
 
