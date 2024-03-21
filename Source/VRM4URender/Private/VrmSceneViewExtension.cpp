@@ -77,7 +77,17 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 			);
 		}
 #else
-		// todo
+		if (DstRDGTex) {
+			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
+			FScreenPassTexture SrcTex((InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]));
+
+			AddDrawTexturePass(
+				GraphBuilder,
+				View,
+				SrcTex,
+				DstTex
+			);
+		}
 #endif
 	}
 
@@ -92,8 +102,8 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
 		return SceneTexture;
 #else
-		// todo
-		return InOutInputs.OverrideOutput;
+		FScreenPassTexture SceneTexture((InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]));
+		return SceneTexture;
 #endif
 	}
 }

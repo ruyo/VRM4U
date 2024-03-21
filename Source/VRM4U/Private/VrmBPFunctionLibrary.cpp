@@ -1749,7 +1749,7 @@ void UVrmBPFunctionLibrary::VRMGetRigNodeNameFromBoneName(const USkeleton* skele
 #if UE_VERSION_OLDER_THAN(5,4,0)
 	RigNodeName = skeleton->GetRigNodeNameFromBoneName(boneName);
 #else
-	// todo
+	RigNodeName = NAME_None;
 #endif
 #endif
 }
@@ -1771,7 +1771,11 @@ void UVrmBPFunctionLibrary::VRMGetIKRigDefinition(UObject *retargeter, UObject *
 		target = Cast <UIKRigDefinition>(r->GetTargetIKRigWriteable());
 	}
 #else
-	// todo
+	UIKRetargeter* r = Cast<UIKRetargeter>(retargeter);
+	if (r) {
+		src = Cast<UIKRigDefinition>(r->GetIKRigWriteable(ERetargetSourceOrTarget::Source));
+		target = Cast <UIKRigDefinition>(r->GetIKRigWriteable(ERetargetSourceOrTarget::Target));
+	}
 #endif
 }
 
