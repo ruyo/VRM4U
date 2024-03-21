@@ -9,11 +9,13 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "RendererInterface.h"
 #include "ScreenPass.h"
-#include "Runtime/Renderer/Private/SceneTextures.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
 #include "SceneRenderTargetParameters.h"
 #include "Slate/SceneViewport.h"
 #include "ScreenRendering.h"
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#include "Runtime/Renderer/Private/SceneTextures.h"
+#endif
 
 
 #if WITH_EDITOR

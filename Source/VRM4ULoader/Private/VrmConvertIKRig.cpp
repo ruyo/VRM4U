@@ -17,10 +17,12 @@
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "Animation/MorphTarget.h"
 #include "Animation/NodeMappingContainer.h"
-#include "Animation/Rig.h"
 #include "Animation/Skeleton.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/UnrealType.h"
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#include "Animation/Rig.h"
+#endif
 
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"

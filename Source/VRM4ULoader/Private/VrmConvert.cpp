@@ -169,6 +169,9 @@ bool VRMConverter::NormalizeBoneName(const aiScene *mScenePtr) {
 	}
 
 	return true;
+
+
+	/*
 	//auto p = const_cast<aiScene*>(mScenePtr);
 	//if (p == nullptr) return false;
 
@@ -237,6 +240,7 @@ bool VRMConverter::NormalizeBoneName(const aiScene *mScenePtr) {
 
 
 	return true;
+	*/
 }
 
 

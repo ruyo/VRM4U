@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
+#include "VrmAssetListObject.h"
+#include "VrmMetaObject.h"
+
 
 void FImportOptionData::init() {
 }
@@ -580,7 +583,12 @@ void VRMAddRetargetChain(UIKRigController* con, FName name, FName begin, FName e
 	c.ChainName = name;
 	c.StartBone = r1;
 	c.EndBone = r2;
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 	con->AddRetargetChain(c);
+#else
+	// todo
+#endif
+
 #endif
 #endif
 }

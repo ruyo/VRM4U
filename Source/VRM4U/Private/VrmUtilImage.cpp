@@ -15,6 +15,11 @@
 #include "PixelFormat.h"
 #include "RenderUtils.h"
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#else
+#include "Misc/FieldAccessor.h"
+#endif
+
 
 /////
 

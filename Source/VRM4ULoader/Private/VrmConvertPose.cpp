@@ -12,12 +12,15 @@
 
 #include "Animation/MorphTarget.h"
 #include "Animation/NodeMappingContainer.h"
-#include "Animation/Rig.h"
 #include "Animation/PoseAsset.h"
 #include "Animation/Skeleton.h"
 #include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "CommonFrameRates.h"
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#include "Animation/Rig.h"
+#endif
+
 
 #if WITH_EDITOR
 #include "IPersonaToolkit.h"

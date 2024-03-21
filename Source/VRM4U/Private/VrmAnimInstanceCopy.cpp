@@ -7,12 +7,15 @@
 #include "VrmUtil.h"
 #include "VrmBPFunctionLibrary.h"
 #include "Animation/AnimNodeBase.h"
-#include "Animation/Rig.h"
 //#include "BoneControllers/AnimNode_Fabrik.h"
 //#include "BoneControllers/AnimNode_TwoBoneIK.h"
 //#include "BoneControllers/AnimNode_SplineIK.h"
 #include "AnimNode_VrmSpringBone.h"
 #include "AnimNode_VrmConstraint.h"
+
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#include "Animation/Rig.h"
+#endif
 
 
 namespace {

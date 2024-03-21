@@ -2,7 +2,6 @@
 
 #include "VrmSceneViewExtension.h"
 #include "Misc/EngineVersionComparison.h"
-#include "Runtime/Renderer/Private/SceneTextures.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
 #include "VRM4U_RenderSubsystem.h"
 
@@ -13,6 +12,9 @@
 #include "PostProcess/PostProcessMaterialInputs.h"
 #endif
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#include "Runtime/Renderer/Private/SceneTextures.h"
+#endif
 
 FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
 }
