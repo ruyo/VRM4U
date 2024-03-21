@@ -792,7 +792,8 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 
 void VRMRetargetData::UpdateBoneName() {
 
-
+#pragma warning(push)
+#pragma warning(disable: 4702)
 	for (auto& a : retargetTable) {
 		bool bFound = false;
 		//vrm
@@ -811,6 +812,7 @@ void VRMRetargetData::UpdateBoneName() {
 		if (bFound) {
 			continue;
 		}
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 		//pmx
 		for (auto& t : VRMUtil::table_ue4_pmx) {
 			if (t.BoneUE4.Compare(a.BoneUE4) != 0) {
@@ -837,8 +839,10 @@ void VRMRetargetData::UpdateBoneName() {
 
 			if (finish) break;
 		}
+#endif
 		if (bFound) {
 			continue;
 		}
 	}
+#pragma warning(pop)
 }

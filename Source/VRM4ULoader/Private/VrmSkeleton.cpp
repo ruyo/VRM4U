@@ -272,7 +272,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 					}
 
 					continue;
-
+					/*
 					TMap<FString, FString> renameTable;
 					{
 						FString s;
@@ -311,6 +311,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 							}
 						}
 					}
+					*/
 				}
 				/*
 				if (0) {

@@ -424,7 +424,12 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 #endif
+
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 			sk->GetResourceForRendering()->LODRenderData[0].InitResources(false, 0, VRMGetMorphTargets(sk), sk);
+#else
+			// todo
+#endif
 		}
 	}
 #endif
