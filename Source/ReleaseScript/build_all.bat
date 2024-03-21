@@ -1,5 +1,27 @@
 set V_DATE=%date:~0,4%%date:~5,2%%date:~8,2%
 
+::5_4
+call build_ver.bat 5.4 Win64 Development MyProjectBuildScriptEditor VRM4U_5_4_%V_DATE%.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+call build_ver.bat 5.4 Win64 Development MyProjectBuildScript VRM4U_5_4_%V_DATE%_gam.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+call build_ver.bat 5.4 Win64 Shipping MyProjectBuildScript VRM4U_5_4_%V_DATE%_gam_shipping.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+call build_ver.bat 5.4 Android Development MyProjectBuildScript VRM4U_5_4_%V_DATE%_android.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+
 ::5_3
 call build_ver.bat 5.3 Win64 Development MyProjectBuildScriptEditor VRM4U_5_3_%V_DATE%.zip
 if not %errorlevel% == 0 (
