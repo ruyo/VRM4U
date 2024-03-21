@@ -185,7 +185,11 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 		auto func = [&](const FString &a, const FString b) {
 			if (mc == nullptr) return;
 			mc->AddMapping(*a, *b);
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 			VRMGetSkeleton(vrmAssetList->SkeletalMesh)->SetRigBoneMapping(*a, *b);
+#else
+			// todo
+#endif
 		};
 		auto func2 = [&](const FString &a, FName b) {
 			func(a, b.ToString());

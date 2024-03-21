@@ -426,7 +426,11 @@ void UVrmGameViewportClient::Draw(FViewport* InViewport, FCanvas* SceneCanvas)
 					View->CurrentBufferVisualizationMode = GetCurrentBufferVisualizationMode();
 					View->CurrentNaniteVisualizationMode = GetCurrentNaniteVisualizationMode();
 					View->CurrentLumenVisualizationMode = GetCurrentLumenVisualizationMode();
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 					View->CurrentStrataVisualizationMode = GetCurrentStrataVisualizationMode();
+#else
+					View->CurrentSubstrateVisualizationMode = GetCurrentSubstrateVisualizationMode();
+#endif
 					View->CurrentGroomVisualizationMode = GetCurrentGroomVisualizationMode();
 					View->CurrentVirtualShadowMapVisualizationMode = GetCurrentVirtualShadowMapVisualizationMode();
 

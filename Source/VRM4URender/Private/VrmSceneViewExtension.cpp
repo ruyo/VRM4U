@@ -63,6 +63,8 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 			//}
 		}
 
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+
 		if (DstRDGTex) {
 			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
 			FScreenPassTexture SrcTex = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
@@ -74,6 +76,9 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 				DstTex
 			);
 		}
+#else
+		// todo
+#endif
 	}
 
 	if (InOutInputs.OverrideOutput.IsValid())
@@ -82,9 +87,14 @@ FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder
 	}
 	else
 	{
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 		/** We don't want to modify scene texture in any way. We just want it to be passed back onto the next stage. */
 		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
 		return SceneTexture;
+#else
+		// todo
+		return InOutInputs.OverrideOutput;
+#endif
 	}
 }
 

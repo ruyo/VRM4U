@@ -1746,7 +1746,11 @@ void UVrmBPFunctionLibrary::VRMGetAllActorsHasSceneComponent(const UObject* Worl
 
 void UVrmBPFunctionLibrary::VRMGetRigNodeNameFromBoneName(const USkeleton* skeleton, const FName& boneName, FName& RigNodeName){
 #if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,4,0)
 	RigNodeName = skeleton->GetRigNodeNameFromBoneName(boneName);
+#else
+	// todo
+#endif
 #endif
 }
 
@@ -1760,12 +1764,14 @@ void UVrmBPFunctionLibrary::VRMSetPerBoneMotionBlur(USkinnedMeshComponent* Skinn
 //void UVrmBPFunctionLibrary::GetIKRigDefinition(UIKRetargeter, UIKRigDefinition*& src, UIKRigDefinition*& target) {
 void UVrmBPFunctionLibrary::VRMGetIKRigDefinition(UObject *retargeter, UObject * &src, UObject * &target) {
 #if	UE_VERSION_OLDER_THAN(5,0,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,4,0)
 	UIKRetargeter* r = Cast<UIKRetargeter>(retargeter);
 	if (r) {
 		src = Cast<UIKRigDefinition>(r->GetSourceIKRigWriteable());
 		target = Cast <UIKRigDefinition>(r->GetTargetIKRigWriteable());
 	}
+#else
+	// todo
 #endif
 }
 

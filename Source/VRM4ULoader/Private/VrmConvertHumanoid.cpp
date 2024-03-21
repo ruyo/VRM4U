@@ -73,7 +73,7 @@ static void renameToHumanoidBone(USkeletalMesh *targetSK, const UVrmMetaObject *
 
 #if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,4,0)
 	if (src_rig) {
 		rig->SetSourceAsset(src_rig->GetSourceAsset());
 		rig->SetTargetAsset(targetSK);
@@ -98,6 +98,8 @@ static void renameToHumanoidBone(USkeletalMesh *targetSK, const UVrmMetaObject *
 		}
 		rig->PostEditChange();
 	}
+#else
+	// todo
 #endif
 #endif
 }
@@ -161,7 +163,8 @@ static void renameToUE4Bone(USkeletalMesh *targetSK, UVrmMetaObject *meta, const
 
 #if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,4,0)
+
 	if (src_rig) {
 		rig->SetSourceAsset(src_rig->GetSourceAsset());
 		rig->SetTargetAsset(targetSK);
@@ -186,6 +189,8 @@ static void renameToUE4Bone(USkeletalMesh *targetSK, UVrmMetaObject *meta, const
 		}
 		rig->PostEditChange();
 	}
+#else
+	// todo
 #endif
 #endif
 }

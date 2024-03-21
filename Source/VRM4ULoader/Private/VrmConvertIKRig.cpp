@@ -472,7 +472,11 @@ public:
 
 #if VRM4U_USE_EDITOR_RIG
 		auto* r = LocalGetController(RigDefinition);
+#if UE_VERSION_OLDER_THAN(5,4,0)
 		r->AddRetargetChain(c);
+#else
+		// todo
+#endif
 		return NAME_None;
 #else
 		if (c.StartBone.BoneName != NAME_None && RigDefinition->GetSkeleton().GetBoneIndexFromName(c.StartBone.BoneName) == INDEX_NONE)
@@ -948,7 +952,11 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					if (DeltaAngle >= MinAngleThreshold)
 					{
 						NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
+#if UE_VERSION_OLDER_THAN(5,4,0)
 						NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
+#else
+						// todo
+#endif
 					}
 				}
 

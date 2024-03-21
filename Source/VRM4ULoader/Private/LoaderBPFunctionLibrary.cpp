@@ -414,7 +414,7 @@ UVrmLicenseObject* ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath) {
 	file = TCHAR_TO_UTF8(*filepath);
 #endif
 
-	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:std::stringFileName=%s"), file.c_str());
+	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:std::stringFileName=%hs"), file.c_str());
 
 	Assimp::Importer mImporter;
 	const aiScene *mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
@@ -857,6 +857,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 bool ULoaderBPFunctionLibrary::CopyPhysicsAsset(USkeletalMesh *dstMesh, const USkeletalMesh *srcMesh, bool bResetCollisionTransform){
 	//GetTransientPackage
 #if WITH_EDITOR
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 	if (srcMesh == nullptr || dstMesh == nullptr) return false;
 
 	auto  *srcPA = VRMGetPhysicsAsset(srcMesh);
@@ -1001,8 +1002,8 @@ bool ULoaderBPFunctionLibrary::CopyPhysicsAsset(USkeletalMesh *dstMesh, const US
 
 	dstPA->RefreshPhysicsAssetChange();
 	dstPA->UpdateBoundsBodiesArray();
-
-#endif
+#endif // 5.4
+#endif // editor
 
 	return true;
 }
@@ -1012,6 +1013,7 @@ bool ULoaderBPFunctionLibrary::CopyVirtualBone(USkeletalMesh *dstMesh, const USk
 	if (dstMesh == nullptr || srcMesh == nullptr) {
 		return false;
 	}
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 
 	// virtual bone
 	{
@@ -1151,7 +1153,9 @@ bool ULoaderBPFunctionLibrary::CopyVirtualBone(USkeletalMesh *dstMesh, const USk
 		}
 	}
 	VRMGetSkeleton(dstMesh)->MarkPackageDirty();
-
+#else
+	// todo
+#endif
 	return true;
 }
 

@@ -116,8 +116,13 @@ void VRMSetRefSkeleton(TObjectPtr<T> t, const FReferenceSkeleton& refsk) {
 //refskeleton end
 
 // morph targets
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 template<typename T>
 TArray<UMorphTarget*>& VRMGetMorphTargets(T* t) {
+#else
+template<typename T>
+TArray<TObjectPtr<UMorphTarget>>& VRMGetMorphTargets(T * t) {
+#endif
 #if	UE_VERSION_OLDER_THAN(4,27,0)
 	return t->MorphTargets;
 #else
@@ -168,8 +173,13 @@ UPhysicsAsset* VRMGetPhysicsAsset(T* t) {
 }
 
 // nodemappingdata
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 template<typename T>
 TArray<class UNodeMappingContainer*>& VRMGetNodeMappingData(T* t) {
+#else
+template<typename T>
+TArray<TObjectPtr<class UNodeMappingContainer>>& VRMGetNodeMappingData(T * t) {
+#endif
 #if	UE_VERSION_OLDER_THAN(4,27,0)
 	return t->NodeMappingData;
 #else
@@ -225,8 +235,10 @@ template<typename T>
 void VRMSetUseLegacyMeshDerivedDataKey(T* t, bool b) {
 #if	UE_VERSION_OLDER_THAN(4,27,0)
 	t->UseLegacyMeshDerivedDataKey = b;
-#else
+#elif UE_VERSION_OLDER_THAN(5,4,0)
 	t->SetUseLegacyMeshDerivedDataKey(b);
+#else
+	// todo
 #endif
 }
 
