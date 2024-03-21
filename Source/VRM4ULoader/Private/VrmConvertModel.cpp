@@ -1808,12 +1808,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 				pRd->ReleaseResources();
 				pRd->SkinWeightVertexBuffer = InWeights;
-
-#if	UE_VERSION_OLDER_THAN(5,4,0)
 				pRd->InitResources(false, 0, VRMGetMorphTargets(sk), sk);
-#else
-				// todo
-#endif
 			}
 #endif
 

@@ -586,7 +586,7 @@ void VRMAddRetargetChain(UIKRigController* con, FName name, FName begin, FName e
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 	con->AddRetargetChain(c);
 #else
-	// todo
+	con->AddRetargetChain(name, begin, end, NAME_None);
 #endif
 
 #endif

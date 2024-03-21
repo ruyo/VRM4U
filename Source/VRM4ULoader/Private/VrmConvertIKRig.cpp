@@ -475,7 +475,7 @@ public:
 #if UE_VERSION_OLDER_THAN(5,4,0)
 		r->AddRetargetChain(c);
 #else
-		// todo
+		r->AddRetargetChain(name, begin, end, NAME_None);
 #endif
 		return NAME_None;
 #else
@@ -955,7 +955,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #if UE_VERSION_OLDER_THAN(5,4,0)
 						NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
 #else
-						// todo
+						NewPose->SortHierarchically(ikr->GetIKRig(ERetargetSourceOrTarget::Target)->GetSkeleton());
 #endif
 					}
 				}
