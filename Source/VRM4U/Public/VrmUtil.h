@@ -10,10 +10,10 @@
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
 #include "Engine/SkinnedAssetCommon.h"
+#include "Engine/SkinnedAsset.h"
 #endif
 
 #include "Components/SkeletalMeshComponent.h"
-#include "Engine/SkinnedAsset.h"
 #include "Engine/SkeletalMesh.h"
 #include "VrmUtil.generated.h"
 
