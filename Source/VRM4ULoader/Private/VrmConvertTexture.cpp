@@ -13,12 +13,14 @@
 #include "RenderUtils.h"
 #include "Engine/Texture.h"
 #include "Engine/Texture2D.h"
+#include "Materials/Material.h"
 #include "Engine/SubsurfaceProfile.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "VrmAssetListObject.h"
 #include "Async/ParallelFor.h"
 #include "UObject/UObjectHash.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 #if WITH_EDITOR
 #include "Factories.h"

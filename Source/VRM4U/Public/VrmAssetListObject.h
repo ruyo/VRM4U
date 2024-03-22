@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/SkeletalMesh.h"
+#include "Animation/Skeleton.h"
 #include "VrmImportMaterialSet.h"
 #include "VrmUtil.h"
 #include "VrmAssetListObject.generated.h"

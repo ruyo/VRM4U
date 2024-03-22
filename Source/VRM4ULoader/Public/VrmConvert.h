@@ -6,6 +6,7 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/Object.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Engine/SkeletalMesh.h"
 #include "VrmUtil.h"
 #include "VrmJson.h"
 

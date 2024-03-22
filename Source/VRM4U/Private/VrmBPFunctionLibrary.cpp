@@ -2,6 +2,7 @@
 
 #include "VrmBPFunctionLibrary.h"
 #include "Materials/MaterialInterface.h"
+#include "TextureResource.h"
 
 #include "Engine/Engine.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -18,6 +19,7 @@
 #else
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/ARFilter.h"
+#include "AssetRegistry/AssetData.h"
 #endif
 
 #include "Components/SkeletalMeshComponent.h"

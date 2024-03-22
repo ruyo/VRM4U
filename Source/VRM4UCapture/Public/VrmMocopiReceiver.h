@@ -11,6 +11,7 @@
 #include "Sockets.h"
 #include "Common/UdpSocketBuilder.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Tickable.h"
 
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)

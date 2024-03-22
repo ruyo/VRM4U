@@ -35,15 +35,18 @@
 #include "UObject/Package.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "EditorFramework/AssetImportData.h"
-
+#include "TextureResource.h"
+#include "Engine/Texture2D.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Engine/Blueprint.h"
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #include "AssetRegistryModule.h"
 #else
 #include "AssetRegistry/AssetRegistryModule.h"
 #endif
+
 #include "UObject/Package.h"
 #include "Engine/Engine.h"
 

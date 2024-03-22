@@ -12,6 +12,9 @@
 #include "Engine/SkinnedAssetCommon.h"
 #endif
 
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkinnedAsset.h"
+#include "Engine/SkeletalMesh.h"
 #include "VrmUtil.generated.h"
 
 class USkeleton;

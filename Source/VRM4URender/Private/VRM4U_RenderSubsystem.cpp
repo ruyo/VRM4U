@@ -7,6 +7,8 @@
 #include "RenderGraphUtils.h"
 #include "EngineModule.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "TextureResource.h"
+#include "Engine/SkeletalMesh.h"
 #include "RendererInterface.h"
 #include "ScreenPass.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"

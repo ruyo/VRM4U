@@ -4,6 +4,8 @@
 #include "VRM4URenderLog.h"
 #include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"
+#include "Misc/Paths.h"
+#include "ShaderCore.h"
 #include "Internationalization/Internationalization.h"
 #define LOCTEXT_NAMESPACE "VRM4URender"
 
