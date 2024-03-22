@@ -6,9 +6,13 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Engine/Scene.h"
-#include "AssetRegistry/Assetdata.h"
 #include "LiveLinkTypes.h"
 #include "VrmUtil.h"
+
+#if	UE_VERSION_OLDER_THAN(4,26,0)
+#else
+#include "AssetRegistry/Assetdata.h"
+#endif
 
 #if	UE_VERSION_OLDER_THAN(4,20,0)
 struct FCameraTrackingFocusSettings {
