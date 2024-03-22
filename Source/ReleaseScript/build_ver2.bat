@@ -2,7 +2,7 @@
 set UE5VER=%1
 set PLATFORM=%2
 set BUILDTYPE=%3
-set ZIPNAME=./_zip/%4
+set ZIPNAME=../../../../_zip/%4
 
 set UE5BASE=D:\Program Files\Epic Games
 set UPLUGIN="%~dp0../../VRM4U.uplugin"
