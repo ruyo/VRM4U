@@ -6,6 +6,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Engine/Scene.h"
+#include "AssetRegistry/Assetdata.h"
 #include "LiveLinkTypes.h"
 #include "VrmUtil.h"
 
