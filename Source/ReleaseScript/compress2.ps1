@@ -12,4 +12,5 @@ Compress-Archive -Force -Path ./Plugins -DestinationPath $Args[0]
 
 Move-Item -Path ./Plugins -Destination ./_out
 
+Remove-Item -Recurse ./_out
 
