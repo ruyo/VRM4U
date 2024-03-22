@@ -2,7 +2,7 @@
 set UE5VER=%1
 set PLATFORM=%2
 set BUILDTYPE=%3
-set ZIPNAME=%~dp0_zip/%4
+set ZIPNAME=./_zip/%4
 
 set UE5BASE=D:\Program Files\Epic Games
 set UPLUGIN="%~dp0../../VRM4U.uplugin"
@@ -54,7 +54,7 @@ if not %errorlevel% == 0 (
 )
 
 
-powershell -ExecutionPolicy RemoteSigned .\compress2.ps1 "%ZIPNAME%"
+powershell -ExecutionPolicy RemoteSigned .\compress2.ps1 %ZIPNAME%
 
 
 
