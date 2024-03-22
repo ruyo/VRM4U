@@ -1,6 +1,7 @@
 
 Remove-Item -Recurse ./_out/Intermediate
 Remove-Item -Recurse ./_out/Binaries/Win64/*.pdb
+Remove-Item -Recurse ./_out/Source/ReleaseScript
 
 Move-Item -Path ./_out -Destination ./Plugins
 
