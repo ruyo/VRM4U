@@ -373,6 +373,14 @@ public:
 #endif
 	}
 #endif
+
+	void AutoAlignAllBones(const ERetargetSourceOrTarget SourceOrTarget) const {
+#if	!WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
+#else
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		c->AutoAlignAllBones(SourceOrTarget);
+#endif
+	}
 };
 #endif // 5.0
 
@@ -891,75 +899,88 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					return false;
 				};
 
-				//name
-				FName PoseName = "POSE_A";
-				const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
-				FIKRetargetPose *NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
-
-				FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
-				const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
-				const FName RetargetRootBoneName = rig_ik->GetRetargetRoot();
-				for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 				{
-					auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
+					//name
+					FName PoseName = "POSE_A";
+					const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
+					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
 
-					auto str = FindKeyByValue(BoneName.ToString());
-					if (str == "") {
-						continue;
-					}
-					FRotator rot;
-					if (FindRotData(*str, rot) == false) {
-						continue;
-					}
-					
-
-					// record a global space translation offset for the root bone
-					if (BoneName == RetargetRootBoneName)
+					FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
+					const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
+					const FName RetargetRootBoneName = rig_ik->GetRetargetRoot();
+					for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 					{
-					//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
-					//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
-					//	NewPose.SetRootTranslationDelta(GlobalImportedTransform.GetLocation() - GlobalRefTransform.GetLocation());
-					}
+						auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
 
-					// record a local space delta rotation (if there is one)
-
-					const FTransform& LocalRefTransform = RefPose[BoneIndex];
-					const FTransform& LocalImportedTransform = FTransform(rot, FVector(0,0,0), FVector(1, 1, 1));
-					//const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
-
-					FQuat DeltaRotation = FQuat(rot);
-					if (VRMConverter::Options::Get().IsVRM10Model()) {
-
-						FTransform dstTrans;
-						auto dstIndex = BoneIndex;
-						while (dstIndex >= 0)
-						{
-							dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
-							dstIndex = RefSkeleton.GetParentIndex(dstIndex);
-							if (dstIndex < 0) {
-								break;
-							}
+						auto str = FindKeyByValue(BoneName.ToString());
+						if (str == "") {
+							continue;
+						}
+						FRotator rot;
+						if (FindRotData(*str, rot) == false) {
+							continue;
 						}
 
-						//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
-						//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
-						//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
-						DeltaRotation = dstTrans.GetRotation().Inverse() * DeltaRotation * dstTrans.GetRotation();
-					}
 
-					const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
-					constexpr float MinAngleThreshold = 0.05f;
-					if (DeltaAngle >= MinAngleThreshold)
-					{
-						NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
+						// record a global space translation offset for the root bone
+						if (BoneName == RetargetRootBoneName)
+						{
+							//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
+							//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
+							//	NewPose.SetRootTranslationDelta(GlobalImportedTransform.GetLocation() - GlobalRefTransform.GetLocation());
+						}
+
+						// record a local space delta rotation (if there is one)
+
+						const FTransform& LocalRefTransform = RefPose[BoneIndex];
+						const FTransform& LocalImportedTransform = FTransform(rot, FVector(0, 0, 0), FVector(1, 1, 1));
+						//const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
+
+						FQuat DeltaRotation = FQuat(rot);
+						if (VRMConverter::Options::Get().IsVRM10Model()) {
+
+							FTransform dstTrans;
+							auto dstIndex = BoneIndex;
+							while (dstIndex >= 0)
+							{
+								dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
+								dstIndex = RefSkeleton.GetParentIndex(dstIndex);
+								if (dstIndex < 0) {
+									break;
+								}
+							}
+
+							//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
+							//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
+							//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
+							DeltaRotation = dstTrans.GetRotation().Inverse() * DeltaRotation * dstTrans.GetRotation();
+						}
+
+						const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
+						constexpr float MinAngleThreshold = 0.05f;
+						if (DeltaAngle >= MinAngleThreshold)
+						{
+							NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
 #if UE_VERSION_OLDER_THAN(5,4,0)
-						NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
+							NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
 #else
-						NewPose->SortHierarchically(ikr->GetIKRig(ERetargetSourceOrTarget::Target)->GetSkeleton());
+							NewPose->SortHierarchically(ikr->GetIKRig(ERetargetSourceOrTarget::Target)->GetSkeleton());
 #endif
+						}
 					}
 				}
 
+#if !WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
+#else
+				// auto align
+				{
+					FName PoseName = "POSE_Auto";
+					const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
+					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
+
+					c.AutoAlignAllBones(ERetargetSourceOrTarget::Target);
+				}
+#endif
 			}
 
 		}
