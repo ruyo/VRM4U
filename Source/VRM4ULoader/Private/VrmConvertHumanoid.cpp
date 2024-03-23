@@ -99,7 +99,7 @@ static void renameToHumanoidBone(USkeletalMesh *targetSK, const UVrmMetaObject *
 		rig->PostEditChange();
 	}
 #else
-	// todo
+	//  ue5.4 no rig data
 #endif
 #endif
 }
@@ -190,7 +190,7 @@ static void renameToUE4Bone(USkeletalMesh *targetSK, UVrmMetaObject *meta, const
 		rig->PostEditChange();
 	}
 #else
-	// todo
+	// ue5.4 no rig data
 #endif
 #endif
 }

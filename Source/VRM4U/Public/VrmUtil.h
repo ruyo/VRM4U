@@ -241,7 +241,7 @@ void VRMSetUseLegacyMeshDerivedDataKey(T* t, bool b) {
 #elif UE_VERSION_OLDER_THAN(5,4,0)
 	t->SetUseLegacyMeshDerivedDataKey(b);
 #else
-	// todo
+	// ue5.4 no action
 #endif
 }
 
