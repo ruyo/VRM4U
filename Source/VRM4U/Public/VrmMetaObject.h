@@ -75,13 +75,92 @@ struct VRM4U_API FVRMColliderMeta {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
-	int bone = 0;
+	int bone = -1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FString boneName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	TArray<FVRMSpringColliderData> collider;
 };
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRM1SpringJointMeta {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	int boneNo = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString boneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	float hitRadius = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	float stiffness = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	float gravityPower = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVector gravityDir = { 0,-1,0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	float dragForce = 0.5f;
+
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRM1SpringMeta {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<FVRM1SpringJointMeta> joints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<int> colliderGroups;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	int center = 0;
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRM1SpringCollider {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	int boneNo = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString boneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FName shapeType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVector offset = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	float radius = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVector tail = FVector::ZeroVector;
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRM1SpringBoneMeta {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<FVRM1SpringMeta> Springs;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<FVRM1SpringCollider> Colliders;
+};
+
+
+//////
+
 
 
 // BlendShape
@@ -246,6 +325,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	TArray<FVRMSpringMeta> VRMSpringMeta;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVRM1SpringBoneMeta VRM1SpringBoneMeta;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	TArray<FVRMColliderMeta> VRMColliderMeta;

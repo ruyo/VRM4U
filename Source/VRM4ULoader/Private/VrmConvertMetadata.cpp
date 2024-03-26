@@ -308,7 +308,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 	}
 
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
-		// collider
+		// vrm1 collider
 		{
 			{
 				auto& collider = jsonData.doc["extensions"]["VRMC_springBone"]["colliders"];
@@ -364,44 +364,43 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 			}
 		}
 
-		//spring
+		// vrm1 spring
 		{
-			auto& spring = jsonData.doc["extensions"]["VRMC_springBone"]["springs"];
+			auto& jsonSpring = jsonData.doc["extensions"]["VRMC_springBone"]["springs"];
 
-			auto& origBone = jsonData.doc["nodes"];
+			auto& sMeta = MetaObject->VRM1SpringBoneMeta.Springs;
+			sMeta.SetNum(jsonSpring.Size());
+			for (uint32 springNo = 0; springNo < jsonSpring.Size(); ++springNo) {
+				auto& jsonJoints = jsonSpring.GetArray()[springNo]["joints"];
 
-			MetaObject->VRMSpringMeta.SetNum(spring.Size());
-			for (uint32 springNo = 0; springNo < spring.Size(); ++springNo) {
-				auto& joint = spring.GetArray()[springNo]["joints"];
+				auto& dstSpring = sMeta[springNo];
+				dstSpring.joints.SetNum(jsonJoints.Size());
+				for (uint32 jointNo = 0; jointNo < jsonJoints.Size(); ++jointNo) {
+					auto& jj = jsonJoints.GetArray()[jointNo];
 
-				auto& dstSpring = MetaObject->VRMSpringMeta[springNo];
-				for (uint32 jointNo = 0; jointNo < joint.Size(); ++jointNo) {
-					auto& j = joint.GetArray()[jointNo];
+					auto& s = dstSpring.joints[jointNo];
 
-					auto& s = MetaObject->VRMSpringMeta[springNo];
+					s.dragForce = jj["dragForce"].GetFloat();
+					s.gravityPower = jj["gravityPower"].GetFloat();
+					if (jj.HasMember("gravityDir")) {
+						if (jj["gravityDir"].GetArray().Size() == 3) {
+							s.gravityDir.X = jj["gravityDir"][0].GetFloat();
+							s.gravityDir.Y = jj["gravityDir"][1].GetFloat();
+							s.gravityDir.Z = jj["gravityDir"][2].GetFloat();
+						}
+					}
+					int node = jj["node"].GetInt();
+					s.boneNo = node;
 
-					s.dragForce = j["dragForce"].GetFloat();
-					s.gravityPower = j["gravityPower"].GetFloat();
-					if (j.HasMember("gravityDir")) {
-						if (j["gravityDir"].GetArray().Size() == 3) {
-							s.gravityDir.X = j["gravityDir"][0].GetFloat();
-							s.gravityDir.Y = j["gravityDir"][1].GetFloat();
-							s.gravityDir.Z = j["gravityDir"][2].GetFloat();
+					{
+						auto& jsonNode = jsonData.doc["nodes"];
+						if (node >= 0 && node < (int)jsonNode.Size()) {
+							s.boneName = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(jsonNode[node]["name"].GetString()));
 						}
 					}
 
-					s.bones.SetNum(1);
-					s.boneNames.SetNum(1);
-
-					int node = j["node"].GetInt();
-					s.bones[0] = node;
-
-					if (node >= 0 && node < (int)origBone.Size()) {
-						s.boneNames[0] = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(origBone[node]["name"].GetString()));
-					}
-
-					s.hitRadius = j["hitRadius"].GetFloat();
-					s.stiffness = j["stiffness"].GetFloat();
+					s.hitRadius = jj["hitRadius"].GetFloat();
+					s.stiffness = jj["stiffness"].GetFloat();
 
 					/*
 							"node": 0,
