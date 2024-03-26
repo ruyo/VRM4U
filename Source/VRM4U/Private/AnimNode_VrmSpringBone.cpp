@@ -639,7 +639,11 @@ namespace VRMSpring1 {
 
 		const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
 		// モデルローカル座標
-		//ComponentToLocal = ComponentTransform.Inverse();
+		// 			FTransform c;
+		//c = Output.AnimInstanceProxy->GetComponentTransform();
+		//c = Output.AnimInstanceProxy->GetActorTransform();
+
+		FTransform ComponentToLocal = ComponentTransform.Inverse();
 
 
 
@@ -675,6 +679,45 @@ namespace VRMSpring1 {
 					ParentRotation = t.GetRotation();
 					currentTransform = t;
 				}
+				FQuat m_localRotation = FQuat::Identity;
+
+				FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
+				FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
+
+
+				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
+				FVector stiffness = ParentRotation * m_localRotation * state->boneAxis * 1.f * DeltaTime;
+
+				FVector nextTail = currentTail + inertia + stiffness;
+
+				// verlet積分で次の位置を計算
+				//FVector nextTail = currentTail
+				//	+ (currentTail - prevTail) * (1.0f - dragForce) // 前フレームの移動を継続する(減衰もあるよ)
+				//	+ ParentRotation * m_localRotation * sData.m_boneAxis * stiffnessForce // 親の回転による子ボーンの移動目標
+				//	;
+				//if (bSkipGravAdd) {
+				//	nextTail += external_noAdd; // 外力による移動量
+				//}
+				//else {
+				//	nextTail += external; // 外力による移動量
+				//}
+
+
+				// 長さをboneLengthに強制
+				//nextTail = sData.m_transform.GetLocation() + (nextTail - sData.m_transform.GetLocation()).GetSafeNormal() * sData.m_length;
+				nextTail = currentTransform.GetLocation() + (nextTail - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
+
+
+				state->prevTail = ComponentToLocal.InverseTransformPosition(currentTail);
+				state->currentTail = ComponentToLocal.InverseTransformPosition(nextTail);
+
+				FQuat rotation = ParentRotation * m_localRotation;
+
+				//state->.m_resultQuat = FQuat::FindBetween((rotation * sData.m_boneAxis).GetSafeNormal(),
+				//	(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
+
+				//currentTransform.SetRotation(sData.m_resultQuat);
+
 			}
 		}
 	}
