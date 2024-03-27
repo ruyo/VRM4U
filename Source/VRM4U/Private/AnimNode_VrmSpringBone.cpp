@@ -700,9 +700,12 @@ namespace VRM1Spring {
 				state.initialLocalMatrix = RefSkeletonTransform[j.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j.boneNo].GetRotation();
 				state.boneLength = RefSkeletonTransform[j.boneNo].GetLocation().Length();
+
+				state.boneAxis = RefSkeletonTransform[j.boneNo].TransformPosition(FVector::ZeroVector);
 			}
 		}
 		bInit = true;
+
 	}
 
 	void VRM1SpringManager::update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
