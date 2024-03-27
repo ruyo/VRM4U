@@ -75,6 +75,8 @@ namespace VRMSpring {
 		virtual void init(const UVrmMetaObject* meta, FComponentSpacePoseContext& Output) {}
 		virtual void update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {}
 		virtual void reset() {}
+		virtual void applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {}
+
 	};
 }
 
@@ -90,6 +92,8 @@ namespace VRMSpring {
 		virtual void init(const UVrmMetaObject *meta, FComponentSpacePoseContext& Output) override;
 		virtual void update(const FAnimNode_VrmSpringBone *animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) override;
 		virtual void reset() override;
+
+		virtual void applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) override;
 
 		TArray<VRMSpring> spring;
 		TArray<VRMSpringColliderGroup> colliderGroup;
@@ -583,10 +587,76 @@ namespace VRMSpring {
 			spring[i].Update(animNode, DeltaTime, c, colliderGroup, Output);
 		}
 	}
+	void VRMSpringManager::applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
+
+		const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
+		const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+
+
+		VRMSpringManager *SpringManager = this;
+
+		for (auto& springRoot : SpringManager->spring) {
+			for (auto& sChain : springRoot.SpringDataChain) {
+				int BoneChain = 0;
+
+				FTransform CurrentTransForm = FTransform::Identity;
+				for (auto& sData : sChain) {
+
+
+					//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(sData.boneIndex);
+					FCompactPoseBoneIndex uu(sData.boneIndex);
+
+					if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
+						continue;
+					}
+
+					FTransform NewBoneTM;
+
+					if (BoneChain == 0) {
+						NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
+						NewBoneTM.SetRotation(sData.m_resultQuat);
+
+						CurrentTransForm = NewBoneTM;
+					}
+					else {
+
+						NewBoneTM = CurrentTransForm;
+
+						auto c = RefSkeletonTransform[sData.boneIndex];
+						NewBoneTM = c * NewBoneTM;
+						NewBoneTM.SetRotation(sData.m_resultQuat);
+
+
+						//const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
+						//NewBoneTM.SetLocation(ComponentTransform.TransformPosition(sData.m_currentTail));
+
+						CurrentTransForm = NewBoneTM;
+					}
+
+					FBoneTransform a(uu, NewBoneTM);
+
+					bool bFirst = true;
+					for (auto& t : OutBoneTransforms) {
+						if (t.BoneIndex == a.BoneIndex) {
+							bFirst = false;
+							break;
+						}
+					}
+
+					if (bFirst) {
+						OutBoneTransforms.Add(a);
+					}
+					BoneChain++;
+				}
+			}
+
+		}
+		OutBoneTransforms.Sort(FCompareBoneTransformIndex());
+	}
 } //spring
 
 
-namespace VRMSpring1 {
+namespace VRM1Spring {
 
 	class SpringBoneJointState {
 	public:
@@ -596,6 +666,8 @@ namespace VRMSpring1 {
 		float boneLength = 0.f;
 		FTransform initialLocalMatrix;
 		FQuat initialLocalRotation;
+
+		FQuat resultQuat;
 	};
 
 
@@ -607,7 +679,11 @@ namespace VRMSpring1 {
 		virtual void init(const UVrmMetaObject* meta, FComponentSpacePoseContext& Output) override;
 		virtual void update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) override;
 		virtual void reset() override;
+		virtual void applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) override;
 	};
+
+	void VRM1SpringManager::reset() {
+	}
 
 	void VRM1SpringManager::init(const UVrmMetaObject* meta, FComponentSpacePoseContext& Output) {
 
@@ -626,6 +702,7 @@ namespace VRMSpring1 {
 				state.boneLength = RefSkeletonTransform[j.boneNo].GetLocation().Length();
 			}
 		}
+		bInit = true;
 	}
 
 	void VRM1SpringManager::update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
@@ -684,6 +761,8 @@ namespace VRMSpring1 {
 				FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
 				FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
 
+				//FVector currentTail = state->currentTail;
+				//FVector prevTail = state->prevTail;
 
 				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
 				FVector stiffness = ParentRotation * m_localRotation * state->boneAxis * 1.f * DeltaTime;
@@ -713,18 +792,85 @@ namespace VRMSpring1 {
 
 				FQuat rotation = ParentRotation * m_localRotation;
 
-				//state->.m_resultQuat = FQuat::FindBetween((rotation * sData.m_boneAxis).GetSafeNormal(),
-				//	(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
+				state->resultQuat = FQuat::FindBetween((rotation * state->boneAxis).GetSafeNormal(),
+					(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
 
-				//currentTransform.SetRotation(sData.m_resultQuat);
+				currentTransform.SetRotation(state->resultQuat);
 
 			}
 		}
 	}
 
+	void VRM1SpringManager::applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
+
+		const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
+		const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+
+		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
+
+			FTransform CurrentTransForm;
+
+			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
+				auto& j = s.joints[jointNo];
+
+				auto* state = JointStateMap.Find(j.boneNo);
+				if (state == nullptr) continue;
+
+				FCompactPoseBoneIndex uu(j.boneNo);
+
+				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
+					continue;
+				}
+
+				FTransform NewBoneTM;
+
+				if (jointNo == 0) {
+					// 現在値
+					NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
+
+					// 差分
+					NewBoneTM.SetRotation(state->resultQuat);
+
+					CurrentTransForm = NewBoneTM;
+				}
+				else {
+
+					NewBoneTM = CurrentTransForm;
+
+					auto c = RefSkeletonTransform[j.boneNo];
+					NewBoneTM = c * NewBoneTM;
+					NewBoneTM.SetRotation(state->resultQuat);
 
 
+					//const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
+					//NewBoneTM.SetLocation(ComponentTransform.TransformPosition(sData.m_currentTail));
 
+					CurrentTransForm = NewBoneTM;
+				}
+
+				FBoneTransform a(uu, NewBoneTM);
+
+				bool bFirst = true;
+				for (auto& t : OutBoneTransforms) {
+					if (t.BoneIndex == a.BoneIndex) {
+						bFirst = false;
+						break;
+					}
+				}
+
+				if (bFirst) {
+					OutBoneTransforms.Add(a);
+				}
+
+
+				// update rotation
+				//FVector to = (state->currentTail * (node.parent.worldMatrix * state->initialLocalMatrix).inverse).normalized;
+				//node.rotation = initialLocalRotation * Quaternion.fromToQuaternion(boneAxis, to);
+			}
+		}
+		OutBoneTransforms.Sort(FCompareBoneTransformIndex());
+
+	}
 } //spring1
 
 
@@ -775,7 +921,14 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread_local(const FAnimationInitial
 		SpringManager.Get()->reset();
 	}
 	else {
-		SpringManager = MakeShareable(new VRMSpring::VRMSpringManager());
+		if (VrmMetaObject) {
+			if (VrmMetaObject->GetVRMVersion() >= 1) {
+				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
+			}
+		}
+		if (SpringManager == nullptr) {
+			SpringManager = MakeShareable(new VRMSpring::VRMSpringManager());
+		}
 	}
 }
 
@@ -880,7 +1033,9 @@ void FAnimNode_VrmSpringBone::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 
 			SpringManager->update(this, CurrentDeltaTime, Output, OutBoneTransforms);
 
+			SpringManager->applyToComponent(Output, OutBoneTransforms);
 
+/*
 			for (auto &springRoot : SpringManager->spring) {
 				for (auto &sChain : springRoot.SpringDataChain) {
 					int BoneChain = 0;
@@ -937,6 +1092,7 @@ void FAnimNode_VrmSpringBone::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 
 			}
 			OutBoneTransforms.Sort(FCompareBoneTransformIndex());
+			*/
 
 		}
 	}

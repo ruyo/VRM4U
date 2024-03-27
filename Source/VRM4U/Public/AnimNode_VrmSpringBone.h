@@ -15,7 +15,7 @@ class USkeletalMeshComponent;
 class UVrmMetaObject;
 
 namespace VRMSpring {
-	class VRMSpringManager;
+	class VRMSpringManagerBase;
 }
 
 /**
@@ -69,7 +69,7 @@ struct VRM4U_API FAnimNode_VrmSpringBone : public FAnimNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
 	TArray<FName> NoWindBoneNameList;
 
-	TSharedPtr<VRMSpring::VRMSpringManager> SpringManager;
+	TSharedPtr<VRMSpring::VRMSpringManagerBase> SpringManager;
 
 	float CurrentDeltaTime = 0.f;
 

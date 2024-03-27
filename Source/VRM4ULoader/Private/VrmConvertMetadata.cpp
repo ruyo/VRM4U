@@ -390,7 +390,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 						}
 					}
 					int node = jj["node"].GetInt();
-					s.boneNo = node;
+					s.boneNo = -1;// node; // reset after bone optimize
 
 					{
 						auto& jsonNode = jsonData.doc["nodes"];
@@ -497,11 +497,17 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				c.rollAxis = constraint["roll"]["rollAxis"].GetString();
 				c.weight = constraint["roll"]["weight"].GetFloat();
 
+				FString n = node["name"].GetString();
+				if (VRMConverter::Options::Get().IsForceOriginalBoneName() == false) {
+					n = VRMUtil::MakeName(n, true);
+					c.sourceName = VRMUtil::MakeName(c.sourceName, true);
+				}
+
 				FVRMConstraint cc;
 				cc.constraintRoll = c;
 				cc.type = EVRMConstraintType::Roll;
 
-				MetaObject->VRMConstraintMeta.Add(node["name"].GetString(), cc);
+				MetaObject->VRMConstraintMeta.Add(n, cc);
 			}
 			if (constraint.HasMember("aim")) {
 				FVRMConstraintAim c;
@@ -513,11 +519,17 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				c.aimAxis = constraint["aim"]["aimAxis"].GetString();
 				c.weight = constraint["aim"]["weight"].GetFloat();
 
+				FString n = node["name"].GetString();
+				if (VRMConverter::Options::Get().IsForceOriginalBoneName() == false) {
+					n = VRMUtil::MakeName(n, true);
+					c.sourceName = VRMUtil::MakeName(c.sourceName, true);
+				}
+
 				FVRMConstraint cc;
 				cc.constraintAim = c;
 				cc.type = EVRMConstraintType::Aim;
 
-				MetaObject->VRMConstraintMeta.Add(node["name"].GetString(), cc);
+				MetaObject->VRMConstraintMeta.Add(n, cc);
 			}
 			if (constraint.HasMember("rotation")) {
 				FVRMConstraintRotation c;
@@ -528,11 +540,17 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				}
 				c.weight = constraint["rotation"]["weight"].GetFloat();
 
+				FString n = node["name"].GetString();
+				if (VRMConverter::Options::Get().IsForceOriginalBoneName() == false) {
+					n = VRMUtil::MakeName(n, true);
+					c.sourceName = VRMUtil::MakeName(c.sourceName, true);
+				}
+
 				FVRMConstraint cc;
 				cc.constraintRotation = c;
 				cc.type = EVRMConstraintType::Rotation;
 
-				MetaObject->VRMConstraintMeta.Add(node["name"].GetString(), cc);
+				MetaObject->VRMConstraintMeta.Add(n, cc);
 			}
 		}
 	}
@@ -690,6 +708,22 @@ bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, cons
 			}
 		}
 	}
+
+
+	// vrm1
+	{
+		auto &sk = vrmAssetList->SkeletalMesh;
+		auto& refSkeleton = sk->GetRefSkeleton();
+
+		auto& sMeta = vrmAssetList->VrmMetaObject->VRM1SpringBoneMeta.Springs;
+
+		for (auto& s : sMeta) {
+			for (auto& j : s.joints) {
+				j.boneNo = refSkeleton.FindBoneIndex(*j.boneName);
+			}
+		}
+	}
+
 	return true;
 }
 
