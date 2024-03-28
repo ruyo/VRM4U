@@ -7,6 +7,12 @@
 #include "UObject/Object.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Engine/SkeletalMesh.h"
+
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#else
+#include "Misc/FieldAccessor.h"
+#endif
+
 #include "VrmUtil.h"
 #include "VrmJson.h"
 
