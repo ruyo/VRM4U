@@ -786,10 +786,10 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				}
 				if (conv.s1 == "" || conv.s2 == "") {
 					// for ik bone
-					if (sk->RefSkeleton.FindBoneIndex(*t.s1) >= 0) {
+					if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s1) >= 0) {
 						conv.s1 = t.s1;
 					}
-					if (sk->RefSkeleton.FindBoneIndex(*t.s2) >= 0) {
+					if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s2) >= 0) {
 						conv.s2 = t.s2;
 					}
 				}
