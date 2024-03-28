@@ -59,12 +59,14 @@ bool VRMConverter::ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint
 	} else {
 		// alpha cutoff flag
 		vrmAssetList->MaterialHasAlphaCutoff.Empty();
-		for (auto& mat : jsonData.doc["materials"].GetArray()) {
-			bool b = false;
-			if (mat.HasMember("alphaCutoff")) {
-				b = true;
+		if (jsonData.IsEnable()) {
+			for (auto& mat : jsonData.doc["materials"].GetArray()) {
+				bool b = false;
+				if (mat.HasMember("alphaCutoff")) {
+					b = true;
+				}
+				vrmAssetList->MaterialHasAlphaCutoff.Add(b);
 			}
-			vrmAssetList->MaterialHasAlphaCutoff.Add(b);
 		}
 	}
 

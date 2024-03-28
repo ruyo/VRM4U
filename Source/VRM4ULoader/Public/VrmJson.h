@@ -9,8 +9,13 @@
 
 class VrmJson {
 
+	bool bEnable = false;
 public:
 	RAPIDJSON_NAMESPACE::Document doc;
 
 	bool init(const uint8_t* pData, size_t size);
+	
+	bool IsEnable() const{
+		return bEnable;
+	}
 };

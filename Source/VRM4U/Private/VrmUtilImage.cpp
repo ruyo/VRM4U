@@ -551,7 +551,7 @@ UTexture2D* VRMUtil::CreateTexture(int32 InSizeX, int32 InSizeY, FString name, U
 				}
 			}
 
-			NewTexture = NewObject<UTexture2D>(
+			NewTexture = VRM4U_NewObject<UTexture2D>(
 				// GetTransientPackage(),
 				package,
 				*name,
