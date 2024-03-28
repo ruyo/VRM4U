@@ -1,8 +1,8 @@
 ﻿// VRM4U Copyright (c) 2021-2024 Haruyoshi Yamamoto. This software is released under the MIT License.
 
-#include "VrmUtil.h"
+#include "VrmConvert.h"
+#include "VRM4ULoaderLog.h"
 
-#include "VRM4U.h"
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 #include "UObject/UObjectHash.h"
@@ -409,32 +409,12 @@ bool DecompressTGA(
 	return DecompressTGA_helper(TGA, TextureData, TextureDataSize, Warn);
 }
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-template<typename T>
-FTexturePlatformData* GetPlatformData(T *t) {
-	return t->PlatformData;
-}
-template<typename T, typename U>
-void SetPlatformData(T *t, U *u) {
-	t->PlatformData = u;
-}
-#else
-template<typename T>
-TFieldPtrAccessor<FTexturePlatformData> GetPlatformData(T *t) {
-	return t->GetPlatformData();
-}
-template<typename T, typename U>
-void SetPlatformData(T* t, U *u) {
-	t->SetPlatformData(u);
-}
-#endif
 
-
-UTexture2D* VRMUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bGenerateMips, bool bRuntimeMode) {
+UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bGenerateMips, bool bRuntimeMode) {
 
 	const char* Buffer = (const char*)vBuffer;
-	FImportImage img;
-	if (LoadImageFromMemory(Buffer, Length, img) == false) {
+	VRMUtil::FImportImage img;
+	if (VRMLoaderUtil::LoadImageFromMemory(Buffer, Length, img) == false) {
 		return nullptr;
 	}
 	UTexture2D *tex = CreateTexture(img.SizeX, img.SizeY, name, package);
@@ -520,7 +500,7 @@ UTexture2D* VRMUtil::CreateTextureFromImage(FString name, UPackage* package, con
 }
 
 
-UTexture2D* VRMUtil::CreateTexture(int32 InSizeX, int32 InSizeY, FString name, UPackage* package) {
+UTexture2D* VRMLoaderUtil::CreateTexture(int32 InSizeX, int32 InSizeY, FString name, UPackage* package) {
 	auto format = PF_B8G8R8A8;
 	UTexture2D* NewTexture = NULL;
 	if (InSizeX > 0 && InSizeY > 0 &&
@@ -584,14 +564,14 @@ UTexture2D* VRMUtil::CreateTexture(int32 InSizeX, int32 InSizeY, FString name, U
 		Mip->BulkData.Unlock();
 	} else
 	{
-		UE_LOG(LogVRM4U, Warning, TEXT("Invalid parameters specified for UTexture2D::Create()"));
+		UE_LOG(LogVRM4ULoader, Warning, TEXT("Invalid parameters specified for UTexture2D::Create()"));
 	}
 	return NewTexture;
 }
 
 
 
-bool VRMUtil::LoadImageFromMemory(const void* vBuffer, const size_t Length, VRMUtil::FImportImage& OutImage) {
+bool VRMLoaderUtil::LoadImageFromMemory(const void* vBuffer, const size_t Length, VRMUtil::FImportImage& OutImage) {
 	const char* Buffer = (const char*)vBuffer;
 
 	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));

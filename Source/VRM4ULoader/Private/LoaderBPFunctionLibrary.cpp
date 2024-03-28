@@ -156,17 +156,6 @@ namespace {
 		}
 	};
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-	template<typename T>
-	FTexturePlatformData* GetPlatformData(T t) {
-		return t->PlatformData;
-	}
-#else
-	template<typename T>
-	TFieldPtrAccessor<FTexturePlatformData> GetPlatformData(T* t) {
-		return t->GetPlatformData();
-	}
-#endif
 }
 
 static bool RemoveObject(UObject* u) {
@@ -495,7 +484,7 @@ UVrmLicenseObject* ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath) {
 					}
 					FString baseName;
 
-					NewTexture2D = VRMUtil::CreateTexture(Width, Height, FString(TEXT("T_")) + baseName, GetTransientPackage());
+					NewTexture2D = VRMLoaderUtil::CreateTexture(Width, Height, FString(TEXT("T_")) + baseName, GetTransientPackage());
 					//UTexture2D* NewTexture2D = _CreateTransient(Width, Height, PF_B8G8R8A8, t.mFilename.C_Str());
 
 					// Fill in the base mip for the texture we created

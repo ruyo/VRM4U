@@ -210,7 +210,7 @@ namespace {
 		{
 			VRMUtil::FImportImage img;
 			auto *a = aiData->mTextures[TextureID];
-			if (VRMUtil::LoadImageFromMemory(a->pcData, a->mWidth, img) == false) {
+			if (VRMLoaderUtil::LoadImageFromMemory(a->pcData, a->mWidth, img) == false) {
 				return;
 			}
 			if (img.RawData.GetData() == nullptr) {
@@ -224,7 +224,7 @@ namespace {
 		if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 			pkg = VRM4U_CreatePackage(vrmAssetList->Package, *baseName);
 		}
-		UTexture2D* NewTexture2D = VRMUtil::CreateTexture(W, H, baseName, pkg);
+		UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTexture(W, H, baseName, pkg);
 
 		// scale texture
 		{
@@ -679,7 +679,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 					pkg = VRM4U_CreatePackage(vrmAssetList->Package, *name);
 				}
-				UTexture2D* NewTexture2D = VRMUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips);
 #if WITH_EDITOR
 				NewTexture2D->DeferCompression = false;
 #endif
@@ -746,14 +746,15 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 
 			FString TextureFullPath = FPaths::GetPath(vrmAssetList->FileFullPathName) + TEXT("/") + UTF8_TO_TCHAR(ais.C_Str());
 			
-			FString baseName = UTF8_TO_TCHAR(ais.C_Str());
+			FString baseName = FPaths::GetBaseFilename(UTF8_TO_TCHAR(ais.C_Str()));
+			baseName = TEXT("T_") + FPaths::GetBaseFilename(baseName);
+			baseName = NormalizeFileName(baseName);
+
 			if (pmxTexNameList.Find(baseName) >= 0) {
 				continue;
 			}
 			pmxTexNameList.Push(baseName);
 
-			baseName = TEXT("T_") + FPaths::GetBaseFilename(baseName);
-			baseName = NormalizeFileName(baseName);
 
 			TArray<uint8> RawFileData;
 			if (FFileHelper::LoadFileToArray(RawFileData, *TextureFullPath)){
@@ -762,7 +763,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 					pkg = VRM4U_CreatePackage(vrmAssetList->Package, *baseName);
 				}
-				UTexture2D* NewTexture2D = VRMUtil::CreateTextureFromImage(baseName, pkg, RawFileData.GetData(), RawFileData.Num(), bGenerateMips);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(baseName, pkg, RawFileData.GetData(), RawFileData.Num(), bGenerateMips);
 
 				texArray.Push(NewTexture2D);
 			}
@@ -1001,7 +1002,12 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 
 					if (Options::Get().IsPMXModel()) {
 						for (int i = 0; i < pmxTexNameList.Num(); ++i) {
-							if (pmxTexNameList[i] == UTF8_TO_TCHAR(path.C_Str())) {
+
+							FString baseName = FPaths::GetBaseFilename(UTF8_TO_TCHAR(path.C_Str()));
+							baseName = TEXT("T_") + FPaths::GetBaseFilename(baseName);
+							baseName = NormalizeFileName(baseName);
+
+							if (pmxTexNameList[i] == baseName) {
 								TextureTypeToIndex[t] = i;
 								break;
 							}

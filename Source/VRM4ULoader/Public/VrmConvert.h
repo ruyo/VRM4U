@@ -169,9 +169,16 @@ public:
 	};
 };
 
+class VRM4ULOADER_API VRMLoaderUtil {
+public:
+	static UTexture2D* CreateTexture(int32 InSizeX, int32 InSizeY, FString name, UPackage* package);
+	static UTexture2D* CreateTextureFromImage(FString name, UPackage* package, const void* Buffer, const size_t Length, bool GenerateMip = false, bool bRuntimeMode = false);
 
-class VRM4ULOADER_API VrmConvert
-{
+	static bool LoadImageFromMemory(const void* Buffer, const size_t Length, VRMUtil::FImportImage& OutImage);
+};
+
+
+class VRM4ULOADER_API VrmConvert {
 public:
 	VrmConvert();
 	~VrmConvert();
@@ -202,3 +209,24 @@ T* VRM4U_DuplicateObject(const T *src, UPackage* Outer, FName Name) {
 	return r;
 }
 //	ss = DuplicateObject<USkeletalMesh>(src_sk, p, *name_mesh)
+
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+template<typename T>
+FTexturePlatformData* GetPlatformData(T* t) {
+	return t->PlatformData;
+}
+template<typename T, typename U>
+void SetPlatformData(T* t, U* u) {
+	t->PlatformData = u;
+}
+#else
+template<typename T>
+TFieldPtrAccessor<FTexturePlatformData> GetPlatformData(T* t) {
+	return t->GetPlatformData();
+}
+template<typename T, typename U>
+void SetPlatformData(T* t, U* u) {
+	t->SetPlatformData(u);
+}
+#endif
+
