@@ -14,9 +14,10 @@
 class USkeletalMeshComponent;
 class UVrmMetaObject;
 
-namespace VRMSpring {
+namespace VRMSpringBone {
 	class VRMSpringManagerBase;
 }
+
 
 /**
 *	Simple controller that replaces or adds to the translation/rotation of a single bone.
@@ -69,7 +70,7 @@ struct VRM4U_API FAnimNode_VrmSpringBone : public FAnimNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
 	TArray<FName> NoWindBoneNameList;
 
-	TSharedPtr<VRMSpring::VRMSpringManagerBase> SpringManager;
+	TSharedPtr<VRMSpringBone::VRMSpringManagerBase> SpringManager;
 
 	float CurrentDeltaTime = 0.f;
 
