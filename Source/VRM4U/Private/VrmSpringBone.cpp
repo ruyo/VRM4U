@@ -590,32 +590,49 @@ namespace VRM1Spring {
 
 			FTransform currentTransform = FTransform::Identity;
 			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
+				if (jointNo == 1) break;
 				auto& j = s.joints[jointNo];
 
 				auto* state = JointStateMap.Find(j.boneNo);
 				if (state == nullptr) continue;
 
-				int myParentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
+				//int myParentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
 
-				FQuat ParentRotation = FQuat::Identity;
+				FQuat ParentWorldRotation = FQuat::Identity;
 				if (jointNo == 0) {
-					FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
-					//FCompactPoseBoneIndex uu(myBoneIndex);
+					// 揺れ骨の根本
 
-					if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
-						continue;
+					{
+						// 親
+						//int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
+						//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
+
+						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
+						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
+							continue;
+						}
+						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
+						ParentWorldRotation = NewBoneTM.GetRotation();
 					}
 
-					FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
-					ParentRotation = NewBoneTM.GetRotation();
-
-					currentTransform = NewBoneTM;
+					{
+						// 自分
+						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
+						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
+							continue;
+						}
+						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
+						currentTransform = NewBoneTM;
+					}
 				}
 				else {
+					// 親
+					ParentWorldRotation = currentTransform.GetRotation();
+
 					auto c = RefSkeletonTransform[j.boneNo];
 					auto t = c * currentTransform;
 
-					ParentRotation = t.GetRotation();
+					// 自分
 					currentTransform = t;
 				}
 				FQuat m_localRotation = FQuat::Identity;
@@ -627,7 +644,7 @@ namespace VRM1Spring {
 				//FVector prevTail = state->prevTail;
 
 				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
-				FVector stiffness = ParentRotation * m_localRotation * state->boneAxis * 1.f * DeltaTime;
+				FVector stiffness = ParentWorldRotation * m_localRotation * state->boneAxis * 1.f * DeltaTime;
 
 				FVector nextTail = currentTail + inertia + stiffness;
 
@@ -652,7 +669,7 @@ namespace VRM1Spring {
 				state->prevTail = ComponentToLocal.InverseTransformPosition(currentTail);
 				state->currentTail = ComponentToLocal.InverseTransformPosition(nextTail);
 
-				FQuat rotation = ParentRotation * m_localRotation;
+				FQuat rotation = ParentWorldRotation * m_localRotation;
 
 				state->resultQuat = FQuat::FindBetween((rotation * state->boneAxis).GetSafeNormal(),
 					(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
