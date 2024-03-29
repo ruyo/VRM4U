@@ -549,7 +549,8 @@ namespace VRM1Spring {
 		vrmMetaObject = meta;
 		skeletalMesh = VRMGetSkinnedAsset(Output.AnimInstanceProxy->GetSkelMeshComponent());
 		const FReferenceSkeleton& RefSkeleton = VRMGetRefSkeleton(skeletalMesh);
-		const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+		//const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+		const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 			for (auto& j : s.joints) {
@@ -574,7 +575,8 @@ namespace VRM1Spring {
 		}
 
 		const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
-		const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+		//const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+		const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
 
 		const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
 		// モデルローカル座標
@@ -588,6 +590,7 @@ namespace VRM1Spring {
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 
+			FTransform parentTransform = FTransform::Identity;
 			FTransform currentTransform = FTransform::Identity;
 			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
 				if (jointNo == 1) break;
@@ -604,14 +607,14 @@ namespace VRM1Spring {
 
 					{
 						// 親
-						//int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
-						//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
-
-						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
+						int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
+						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
+						//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
 						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 							continue;
 						}
 						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
+						parentTransform = NewBoneTM;
 						ParentWorldRotation = NewBoneTM.GetRotation();
 					}
 
@@ -635,7 +638,7 @@ namespace VRM1Spring {
 					// 自分
 					currentTransform = t;
 				}
-				FQuat m_localRotation = FQuat::Identity;
+				FQuat m_localRotation = state->initialLocalMatrix.GetRotation();
 
 				FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
 				FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
@@ -644,22 +647,10 @@ namespace VRM1Spring {
 				//FVector prevTail = state->prevTail;
 
 				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
-				FVector stiffness = ParentWorldRotation * m_localRotation * state->boneAxis * 1.f * DeltaTime;
+				FVector stiffness = ParentWorldRotation * state->boneAxis * 1.f * DeltaTime;
 
-				FVector nextTail = currentTail + inertia + stiffness;
-
-				// verlet積分で次の位置を計算
-				//FVector nextTail = currentTail
-				//	+ (currentTail - prevTail) * (1.0f - dragForce) // 前フレームの移動を継続する(減衰もあるよ)
-				//	+ ParentRotation * m_localRotation * sData.m_boneAxis * stiffnessForce // 親の回転による子ボーンの移動目標
-				//	;
-				//if (bSkipGravAdd) {
-				//	nextTail += external_noAdd; // 外力による移動量
-				//}
-				//else {
-				//	nextTail += external; // 外力による移動量
-				//}
-
+				//FVector nextTail = currentTail + inertia + stiffness;
+				FVector nextTail = currentTail + stiffness * 10;
 
 				// 長さをboneLengthに強制
 				//nextTail = sData.m_transform.GetLocation() + (nextTail - sData.m_transform.GetLocation()).GetSafeNormal() * sData.m_length;
@@ -671,8 +662,48 @@ namespace VRM1Spring {
 
 				FQuat rotation = ParentWorldRotation * m_localRotation;
 
-				state->resultQuat = FQuat::FindBetween((rotation * state->boneAxis).GetSafeNormal(),
-					(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
+				//state->resultQuat = FQuat::FindBetween((rotation * state->boneAxis).GetSafeNormal(),
+				//	(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
+
+				// update rotation
+				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
+				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
+				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
+
+				{
+					FVector from = parentTransform.TransformVector(state->boneAxis).GetSafeNormal();
+					FVector to = (nextTail - currentTransform.GetLocation()).GetSafeNormal();
+
+					//rotation = (parentTransform * state->initialLocalMatrix).GetRotation();
+					//rotation = (state->initialLocalMatrix * parentTransform).GetRotation();
+					state->resultQuat = FQuat::FindBetween(from, to) * state->initialLocalMatrix.GetRotation() * parentTransform.GetRotation();
+					//state->resultQuat = ;
+					//state->resultQuat = rotation;
+				}
+
+				//state->resultQuat = (parentTransform * state->initialLocalMatrix).GetRotation() *
+				//	FQuat::FindBetween(state->boneAxis, to);
+
+				{
+					//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse().TransformPosition(nextTail)).GetSafeNormal();
+					FVector to = ((parentTransform * state->initialLocalMatrix).Inverse().TransformPosition(nextTail)).GetSafeNormal();
+					state->resultQuat = state->initialLocalRotation * FQuat::FindBetween(state->boneAxis, to) * parentTransform.GetRotation();
+				}
+
+
+				// initial rot
+				{
+					//state->resultQuat = currentTransform.GetRotation();
+				}
+				{
+					//state->resultQuat = (state->initialLocalMatrix * parentTransform).GetRotation();
+				}
+				{
+		
+				}
+
+
+
 
 				currentTransform.SetRotation(state->resultQuat);
 

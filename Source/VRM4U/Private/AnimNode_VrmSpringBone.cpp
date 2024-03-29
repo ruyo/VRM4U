@@ -95,8 +95,16 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 
 	if (SpringManager.Get()) {
 		SpringManager.Get()->reset();
-	} else {
-		SpringManager = MakeShareable(new VRMSpringBone::VRMSpringManager());
+	}
+	else {
+		if (VrmMetaObject) {
+			if (VrmMetaObject->GetVRMVersion() >= 1) {
+				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
+			}
+		}
+		if (SpringManager == nullptr) {
+			SpringManager = MakeShareable(new VRMSpringBone::VRMSpringManager());
+		}
 	}
 }
 void FAnimNode_VrmSpringBone::Initialize_AnyThread_local(const FAnimationInitializeContext& Context) {
