@@ -553,15 +553,18 @@ namespace VRM1Spring {
 		const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
-			for (auto& j : s.joints) {
-				auto& state = JointStateMap.FindOrAdd(j.boneNo);
+			for (int jointNo = 0; jointNo < s.joints.Num()-1; jointNo++) {
 
+				auto &j = s.joints[jointNo];
+				auto& jc = s.joints[jointNo + 1];
+
+				auto& state = JointStateMap.FindOrAdd(j.boneNo);
 
 				state.initialLocalMatrix = RefSkeletonTransform[j.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j.boneNo].GetRotation();
-				state.boneLength = RefSkeletonTransform[j.boneNo].GetLocation().Length();
 
-				state.boneAxis = RefSkeletonTransform[j.boneNo].TransformPosition(FVector::ZeroVector);
+				state.boneLength = RefSkeletonTransform[jc.boneNo].GetLocation().Length();
+				state.boneAxis = RefSkeletonTransform[jc.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
 			}
 		}
 		bInit = true;
@@ -647,49 +650,25 @@ namespace VRM1Spring {
 				//FVector prevTail = state->prevTail;
 
 				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
-				FVector stiffness = ParentWorldRotation * state->boneAxis * 1.f * DeltaTime;
+				FVector stiffness = currentTransform.GetRotation() * state->boneAxis * 1.f * DeltaTime;
 
 				//FVector nextTail = currentTail + inertia + stiffness;
-				FVector nextTail = currentTail + stiffness * 10;
+				FVector nextTailTarget = currentTail + stiffness * 10;
 
 				// 長さをboneLengthに強制
-				//nextTail = sData.m_transform.GetLocation() + (nextTail - sData.m_transform.GetLocation()).GetSafeNormal() * sData.m_length;
-				nextTail = currentTransform.GetLocation() + (nextTail - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
+				FVector nextTailDirection = (nextTailTarget - currentTransform.GetLocation()).GetSafeNormal();
+				FVector nextTailPosition = currentTransform.GetLocation() + nextTailDirection * state->boneLength;
 
 
 				state->prevTail = ComponentToLocal.InverseTransformPosition(currentTail);
-				state->currentTail = ComponentToLocal.InverseTransformPosition(nextTail);
-
-				FQuat rotation = ParentWorldRotation * m_localRotation;
-
-				//state->resultQuat = FQuat::FindBetween((rotation * state->boneAxis).GetSafeNormal(),
-				//	(nextTail - currentTransform.GetLocation()).GetSafeNormal()) * rotation;
-
-				// update rotation
-				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
-				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
-				//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse()).TransformVector(nextTail).GetSafeNormal();
+				state->currentTail = ComponentToLocal.InverseTransformPosition(nextTailPosition);
 
 				{
-					FVector from = parentTransform.TransformVector(state->boneAxis).GetSafeNormal();
-					FVector to = (nextTail - currentTransform.GetLocation()).GetSafeNormal();
+					FVector from = currentTransform.TransformVector(state->boneAxis).GetSafeNormal();
+					FVector to = nextTailDirection;
 
-					//rotation = (parentTransform * state->initialLocalMatrix).GetRotation();
-					//rotation = (state->initialLocalMatrix * parentTransform).GetRotation();
-					state->resultQuat = FQuat::FindBetween(from, to) * state->initialLocalMatrix.GetRotation() * parentTransform.GetRotation();
-					//state->resultQuat = ;
-					//state->resultQuat = rotation;
+					state->resultQuat = FQuat::FindBetween(from, to) * parentTransform.GetRotation() * state->initialLocalMatrix.GetRotation();
 				}
-
-				//state->resultQuat = (parentTransform * state->initialLocalMatrix).GetRotation() *
-				//	FQuat::FindBetween(state->boneAxis, to);
-
-				{
-					//FVector to = ((parentTransform * state->initialLocalMatrix).Inverse().TransformPosition(nextTail)).GetSafeNormal();
-					FVector to = ((parentTransform * state->initialLocalMatrix).Inverse().TransformPosition(nextTail)).GetSafeNormal();
-					state->resultQuat = state->initialLocalRotation * FQuat::FindBetween(state->boneAxis, to) * parentTransform.GetRotation();
-				}
-
 
 				// initial rot
 				{
@@ -699,11 +678,8 @@ namespace VRM1Spring {
 					//state->resultQuat = (state->initialLocalMatrix * parentTransform).GetRotation();
 				}
 				{
-		
+					//state->resultQuat = parentTransform.GetRotation() * state->initialLocalRotation;
 				}
-
-
-
 
 				currentTransform.SetRotation(state->resultQuat);
 
