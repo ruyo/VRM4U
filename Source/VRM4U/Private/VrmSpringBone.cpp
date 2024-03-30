@@ -546,11 +546,15 @@ namespace VRM1Spring {
 
 	void VRM1SpringManager::init(const UVrmMetaObject* meta, FComponentSpacePoseContext& Output) {
 
+		const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
+		FTransform ComponentToLocal = ComponentTransform.Inverse();
+
 		vrmMetaObject = meta;
 		skeletalMesh = VRMGetSkinnedAsset(Output.AnimInstanceProxy->GetSkelMeshComponent());
 		const FReferenceSkeleton& RefSkeleton = VRMGetRefSkeleton(skeletalMesh);
 		//const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
 		const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
+
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 			for (int jointNo = 0; jointNo < s.joints.Num()-1; jointNo++) {
@@ -565,10 +569,23 @@ namespace VRM1Spring {
 
 				state.boneLength = RefSkeletonTransform[jc.boneNo].GetLocation().Length();
 				state.boneAxis = RefSkeletonTransform[jc.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
+
+				{
+					FCompactPoseBoneIndex u(j.boneNo);
+					auto t = Output.Pose.GetComponentSpaceTransform(u);
+
+					state.prevTail = ComponentToLocal.InverseTransformPosition(t.GetLocation());
+					state.currentTail = ComponentToLocal.InverseTransformPosition(t.GetLocation());
+				}
+				{
+					FCompactPoseBoneIndex u(j.boneNo);
+					auto t = Output.Pose.GetComponentSpaceTransform(u);
+
+					state.resultQuat = t.GetRotation();
+				}
 			}
 		}
 		bInit = true;
-
 	}
 
 	void VRM1SpringManager::update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
@@ -590,13 +607,12 @@ namespace VRM1Spring {
 		FTransform ComponentToLocal = ComponentTransform.Inverse();
 
 
-
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 
 			FTransform parentTransform = FTransform::Identity;
 			FTransform currentTransform = FTransform::Identity;
 			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
-				if (jointNo == 1) break;
+				//if (jointNo == 1) break;
 				auto& j = s.joints[jointNo];
 
 				auto* state = JointStateMap.Find(j.boneNo);
@@ -604,7 +620,6 @@ namespace VRM1Spring {
 
 				//int myParentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
 
-				FQuat ParentWorldRotation = FQuat::Identity;
 				if (jointNo == 0) {
 					// 揺れ骨の根本
 
@@ -612,13 +627,11 @@ namespace VRM1Spring {
 						// 親
 						int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
 						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
-						//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
 						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 							continue;
 						}
 						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
 						parentTransform = NewBoneTM;
-						ParentWorldRotation = NewBoneTM.GetRotation();
 					}
 
 					{
@@ -633,7 +646,7 @@ namespace VRM1Spring {
 				}
 				else {
 					// 親
-					ParentWorldRotation = currentTransform.GetRotation();
+					parentTransform = currentTransform;
 
 					auto c = RefSkeletonTransform[j.boneNo];
 					auto t = c * currentTransform;
@@ -646,14 +659,11 @@ namespace VRM1Spring {
 				FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
 				FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
 
-				//FVector currentTail = state->currentTail;
-				//FVector prevTail = state->prevTail;
-
 				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
-				FVector stiffness = currentTransform.GetRotation() * state->boneAxis * 1.f * DeltaTime;
+				FVector stiffness = currentTransform.GetRotation() * state->boneAxis * 1.f * DeltaTime * 100;
 
-				//FVector nextTail = currentTail + inertia + stiffness;
-				FVector nextTailTarget = currentTail + stiffness * 10;
+				FVector nextTailTarget = currentTail + inertia + stiffness;
+				//FVector nextTailTarget = currentTail + stiffness * 10;
 
 				// 長さをboneLengthに強制
 				FVector nextTailDirection = (nextTailTarget - currentTransform.GetLocation()).GetSafeNormal();

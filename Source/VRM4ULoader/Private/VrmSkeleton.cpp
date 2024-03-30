@@ -477,10 +477,20 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 			// remove local axis
 			if (VRMConverter::Options::Get().IsVRM10Model()) {
 				if (VRMConverter::Options::Get().IsVRM10RemoveLocalRotation()) {
-					pose.SetRotation(FQuat::Identity);
-					if (ParentIndex >= 0) {
-						pose.SetTranslation(poseGlobal_tpose[nodeNo].GetLocation() - poseGlobal_tpose[ParentIndex].GetLocation());
+
+					if (vrmAssetList){
+						if (vrmAssetList->VrmMetaObject) {
+							TArray<FString> v;
+							vrmAssetList->VrmMetaObject->humanoidBoneTable.GenerateValueArray(v);
+							//if (v.Find(info.Name.ToString())) {
+								pose.SetRotation(FQuat::Identity);
+								if (ParentIndex >= 0) {
+									pose.SetTranslation(poseGlobal_tpose[nodeNo].GetLocation() - poseGlobal_tpose[ParentIndex].GetLocation());
+								}
+							//}
+						}
 					}
+
 				}
 			}
 
