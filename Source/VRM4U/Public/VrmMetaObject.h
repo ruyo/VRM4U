@@ -148,6 +148,17 @@ struct VRM4U_API FVRM1SpringCollider {
 };
 
 USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRM1SpringColliderGroups {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<int> colliders;
+};
+
+USTRUCT(Blueprintable, BlueprintType)
 struct VRM4U_API FVRM1SpringBoneMeta {
 	GENERATED_BODY()
 
@@ -156,6 +167,9 @@ struct VRM4U_API FVRM1SpringBoneMeta {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	TArray<FVRM1SpringCollider> Colliders;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<FVRM1SpringColliderGroups> ColliderGroups;
 };
 
 
