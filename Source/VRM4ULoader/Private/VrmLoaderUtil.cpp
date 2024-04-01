@@ -273,6 +273,7 @@ void DecompressTGA_8bpp(const FTGAFileHeader* TGA, uint8* TextureData)
 
 
 bool DecompressTGA_helper(
+	const int dummy,
 	const FTGAFileHeader* TGA,
 	uint32*& TextureData,
 	const int32 TextureDataSize,
@@ -418,7 +419,7 @@ bool DecompressTGA(
 	int32 TextureDataSize = OutImage.RawData.Num();
 	uint32* TextureData = (uint32*)OutImage.RawData.GetData();
 
-	return DecompressTGA_helper(TGA, TextureData, TextureDataSize, Warn);
+	return DecompressTGA_helper(0, TGA, TextureData, TextureDataSize, Warn);
 }
 
 

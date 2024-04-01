@@ -782,7 +782,7 @@ bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, cons
 	// vrm1
 	{
 		auto &sk = vrmAssetList->SkeletalMesh;
-		auto& refSkeleton = sk->GetRefSkeleton();
+		auto& refSkeleton = VRMGetRefSkeleton(sk);
 
 		auto& sMeta = vrmAssetList->VrmMetaObject->VRM1SpringBoneMeta.Springs;
 
