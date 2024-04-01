@@ -79,7 +79,7 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
 			}
 		}
-		if (SpringManager == nullptr) {
+		if (SpringManager.IsValid() == false) {
 			SpringManager = MakeShareable(new VRMSpringBone::VRMSpringManager());
 		}
 	}
@@ -103,7 +103,7 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread_local(const FAnimationInitial
 				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
 			}
 		}
-		if (SpringManager == nullptr) {
+		if (SpringManager.IsValid() == false) {
 			SpringManager = MakeShareable(new VRMSpringBone::VRMSpringManager());
 		}
 	}
