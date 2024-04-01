@@ -5,7 +5,9 @@ Remove-Item -Recurse ./_out/Source/ReleaseScript
 
 Copy-Item -Path ../../ThirdParty -Destination ./_out -Recurse -Container
 
-Move-Item -Path ./_out -Destination ./Plugins
+New-Item -ItemType Directory -Path "Plugins"
+
+Move-Item -Path ./_out -Destination ./Plugins/VRM4U
 
 Compress-Archive -Force -Path ./Plugins -DestinationPath $Args[0]
 
