@@ -45,29 +45,6 @@ SOFTWARE.
 /////////////////////////////////////////////////////
 // FAnimNode_ModifyBone
 
-namespace {
-	int32 GetDirectChildBonesLocal(FReferenceSkeleton &refs, int32 ParentBoneIndex, TArray<int32> & Children)
-	{
-		Children.Reset();
-
-		const int32 NumBones = refs.GetNum();
-		for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
-		{
-			if (ParentBoneIndex == refs.GetParentIndex(ChildIndex))
-			{
-				Children.Add(ChildIndex);
-			}
-		}
-
-		return Children.Num();
-	}
-
-}
-
-
-
-
-
 FAnimNode_VrmSpringBone::FAnimNode_VrmSpringBone()
 {
 	NoWindBoneNameList = TArray<FName>{
@@ -370,7 +347,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 				for (int i = 0; i < boneList.Num(); ++i) {
 					TArray<int32> c;
-					GetDirectChildBonesLocal(VRMGetRefSkeleton( VRMGetSkinnedAsset(PreviewSkelMeshComp) ), boneList[i], c);
+					VRMUtil::GetDirectChildBones(VRMGetRefSkeleton( VRMGetSkinnedAsset(PreviewSkelMeshComp) ), boneList[i], c);
 					if (c.Num()) {
 						for (const auto cc : c) {
 							boneList.AddUnique(cc);

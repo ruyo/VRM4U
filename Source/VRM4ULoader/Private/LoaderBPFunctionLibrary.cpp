@@ -1152,25 +1152,6 @@ bool ULoaderBPFunctionLibrary::CopyVirtualBone(USkeletalMesh *dstMesh, const USk
 }
 
 
-namespace {
-	int32 GetDirectChildBonesLocal(FReferenceSkeleton &refs, int32 ParentBoneIndex, TArray<int32> & Children)
-	{
-		Children.Reset();
-
-		const int32 NumBones = refs.GetNum();
-		for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
-		{
-			if (ParentBoneIndex == refs.GetParentIndex(ChildIndex))
-			{
-				Children.Add(ChildIndex);
-			}
-		}
-
-		return Children.Num();
-	}
-}
-
-
 bool ULoaderBPFunctionLibrary::CreateTailBone(USkeletalMesh *skeletalMesh, const TArray<FString> &boneName) {
 
 	if (skeletalMesh == nullptr) {
@@ -1201,7 +1182,7 @@ bool ULoaderBPFunctionLibrary::CreateTailBone(USkeletalMesh *skeletalMesh, const
 
 	for (int i = 0; i < tail.Num(); ++i) {
 		TArray<int32> children;
-		GetDirectChildBonesLocal(VRMGetRefSkeleton(sk_tmp), tail[i], children);
+		VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(sk_tmp), tail[i], children);
 		if (children.Num()) {
 			tail.RemoveAt(i);
 			tail.Append(children);

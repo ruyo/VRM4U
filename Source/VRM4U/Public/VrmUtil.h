@@ -505,6 +505,8 @@ public:
 	static FString GetSafeNewName(const FString& str);
 
 	static FString MakeName(const FString& str, bool IsJoint = false);
+
+	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
 };
 
 class VRM4U_API VRMRetargetData {

@@ -9,26 +9,6 @@ VrmSpringBone::~VrmSpringBone()
 {
 }
 
-namespace {
-	int32 GetDirectChildBonesLocal(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children)
-	{
-		Children.Reset();
-
-		const int32 NumBones = refs.GetNum();
-		for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
-		{
-			if (ParentBoneIndex == refs.GetParentIndex(ChildIndex))
-			{
-				Children.Add(ChildIndex);
-			}
-		}
-
-		return Children.Num();
-	}
-
-}
-
-
 namespace VRMSpringBone {
 
 	void VRMSpring::Update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FTransform ComponentToLocal,
@@ -343,7 +323,7 @@ namespace VRMSpringBone {
 					sData.boneIndex = index;
 
 					TArray<int32> Children;
-					GetDirectChildBonesLocal(VRMGetRefSkeleton(skeletalMesh), sData.boneIndex, Children);
+					VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(skeletalMesh), sData.boneIndex, Children);
 					if (Children.Num() > 0) {
 						sData.m_boneAxis = RefSkeletonTransform[Children[0]].GetLocation();
 					}
@@ -358,7 +338,7 @@ namespace VRMSpringBone {
 						bool bLast = false;
 						TArray<int32> Children;
 
-						GetDirectChildBonesLocal(VRMGetRefSkeleton(skeletalMesh), chain[chainCount].boneIndex, Children);
+						VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(skeletalMesh), chain[chainCount].boneIndex, Children);
 						if (Children.Num() <= 0) {
 							break;
 						}
@@ -368,7 +348,7 @@ namespace VRMSpringBone {
 						sData.boneIndex = Children[0];
 						sData.boneName = *RefSkeleton.GetBoneName(sData.boneIndex).ToString();
 
-						GetDirectChildBonesLocal(VRMGetRefSkeleton(skeletalMesh), sData.boneIndex, Children);
+						VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(skeletalMesh), sData.boneIndex, Children);
 						if (Children.Num() > 0) {
 							sData.m_boneAxis = RefSkeletonTransform[Children[0]].GetLocation();
 						}

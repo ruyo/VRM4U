@@ -846,3 +846,20 @@ void VRMRetargetData::UpdateBoneName() {
 	}
 #pragma warning(pop)
 }
+
+
+
+int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children) {
+	Children.Reset();
+
+	const int32 NumBones = refs.GetNum();
+	for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
+	{
+		if (ParentBoneIndex == refs.GetParentIndex(ChildIndex))
+		{
+			Children.Add(ChildIndex);
+		}
+	}
+
+	return Children.Num();
+}
