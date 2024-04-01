@@ -22,6 +22,23 @@
 
 //test
 
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+
+#if WITH_EDITOR==0
+#define VRM4U_UseLocalTGAHeader 1
+#endif
+
+#else
+#define VRM4U_UseLocalTGAHeader 1
+#endif
+
+
+#ifndef  VRM4U_UseLocalTGAHeader
+#define VRM4U_UseLocalTGAHeader 0
+#endif
+
+#if	VRM4U_UseLocalTGAHeader
+
 #pragma pack(push,1)
 
 struct FTGAFileHeader
@@ -48,7 +65,7 @@ struct FTGAFileHeader
 	}
 };
 #pragma pack(pop)
-
+#endif
 
 void DecompressTGA_RLE_32bpp(const FTGAFileHeader* TGA, uint32* TextureData)
 {

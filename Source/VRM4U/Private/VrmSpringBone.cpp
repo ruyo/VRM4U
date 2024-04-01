@@ -547,7 +547,11 @@ namespace VRM1Spring {
 				state.initialLocalMatrix = RefSkeletonTransform[j.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j.boneNo].GetRotation();
 
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+				state.boneLength = RefSkeletonTransform[jc.boneNo].GetLocation().Size();
+#else
 				state.boneLength = RefSkeletonTransform[jc.boneNo].GetLocation().Length();
+#endif
 				state.boneAxis = RefSkeletonTransform[jc.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
 
 				{
