@@ -301,12 +301,44 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 	ESceneDepthPriorityGroup Priority = SDPG_World;
 	if (bPreviewForeground) Priority = SDPG_Foreground;
 
+	if (VrmMetaObject->VRM1SpringBoneMeta.Springs.Num() > 0) {
+		// vrm1
+
+		// col
+		for (const auto& c : VrmMetaObject->VRM1SpringBoneMeta.Colliders) {
+			const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*c.boneName);
+
+			float r = (c.radius) * 100.f;
+			auto offs = c.offset;
+			offs.Set(-offs.X, offs.Z, offs.Y);
+			offs *= 100;
+			FVector center = t.TransformPosition(offs);
+
+			FTransform tt = t;
+			tt.AddToTranslation(offs);
+
+			if (c.shapeType == TEXT("shpere")) {
+				DrawWireSphere(PDI, tt, FLinearColor::Green, r, 8, Priority);
+			}
+			else {
+				FVector Up = c.tail;
+
+				FVector Forward, Right;
+				Up.FindBestAxisVectors(Forward, Right);
+				const FVector X = t.TransformVector(Forward) * 1.f;
+				const FVector Y = t.TransformVector(Right) * 1.f;
+				const FVector Z = t.TransformVector(Up) * 1.f;
+				float halfheight = c.tail.Size() * 2 * 100.f + r;
+				DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 12, Priority);
+			}
+		}
+	}
+
 	for (const auto &colMeta : VrmMetaObject->VRMColliderMeta) {
 		const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*colMeta.boneName);
 
 		for (const auto &col : colMeta.collider) {
 			float r = (col.radius) * 100.f;
-			//FVector v = collisionBoneTrans.TransformPosition(c.offset*100);
 			auto offs = col.offset;
 			offs.Set(-offs.X, offs.Z, offs.Y);
 			offs *= 100;
@@ -370,17 +402,6 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 			DrawWireSphere(PDI, t, FLinearColor::Red, r, 8, Priority);
 		}
-		/*
-		for (int i = 0; i < boneList.Num(); ++i) {
-			const auto& name = PreviewSkelMeshComp->GetBoneName(boneList[i]);
-
-			FTransform t = PreviewSkelMeshComp->GetSocketTransform(name);
-			float r = spr.hitRadius * 100.f;
-			FVector v = t.GetLocation();
-
-			DrawDebugSphere(PreviewSkelMeshComp->GetWorld(), v, r, 8, FColor::Red, true, 0.1f);
-		}
-		*/
 	}
 
 
