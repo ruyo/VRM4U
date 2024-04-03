@@ -332,6 +332,39 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 12, Priority);
 			}
 		}
+
+		// spring col
+
+		for (int springNo = 0; springNo < VrmMetaObject->VRM1SpringBoneMeta.Springs.Num(); ++springNo) {
+			const auto& s = VrmMetaObject->VRM1SpringBoneMeta.Springs[springNo];
+
+
+			const TArray<FLinearColor> color = {
+				FLinearColor(1.f, 0, 0),
+				FLinearColor(1.f, 0.5, 0),
+				FLinearColor(1.f, 0, 0.5),
+			};
+
+			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
+				auto& j = s.joints[jointNo];
+
+				const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*j.boneName);
+
+				float r = j.hitRadius * 100.f;
+
+				DrawWireSphere(PDI, t.GetLocation(), color[springNo%color.Num()], r, 8, Priority);
+
+				if (jointNo > 0) {
+					const FTransform t2 = PreviewSkelMeshComp->GetSocketTransform(*s.joints[jointNo - 1].boneName);
+
+					PDI->DrawLine(
+						t.GetLocation(),
+						t2.GetLocation(),
+						color[springNo % color.Num()] / 2.f,
+						Priority);
+				}
+			}
+		}
 	}
 
 	for (const auto &colMeta : VrmMetaObject->VRMColliderMeta) {
@@ -415,8 +448,8 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		FTransform CachedEffectorCSTransform;
 
 		// Show end effector position.
-		DrawDebugBox(PreviewSkelMeshComp->GetWorld(), CSEffectorLocation, FVector(Precision), FColor::Green, true, 0.1f);
-		DrawDebugCoordinateSystem(PreviewSkelMeshComp->GetWorld(), CSEffectorLocation, CachedEffectorCSTransform.GetRotation().Rotator(), 5.f, true, 0.1f);
+		//DrawDebugBox(PreviewSkelMeshComp->GetWorld(), CSEffectorLocation, FVector(Precision), FColor::Green, true, 0.1f);
+		//DrawDebugCoordinateSystem(PreviewSkelMeshComp->GetWorld(), CSEffectorLocation, CachedEffectorCSTransform.GetRotation().Rotator(), 5.f, true, 0.1f);
 	}
 #endif
 }
