@@ -310,26 +310,57 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 			float r = (c.radius) * 100.f;
 			auto offs = c.offset;
-			offs.Set(-offs.X, offs.Z, offs.Y);
+			offs.Set(offs.X, offs.Z, -offs.Y);
 			offs *= 100;
-			FVector center = t.TransformPosition(offs);
 
-			FTransform tt = t;
-			tt.AddToTranslation(offs);
+			if (c.shapeType == TEXT("sphere")) {
 
-			if (c.shapeType == TEXT("shpere")) {
-				DrawWireSphere(PDI, tt, FLinearColor::Green, r, 8, Priority);
+				FTransform tt = t;
+				tt.AddToTranslation(offs);
+
+				DrawWireSphere(PDI, tt, FLinearColor(1,1,0), r, 8, Priority);
 			}
 			else {
-				FVector Up = c.tail;
 
-				FVector Forward, Right;
-				Up.FindBestAxisVectors(Forward, Right);
-				const FVector X = t.TransformVector(Forward) * 1.f;
-				const FVector Y = t.TransformVector(Right) * 1.f;
-				const FVector Z = t.TransformVector(Up) * 1.f;
-				float halfheight = c.tail.Size() * 2 * 100.f + r;
-				DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 12, Priority);
+				auto tail = c.tail;
+				tail.Set(tail.X, tail.Z, -tail.Y);
+				tail *= 100;
+
+				if (0) {
+					// sphere and line
+					FTransform t1 = t;
+					t1.AddToTranslation(offs);
+
+					FTransform t2 = t;
+					t2.AddToTranslation(tail);
+
+					DrawWireSphere(PDI, t1, FLinearColor(1, 1, 1), r, 8, Priority);
+					DrawWireSphere(PDI, t2, FLinearColor::Green, r, 8, Priority);
+					PDI->DrawLine(
+						t1.GetLocation(),
+						t2.GetLocation(),
+						FLinearColor::Green,
+						Priority);
+				}
+				else {
+					FTransform t1 = t;
+					t1.AddToTranslation(offs);
+
+					FTransform t2 = t;
+					t2.AddToTranslation(tail);
+
+					FVector center = (t1.GetLocation() + t2.GetLocation()) / 2.f;
+
+					FVector Up = (t1.GetLocation() - t2.GetLocation()).GetSafeNormal();
+
+					FVector Forward, Right;
+					Up.FindBestAxisVectors(Forward, Right);
+					const FVector X = (Forward);
+					const FVector Y = (Right);
+					const FVector Z = (Up);
+					float halfheight = (t1.GetLocation() - center).Size() + r;
+					DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 12, Priority);
+				}
 			}
 		}
 

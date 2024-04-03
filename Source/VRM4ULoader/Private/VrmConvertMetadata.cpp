@@ -373,7 +373,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 					jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
 					jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
 					jsonCol["shape"]["sphere"]["offset"][2].GetFloat());
-				cMeta.radius = jsonCol["radius"].GetFloat();
+				cMeta.radius = jsonCol["shape"]["sphere"]["radius"].GetFloat();
 				cMeta.shapeType = TEXT("sphere");
 
 			}

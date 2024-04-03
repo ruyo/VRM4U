@@ -202,11 +202,16 @@ void UAnimGraphNode_VrmSpringBone::Draw(FPrimitiveDrawInterface* PDI, USkeletalM
 {
 	if (PreviewSkelMeshComp)
 	{
+		/*
 		if (FAnimNode_VrmSpringBone* ActiveNode = GetActiveInstanceNode<FAnimNode_VrmSpringBone>(PreviewSkelMeshComp->GetAnimInstance()))
 		{
 			if (bPreviewLive) {
 				ActiveNode->ConditionalDebugDraw(PDI, PreviewSkelMeshComp, bPreviewForeground);
 			}
+		}
+		*/
+		if (bPreviewLive) {
+			Node.ConditionalDebugDraw(PDI, PreviewSkelMeshComp, bPreviewForeground);
 		}
 	}
 }

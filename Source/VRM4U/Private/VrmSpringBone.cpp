@@ -677,24 +677,36 @@ namespace VRM1Spring {
 						}
 						FTransform collisionBoneTrans = Output.Pose.GetComponentSpaceTransform(uu);
 
-
-						float r = (j.hitRadius + cg.radius) * 100.f;
-						//FVector v = collisionBoneTrans.TransformPosition(c.offset*100);
 						auto offs = cg.offset;
 						offs.Set(-offs.X, offs.Z, offs.Y);
 						offs *= 100;
 						FVector v = collisionBoneTrans.TransformPosition(offs);
 
-						if ((v - nextTailPosition).SizeSquared() > r * r) {
-							continue;
-						}
+						float r = (j.hitRadius + cg.radius) * 100.f;
 
-						// ヒット。Colliderの半径方向に押し出す
-						auto normal = (nextTailPosition - v).GetSafeNormal();
-						auto posFromCollider = v + normal * (r);
-						// 長さをboneLengthに強制
-						nextTailPosition = currentTransform.GetLocation() + (posFromCollider - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
-						nextTailDirection = (posFromCollider - currentTransform.GetLocation()).GetSafeNormal();
+						if (cg.shapeType == TEXT("sphere")) {
+							if ((v - nextTailPosition).SizeSquared() > r * r) {
+								continue;
+							}
+							// ヒット。Colliderの半径方向に押し出す
+							auto normal = (nextTailPosition - v).GetSafeNormal();
+							auto posFromCollider = v + normal * (r);
+							// 長さをboneLengthに強制
+							nextTailPosition = currentTransform.GetLocation() + (posFromCollider - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
+							nextTailDirection = (posFromCollider - currentTransform.GetLocation()).GetSafeNormal();
+						}
+						else {
+							auto tail = cg.tail;
+							//tail.Set(-tail.X, tail.Z, tail.Y);
+							tail *= 100.f;
+							FVector start = collisionBoneTrans.TransformPosition(offs + tail);
+							FVector end = collisionBoneTrans.TransformPosition(offs - tail);
+
+
+							FVector nearestPoint = FMath::ClosestPointOnSegment(currentTransform.GetLocation(), start, end);
+
+							//FCollisionShape::MakeCapsule(Radius.GetValue(), HalfHeight.GetValue());
+						}
 					}
 				}
 
