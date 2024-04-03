@@ -319,7 +319,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				FTransform tt = t;
 				tt.AddToTranslation(offs);
 
-				DrawWireSphere(PDI, tt, FLinearColor(1,1,0), r, 8, Priority);
+				DrawWireSphere(PDI, tt, FLinearColor(1,1,0), r, 32, Priority);
 			}
 			else {
 
@@ -334,10 +334,10 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				FTransform t2 = t;
 				t2.AddToTranslation(tail);
 
-				if (1) {
+				if (0) {
 					// sphere and line
-					DrawWireSphere(PDI, t1, FLinearColor(1, 1, 1), r, 8, Priority);
-					DrawWireSphere(PDI, t2, FLinearColor::Green, r, 8, Priority);
+					DrawWireSphere(PDI, t1, FLinearColor(1, 1, 1), r, 32, Priority);
+					DrawWireSphere(PDI, t2, FLinearColor::Green, r, 32, Priority);
 					PDI->DrawLine(
 						t1.GetLocation(),
 						t2.GetLocation(),
@@ -355,7 +355,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 					const FVector Y = (Right);
 					const FVector Z = (Up);
 					float halfheight = (t1.GetLocation() - center).Size() + r;
-					DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 12, Priority);
+					DrawWireCapsule(PDI, center, X, Y, Z, FLinearColor::Green, r, halfheight, 32, Priority);
 				}
 			}
 		}
@@ -380,7 +380,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 				float r = j1.hitRadius * 100.f;
 
-				DrawWireSphere(PDI, t.GetLocation(), color[springNo%color.Num()], r, 8, Priority);
+				DrawWireSphere(PDI, t.GetLocation(), color[springNo%color.Num()], r, 32, Priority);
 
 				const FTransform t2 = PreviewSkelMeshComp->GetSocketTransform(*j1.boneName);
 
@@ -406,7 +406,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 			FTransform tt = t;
 			tt.AddToTranslation(offs);
 
-			DrawWireSphere(PDI, tt, FLinearColor::Green, r, 8, Priority);
+			DrawWireSphere(PDI, tt, FLinearColor::Green, r, 32, Priority);
 		}
 	}
 
@@ -459,7 +459,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 			float r = dataList[i].radius * 100.f;
 			FVector v = t.GetLocation();
 
-			DrawWireSphere(PDI, t, FLinearColor::Red, r, 8, Priority);
+			DrawWireSphere(PDI, t, FLinearColor::Red, r, 32, Priority);
 		}
 	}
 
