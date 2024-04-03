@@ -372,24 +372,23 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				FLinearColor(1.f, 0, 0.5),
 			};
 
-			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
-				auto& j = s.joints[jointNo];
+			for (int jointNo = 0; jointNo < s.joints.Num()-1; ++jointNo) {
+				auto& j1 = s.joints[jointNo];
+				auto& j2 = s.joints[jointNo + 1];
 
-				const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*j.boneName);
+				const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*j2.boneName);
 
-				float r = j.hitRadius * 100.f;
+				float r = j1.hitRadius * 100.f;
 
 				DrawWireSphere(PDI, t.GetLocation(), color[springNo%color.Num()], r, 8, Priority);
 
-				if (jointNo > 0) {
-					const FTransform t2 = PreviewSkelMeshComp->GetSocketTransform(*s.joints[jointNo - 1].boneName);
+				const FTransform t2 = PreviewSkelMeshComp->GetSocketTransform(*j1.boneName);
 
-					PDI->DrawLine(
-						t.GetLocation(),
-						t2.GetLocation(),
-						color[springNo % color.Num()] / 2.f,
-						Priority);
-				}
+				PDI->DrawLine(
+					t.GetLocation(),
+					t2.GetLocation(),
+					color[springNo % color.Num()] / 2.f,
+					Priority);
 			}
 		}
 	}
