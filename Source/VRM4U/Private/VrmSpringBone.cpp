@@ -592,7 +592,7 @@ namespace VRM1Spring {
 
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
-
+			
 			FTransform parentTransform = FTransform::Identity;
 			FTransform currentTransform = FTransform::Identity;
 			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
@@ -640,11 +640,11 @@ namespace VRM1Spring {
 				}
 				FQuat m_localRotation = state->initialLocalMatrix.GetRotation();
 
-				FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
-				FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
+				const FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
+				const FVector prevTail = ComponentToLocal.TransformPosition(state->prevTail);
 
-				FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
-				FVector stiffness = currentTransform.GetRotation() * state->boneAxis * 1.f * DeltaTime * 100;
+				const FVector inertia = (currentTail - prevTail) * (1.0f - j.dragForce);
+				const FVector stiffness = currentTransform.GetRotation() * state->boneAxis * 1.f * DeltaTime * 100;
 
 				FVector nextTailTarget = currentTail + inertia + stiffness;
 				//FVector nextTailTarget = currentTail + stiffness * 10;
@@ -656,56 +656,83 @@ namespace VRM1Spring {
 
 				// vrm <-> vrm collision
 				if (animNode->bIgnoreVRMCollision == false) {
-					//auto& j = s.joints[jointNo];
-					auto& colliderArray = vrmMetaObject->VRM1SpringBoneMeta.Colliders;
-					for (auto colNo : s.colliderGroups) {
 
-						if (colNo >= colliderArray.Num()) {
+					// このSpringが参照するコライダのインデックス
+					TArray<int> checkcolliderIndexArray;
+					for (auto colg : s.colliderGroups) {
+						checkcolliderIndexArray.Append(vrmMetaObject->VRM1SpringBoneMeta.ColliderGroups[colg].colliders);
+					}
+
+					// 全てのコライダ
+					auto& AllColliderArray = vrmMetaObject->VRM1SpringBoneMeta.Colliders;
+
+					for (auto colNo : checkcolliderIndexArray){
+						if (colNo >= AllColliderArray.Num()) {
 							continue;
 						}
-						const auto& cg = colliderArray[colNo];
+						const auto& collider = AllColliderArray[colNo];
 
-						int ii = RefSkeleton.FindBoneIndex(*cg.boneName);
-						if (ii < 0) {
-							continue;
+						FTransform collisionBoneTrans;
+						{
+							int boneNo = RefSkeleton.FindBoneIndex(*collider.boneName);
+							if (boneNo < 0) {
+								continue;
+							}
+
+							FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(boneNo);
+							//FCompactPoseBoneIndex uu(ii);
+							if (uu == INDEX_NONE) {
+								continue;
+							}
+							collisionBoneTrans = Output.Pose.GetComponentSpaceTransform(uu);
 						}
 
-						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(ii);
-						//FCompactPoseBoneIndex uu(ii);
-						if (uu == INDEX_NONE) {
-							continue;
-						}
-						FTransform collisionBoneTrans = Output.Pose.GetComponentSpaceTransform(uu);
-
-						auto offs = cg.offset;
-						offs.Set(-offs.X, offs.Z, offs.Y);
+						auto offs = collider.offset;
+						offs.Set(offs.X, offs.Y, -offs.Z);
 						offs *= 100;
-						FVector v = collisionBoneTrans.TransformPosition(offs);
+						offs = collisionBoneTrans.TransformVector(offs);
 
-						float r = (j.hitRadius + cg.radius) * 100.f;
+						auto tail = collider.tail;
+						tail.Set(tail.X, tail.Y, -tail.Z);
+						tail *= 100;
+						tail = collisionBoneTrans.TransformVector(tail);
 
-						if (cg.shapeType == TEXT("sphere")) {
+						float r = (j.hitRadius + collider.radius) * 100.f;
+
+						if (collider.shapeType == TEXT("sphere")) {
+							FVector v = collisionBoneTrans.TransformPosition(offs);
+
 							if ((v - nextTailPosition).SizeSquared() > r * r) {
 								continue;
 							}
 							// ヒット。Colliderの半径方向に押し出す
 							auto normal = (nextTailPosition - v).GetSafeNormal();
-							auto posFromCollider = v + normal * (r);
+							auto posFromCollider = v + normal * r;
 							// 長さをboneLengthに強制
 							nextTailPosition = currentTransform.GetLocation() + (posFromCollider - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
 							nextTailDirection = (posFromCollider - currentTransform.GetLocation()).GetSafeNormal();
 						}
 						else {
-							auto tail = cg.tail;
-							//tail.Set(-tail.X, tail.Z, tail.Y);
-							tail *= 100.f;
-							FVector start = collisionBoneTrans.TransformPosition(offs + tail);
-							FVector end = collisionBoneTrans.TransformPosition(offs - tail);
+	
+							FTransform t1 = collisionBoneTrans;
+							t1.AddToTranslation(offs);
 
+							FTransform t2 = collisionBoneTrans;
+							t2.AddToTranslation(tail);
 
-							FVector nearestPoint = FMath::ClosestPointOnSegment(currentTransform.GetLocation(), start, end);
+							FVector nearestPoint = FMath::ClosestPointOnSegment(nextTailPosition, t1.GetLocation(), t2.GetLocation());
 
-							//FCollisionShape::MakeCapsule(Radius.GetValue(), HalfHeight.GetValue());
+							float dif = (nearestPoint - nextTailPosition).SizeSquared();
+							if (dif > r * r) {
+								continue;
+							}
+
+							auto normal = (nextTailPosition - nearestPoint).GetSafeNormal();
+
+							auto posFromCollider = nearestPoint + normal * r;
+							// 長さをboneLengthに強制
+							nextTailPosition = currentTransform.GetLocation() + (posFromCollider - currentTransform.GetLocation()).GetSafeNormal() * state->boneLength;
+							nextTailDirection = (posFromCollider - currentTransform.GetLocation()).GetSafeNormal();
 						}
 					}
 				}

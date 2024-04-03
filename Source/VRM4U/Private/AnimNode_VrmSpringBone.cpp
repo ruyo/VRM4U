@@ -310,8 +310,9 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 			float r = (c.radius) * 100.f;
 			auto offs = c.offset;
-			offs.Set(offs.X, offs.Z, -offs.Y);
+			offs.Set(offs.X, offs.Y, -offs.Z);
 			offs *= 100;
+			offs = t.TransformVector(offs);
 
 			if (c.shapeType == TEXT("sphere")) {
 
@@ -323,17 +324,18 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 			else {
 
 				auto tail = c.tail;
-				tail.Set(tail.X, tail.Z, -tail.Y);
+				tail.Set(tail.X, tail.Y, -tail.Z);
 				tail *= 100;
+				tail = t.TransformVector(tail);
 
-				if (0) {
+				FTransform t1 = t;
+				t1.AddToTranslation(offs);
+
+				FTransform t2 = t;
+				t2.AddToTranslation(tail);
+
+				if (1) {
 					// sphere and line
-					FTransform t1 = t;
-					t1.AddToTranslation(offs);
-
-					FTransform t2 = t;
-					t2.AddToTranslation(tail);
-
 					DrawWireSphere(PDI, t1, FLinearColor(1, 1, 1), r, 8, Priority);
 					DrawWireSphere(PDI, t2, FLinearColor::Green, r, 8, Priority);
 					PDI->DrawLine(
@@ -343,17 +345,11 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 						Priority);
 				}
 				else {
-					FTransform t1 = t;
-					t1.AddToTranslation(offs);
-
-					FTransform t2 = t;
-					t2.AddToTranslation(tail);
-
+					// capsule
 					FVector center = (t1.GetLocation() + t2.GetLocation()) / 2.f;
-
 					FVector Up = (t1.GetLocation() - t2.GetLocation()).GetSafeNormal();
-
 					FVector Forward, Right;
+
 					Up.FindBestAxisVectors(Forward, Right);
 					const FVector X = (Forward);
 					const FVector Y = (Right);

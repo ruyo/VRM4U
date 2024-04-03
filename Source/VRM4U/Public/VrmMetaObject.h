@@ -46,16 +46,10 @@ struct VRM4U_API FVRMSpringColliderData {
 	GENERATED_BODY()
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
-	FName shapeType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FVector offset = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	float radius = 0.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
-	FVector tail = FVector::ZeroVector;
 };
 
 USTRUCT(Blueprintable, BlueprintType)
@@ -143,6 +137,7 @@ struct VRM4U_API FVRM1SpringCollider {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	float radius = 0.f;
 
+	// for capsule. offset-tail cylinder
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FVector tail = FVector::ZeroVector;
 };
