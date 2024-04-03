@@ -482,7 +482,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 						if (vrmAssetList->VrmMetaObject) {
 							TArray<FString> v;
 							vrmAssetList->VrmMetaObject->humanoidBoneTable.GenerateValueArray(v);
-							//if (v.Find(info.Name.ToString())) {
+							//if (v.Find(info.Name.ToString()) != INDEX_NONE) {
 								pose.SetRotation(FQuat::Identity);
 								if (ParentIndex >= 0) {
 									pose.SetTranslation(poseGlobal_tpose[nodeNo].GetLocation() - poseGlobal_tpose[ParentIndex].GetLocation());
