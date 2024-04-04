@@ -43,6 +43,7 @@ public:
 			AssetTypeActions.Empty();
 			AssetTypeActions.Add(MakeShareable(new FAssetTypeActions_VrmAssetList));
 			AssetTypeActions.Add(MakeShareable(new FAssetTypeActions_VrmLicense));
+			AssetTypeActions.Add(MakeShareable(new FAssetTypeActions_Vrm1License));
 			AssetTypeActions.Add(MakeShareable(new FAssetTypeActions_VrmMeta));
 
 			IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
