@@ -16,6 +16,7 @@ class USkeletalMesh;
 class USkeleton;
 class UVrmMetaObject;
 class UVrmLicenseObject;
+class UVrm1LicenseObject;
 struct FReturnedData;
 class UNodeMappingContainer;
 
@@ -137,6 +138,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
 	UVrmLicenseObject* VrmLicenseObject;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
+	UVrm1LicenseObject* Vrm1LicenseObject;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
 	USkeletalMesh* SkeletalMesh;

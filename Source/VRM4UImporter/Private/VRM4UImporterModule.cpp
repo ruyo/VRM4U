@@ -5,6 +5,7 @@
 #include "VrmAssetListThumbnailRenderer.h"
 #include "VrmAssetListObject.h"
 #include "VrmLicenseObject.h"
+#include "Vrm1LicenseObject.h"
 #include "VrmMetaObject.h"
 #include "VrmCustomStruct.h"
 
@@ -34,6 +35,7 @@ public:
 			auto &a = UThumbnailManager::Get();
 			a.RegisterCustomRenderer(UVrmAssetListObject::StaticClass(), UVrmAssetListThumbnailRenderer::StaticClass());
 			a.RegisterCustomRenderer(UVrmLicenseObject::StaticClass(), UVrmAssetListThumbnailRenderer::StaticClass());
+			a.RegisterCustomRenderer(UVrm1LicenseObject::StaticClass(), UVrmAssetListThumbnailRenderer::StaticClass());
 			a.RegisterCustomRenderer(UVrmMetaObject::StaticClass(), UVrmAssetListThumbnailRenderer::StaticClass());
 		}
 
@@ -67,6 +69,7 @@ public:
 		if (UObjectInitialized()){
 			UThumbnailManager::Get().UnregisterCustomRenderer(UVrmAssetListObject::StaticClass());
 			UThumbnailManager::Get().UnregisterCustomRenderer(UVrmLicenseObject::StaticClass());
+			UThumbnailManager::Get().UnregisterCustomRenderer(UVrm1LicenseObject::StaticClass());
 			UThumbnailManager::Get().UnregisterCustomRenderer(UVrmMetaObject::StaticClass());
 
 			FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");

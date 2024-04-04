@@ -36,6 +36,7 @@
 #include "VrmImportUI.h"
 #include "VrmConvert.h"
 #include "VrmLicenseObject.h"
+#include "Vrm1LicenseObject.h"
 
 #define LOCTEXT_NAMESPACE "VRMImporter"
 

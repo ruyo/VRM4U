@@ -36,6 +36,13 @@ public:
 	virtual FText GetName() const override;
 	virtual UClass* GetSupportedClass() const override;
 };
+class FAssetTypeActions_Vrm1License : public FAssetTypeActions_VrmBase
+{
+public:
+	// IAssetTypeActions Implementation
+	virtual FText GetName() const override;
+	virtual UClass* GetSupportedClass() const override;
+};
 class FAssetTypeActions_VrmMeta : public FAssetTypeActions_VrmBase
 {
 public:

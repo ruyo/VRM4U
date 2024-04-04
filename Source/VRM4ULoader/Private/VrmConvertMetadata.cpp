@@ -7,6 +7,7 @@
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
 #include "VrmLicenseObject.h"
+#include "Vrm1LicenseObject.h"
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #include "AssetRegistryModule.h"
@@ -74,52 +75,73 @@ bool VRMConverter::ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint
 }
 
 
-bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiScene *mScenePtr, const uint8* pData, size_t dataSize) {
+bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize) {
 
 	tmpLicense = nullptr;
-	VRM::VRMMetadata *SceneMeta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
+	VRM::VRMMetadata* SceneMeta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
 
-	UVrmMetaObject *MetaObject = nullptr;
-	UVrmLicenseObject *lic = nullptr;
+	UVrmMetaObject* MetaObject = nullptr;
+	UVrmLicenseObject* lic0 = nullptr;
+	UVrm1LicenseObject* lic1 = nullptr;
 
 	{
-		UPackage *package = GetTransientPackage();
+		UPackage* package = GetTransientPackage();
 
 		if (vrmAssetList) {
 			package = vrmAssetList->Package;
 		}
 
-		if (package == GetTransientPackage() || vrmAssetList==nullptr) {
+		if (package == GetTransientPackage() || vrmAssetList == nullptr) {
 			MetaObject = VRM4U_NewObject<UVrmMetaObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
-			lic = VRM4U_NewObject<UVrmLicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
-		} else {
+			lic0 = VRM4U_NewObject<UVrmLicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
+			lic1 = VRM4U_NewObject<UVrm1LicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
+		}
+		else {
 
 			if (vrmAssetList->ReimportBase) {
 				MetaObject = vrmAssetList->ReimportBase->VrmMetaObject;
-				lic = vrmAssetList->ReimportBase->VrmLicenseObject;
+				lic0 = vrmAssetList->ReimportBase->VrmLicenseObject;
+				lic1 = vrmAssetList->ReimportBase->Vrm1LicenseObject;
 			}
 			if (MetaObject == nullptr) {
 				MetaObject = VRM4U_NewObject<UVrmMetaObject>(package, *(FString(TEXT("VM_")) + vrmAssetList->BaseFileName + TEXT("_VrmMeta")), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 			}
-			if (lic == nullptr){
-				lic = VRM4U_NewObject<UVrmLicenseObject>(package, *(FString(TEXT("VL_")) + vrmAssetList->BaseFileName + TEXT("_VrmLicense")), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+
+			if (VRMConverter::Options::Get().IsVRM10Model()) {
+				if (lic1 == nullptr) {
+					lic1 = VRM4U_NewObject<UVrm1LicenseObject>(package, *(FString(TEXT("VL_")) + vrmAssetList->BaseFileName + TEXT("_Vrm1License")), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+				}
 			}
+			else {
+				if (lic0 == nullptr) {
+					lic0 = VRM4U_NewObject<UVrmLicenseObject>(package, *(FString(TEXT("VL_")) + vrmAssetList->BaseFileName + TEXT("_VrmLicense")), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+				}
+			}
+
 		}
 		if (MetaObject) MetaObject->MarkPackageDirty();
-		if (lic) lic->MarkPackageDirty();
+		if (lic0) lic0->MarkPackageDirty();
+		if (lic1) lic1->MarkPackageDirty();
 
 		if (vrmAssetList) {
 			vrmAssetList->VrmMetaObject = MetaObject;
-			vrmAssetList->VrmLicenseObject = lic;
+			vrmAssetList->VrmLicenseObject = lic0;
+			vrmAssetList->Vrm1LicenseObject = lic1;
 			MetaObject->VrmAssetListObject = vrmAssetList;
-		} else {
-			tmpLicense = lic;
 		}
+		else {
+			tmpLicense = lic0;
+		}
+
+		if (VRMConverter::Options::Get().IsVRM10Model()) {
+		}
+
 	}
 
 	if (SceneMeta == nullptr) {
 		return false;
 	}
+
 
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
 		MetaObject->Version = 1;
@@ -559,29 +581,70 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 
 
 	// license
-	{
+		// license
+	if (VRMConverter::Options::Get().IsVRM10Model()) {
+		auto& meta = jsonData.doc["extensions"]["VRMC_vrm"]["meta"];
+		for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
+
+			FString key = UTF8_TO_TCHAR((*m).name.GetString());
+
+			if (key.Find("allow") == 0){
+				FLicenseBoolDataPair p;
+				p.key = key;
+				p.value = (*m).value.GetBool();
+				lic1->LicenseBool.Add(p);
+			}
+			else {
+				if ((*m).value.IsArray()) {
+					int ind = 0;
+					bool bFound = false;
+					for (auto& a : lic1->LicenseStringArray) {
+						if (a.key != key) {
+							++ind;
+							continue;
+						}
+						bFound = true;
+						break;
+					}
+					if (bFound == false) {
+						ind = lic1->LicenseStringArray.AddDefaulted();
+						lic1->LicenseStringArray[ind].key = key;
+					}
+					for (auto& a : (*m).value.GetArray()) {
+						lic1->LicenseStringArray[ind].value.Add(UTF8_TO_TCHAR(a.GetString()));
+					}
+				} else {
+					FLicenseStringDataPair p;
+					p.key = key;
+					p.value = UTF8_TO_TCHAR((*m).value.GetString());
+					lic1->LicenseString.Add(p);
+				}
+			}
+		}
+
+	}else {
 		struct TT {
 			FString key;
 			FString &dst;
 		};
 		const TT table[] = {
-			{TEXT("version"),		lic->version},
-			{TEXT("author"),			lic->author},
-			{TEXT("contactInformation"),	lic->contactInformation},
-			{TEXT("reference"),		lic->reference},
+			{TEXT("version"),		lic0->version},
+			{TEXT("author"),			lic0->author},
+			{TEXT("contactInformation"),	lic0->contactInformation},
+			{TEXT("reference"),		lic0->reference},
 				// texture skip
-			{TEXT("title"),			lic->title},
-			{TEXT("allowedUserName"),	lic->allowedUserName},
-			{TEXT("violentUsageName"),	lic->violentUsageName},
-			{TEXT("sexualUsageName"),	lic->sexualUsageName},
-			{TEXT("commercialUsageName"),	lic->commercialUsageName},
-			{TEXT("otherPermissionUrl"),		lic->otherPermissionUrl},
-			{TEXT("licenseName"),			lic->licenseName},
-			{TEXT("otherLicenseUrl"),		lic->otherLicenseUrl},
+			{TEXT("title"),			lic0->title},
+			{TEXT("allowedUserName"),	lic0->allowedUserName},
+			{TEXT("violentUsageName"),	lic0->violentUsageName},
+			{TEXT("sexualUsageName"),	lic0->sexualUsageName},
+			{TEXT("commercialUsageName"),	lic0->commercialUsageName},
+			{TEXT("otherPermissionUrl"),		lic0->otherPermissionUrl},
+			{TEXT("licenseName"),			lic0->licenseName},
+			{TEXT("otherLicenseUrl"),		lic0->otherLicenseUrl},
 
-			{TEXT("violentUssageName"),	lic->violentUsageName},
-			{TEXT("sexualUssageName"),	lic->sexualUsageName},
-			{TEXT("commercialUssageName"),	lic->commercialUsageName},
+			{TEXT("violentUssageName"),	lic0->violentUsageName},
+			{TEXT("sexualUssageName"),	lic0->sexualUsageName},
+			{TEXT("commercialUssageName"),	lic0->commercialUsageName},
 		};
 		for (int i = 0; i < SceneMeta->license.licensePairNum; ++i) {
 
@@ -596,7 +659,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiSce
 				if (FString(TEXT("texture")) == p.Key.C_Str()) {
 					int t = FCString::Atoi(*FString(p.Value.C_Str()));
 					if (t >= 0 && t < vrmAssetList->Textures.Num()) {
-						lic->thumbnail = vrmAssetList->Textures[t];
+						lic0->thumbnail = vrmAssetList->Textures[t];
 					}
 				}
 			}

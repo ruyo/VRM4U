@@ -8,6 +8,7 @@
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
 #include "VrmLicenseObject.h"
+#include "Vrm1LicenseObject.h"
 
 #include "VrmAsyncLoadAction.h"
 
@@ -189,6 +190,7 @@ static bool RemoveAssetList(UVrmAssetListObject *&assetList) {
 	}
 	RemoveObject(assetList->VrmMetaObject);
 	RemoveObject(assetList->VrmLicenseObject);
+	RemoveObject(assetList->Vrm1LicenseObject);
 	RemoveObject(assetList->HumanoidSkeletalMesh);
 	RemoveObject(assetList->HumanoidRig);
 
@@ -813,6 +815,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 		RenewPkgAndSaveObject(out->VrmHumanoidMetaObject, b);
 		RenewPkgAndSaveObject(out->VrmMannequinMetaObject, b);
 		RenewPkgAndSaveObject(out->VrmLicenseObject, b);
+		RenewPkgAndSaveObject(out->Vrm1LicenseObject, b);
 		RenewPkgAndSaveObject(out->HumanoidSkeletalMesh, b);
 		RenewPkgAndSaveObject(out->HumanoidRig, b);
 

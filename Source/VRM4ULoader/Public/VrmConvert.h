@@ -36,6 +36,7 @@ class UMaterialInterface;
 class USkeletalMesh;
 class UVrmAssetListObject;
 class UVrmLicenseObject;
+class UVrm1LicenseObject;
 class UPackage;
 
 

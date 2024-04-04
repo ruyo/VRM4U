@@ -16,6 +16,7 @@
 
 #include "VrmAssetListObject.h"
 #include "VrmLicenseObject.h"
+#include "Vrm1LicenseObject.h"
 #include "VrmMetaObject.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -34,6 +35,14 @@ UClass* FAssetTypeActions_VrmLicense::GetSupportedClass() const {
 FText FAssetTypeActions_VrmLicense::GetName() const {
 	return NSLOCTEXT("AssetTypeActions", "FAssetTypeActions_VrmLicense", "Vrm License");
 }
+
+UClass* FAssetTypeActions_Vrm1License::GetSupportedClass() const {
+	return UVrm1LicenseObject::StaticClass();
+}
+FText FAssetTypeActions_Vrm1License::GetName() const {
+	return NSLOCTEXT("AssetTypeActions", "FAssetTypeActions_Vrm1License", "Vrm1 License");
+}
+
 UClass* FAssetTypeActions_VrmMeta::GetSupportedClass() const {
 	return UVrmMetaObject::StaticClass();
 }
@@ -54,6 +63,13 @@ TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetD
 	}
 	if (str.Len() == 0){
 		TWeakObjectPtr<UVrmLicenseObject> a = Cast<UVrmLicenseObject>(AssetData.GetAsset());
+		if (a.Get()) {
+			str = TEXT(" License ");
+			col.A = 128;
+		}
+	}
+	if (str.Len() == 0) {
+		TWeakObjectPtr<UVrm1LicenseObject> a = Cast<UVrm1LicenseObject>(AssetData.GetAsset());
 		if (a.Get()) {
 			str = TEXT(" License ");
 			col.A = 128;
@@ -147,6 +163,15 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 			UVrmLicenseObject* a = Cast<UVrmLicenseObject>(Object);
 			if (a) {
 				UPackage *pk = a->GetOutermost();
+				GetObjectsWithOuter(pk, ret);
+				// no sk
+				tex = a->thumbnail;
+			}
+		}
+		{
+			UVrm1LicenseObject* a = Cast<UVrm1LicenseObject>(Object);
+			if (a) {
+				UPackage* pk = a->GetOutermost();
 				GetObjectsWithOuter(pk, ret);
 				// no sk
 				tex = a->thumbnail;

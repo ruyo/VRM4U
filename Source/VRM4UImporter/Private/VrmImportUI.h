@@ -7,6 +7,7 @@
 #include "UObject/Object.h"
 #include "Factories/ImportSettings.h"
 #include "VrmConvert.h"
+#include "Vrm1LicenseObject.h"
 
 #include "VrmImportUI.generated.h"
 
@@ -173,6 +174,14 @@ public:
 	/** Skeleton to use for imported asset. When importing a mesh, leaving this as "None" will create a new skeleton. When importing an animation this MUST be specified to import the asset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category=Mesh, meta=(ImportType="SkeletalMesh"))
 	class USkeleton* Skeleton;
+
+	//
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
+	TArray<FLicenseStringDataPair> LicenseString;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
+	TArray<FLicenseBoolDataPair> LicenseBool;
 
 	//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License_Personation/CharacterizationPermission")
