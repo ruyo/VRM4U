@@ -97,8 +97,11 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 		if (package == GetTransientPackage() || vrmAssetList == nullptr) {
 			MetaObject = VRM4U_NewObject<UVrmMetaObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
-			lic0 = VRM4U_NewObject<UVrmLicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
-			lic1 = VRM4U_NewObject<UVrm1LicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
+			if (VRMConverter::Options::Get().IsVRM10Model()) {
+				lic1 = VRM4U_NewObject<UVrm1LicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
+			} else {
+				lic0 = VRM4U_NewObject<UVrmLicenseObject>(package, NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
+			}
 		}
 		else {
 
@@ -593,13 +596,20 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 			FString key = UTF8_TO_TCHAR((*m).name.GetString());
 
-			if (key.Find("allow") == 0){
+			if (key.Find("allow") == 0) {
 				FLicenseBoolDataPair p;
 				p.key = key;
 				p.value = (*m).value.GetBool();
 				lic1->LicenseBool.Add(p);
-			}
-			else {
+			} else if (key == "thumbnailImage") {
+				if (vrmAssetList) {
+					int t = (*m).value.GetInt();
+					if (t >= 0 && t < vrmAssetList->Textures.Num()) {
+						lic1->thumbnail = vrmAssetList->Textures[t];
+						vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
+					}
+				}
+			}else{
 				if ((*m).value.IsArray()) {
 					int ind = 0;
 					bool bFound = false;
@@ -626,7 +636,6 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 				}
 			}
 		}
-
 	}else {
 		struct TT {
 			FString key;

@@ -121,8 +121,17 @@ void UVrmAssetListThumbnailRenderer::GetThumbnailSize(UObject* Object, float Zoo
 			if (tex) {
 				return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
 			}
+		}
+		if (a->Vrm1LicenseObject) {
+			auto tex = a->SmallThumbnailTexture;
+			if (tex == nullptr) {
+				tex = a->Vrm1LicenseObject->thumbnail;
+			}
+			if (tex) {
+				return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
+		}
 	}
-	}
+}
 	Super::GetThumbnailSize(Object, Zoom, OutWidth, OutHeight);
 }
 
@@ -139,11 +148,13 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 	if (tex == nullptr){
 		UVrmAssetListObject* a = Cast<UVrmAssetListObject>(Object);
 		if (a) {
-			sk = a->SkeletalMesh;
 			tex = a->SmallThumbnailTexture;
 			if (tex == nullptr) {
 				if (a->VrmLicenseObject) {
 					tex = a->VrmLicenseObject->thumbnail;
+				}
+				if (a->Vrm1LicenseObject) {
+					tex = a->Vrm1LicenseObject->thumbnail;
 				}
 			}
 		}

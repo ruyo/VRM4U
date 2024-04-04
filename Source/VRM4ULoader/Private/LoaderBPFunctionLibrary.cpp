@@ -413,6 +413,7 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 	Assimp::Importer mImporter;
 	const aiScene *mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
 
+	VRMConverter vc;
 	{
 		TArray<uint8> Res;
 		if (FFileHelper::LoadFileToArray(Res, *filepath)) {
@@ -433,10 +434,21 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 		//UE_LOG(LogVRM4ULoader, Log, TEXT("VRM:(%3.3lf secs) ReadFileFromMemory"), FPlatformTime::Seconds() - StartTime);
 
 		UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta: mScenePtr=%p"), mScenePtr);
+
+		{
+			// vrm version check
+
+			extern bool VRMIsVRM10(const uint8 * pData, size_t size);
+			if (VRMIsVRM10(Res.GetData(), Res.Num())) {
+				VRMConverter::Options::Get().SetVRM10Model(true);
+				vc.Init(Res.GetData(), Res.Num(), nullptr);
+			}
+		}
 	}
 	if (mScenePtr == nullptr) {
 		return;
 	}
+
 	UTexture2D* NewTexture2D = nullptr;
 
 	VRM::VRMMetadata *meta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
@@ -540,12 +552,13 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 
 		}
 	}
-	VRMConverter vc;
+
 	UVrmLicenseObject* m = nullptr;
 	UVrm1LicenseObject* m1 = nullptr;
 	vc.GetVRMMeta(mScenePtr, m, m1);
-	auto* p = m;
-	p->thumbnail = NewTexture2D;
+
+	if (m) m->thumbnail = NewTexture2D;
+	if (m1) m1->thumbnail = NewTexture2D;
 
 	a = m;
 	b = m1;

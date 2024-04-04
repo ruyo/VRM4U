@@ -174,6 +174,9 @@ namespace {
 			}
 		}
 		if (src == nullptr) {
+			// todo small texture vrm1license
+		}
+		if (src == nullptr) {
 			return;
 		}
 

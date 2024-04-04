@@ -219,19 +219,25 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 			UVrmLicenseObject* a = nullptr;
 			UVrm1LicenseObject* b = nullptr;
 			ULoaderBPFunctionLibrary::GetVRMMeta(fullFileName,a,b);
-			auto* p = a;
-			if (p) {
-				ImportUI->TitleAuthor = TEXT("\"") + p->title + TEXT("\"") + TEXT(" / ") + TEXT("\"") + p->author + TEXT("\"");
-				ImportUI->Thumbnail = p->thumbnail;
-				ImportUI->allowedUserName = p->allowedUserName;
-				ImportUI->violentUsageName = p->violentUsageName;
-				ImportUI->sexualUsageName = p->sexualUsageName;
-				ImportUI->commercialUsageName = p->commercialUsageName;
-				ImportUI->otherPermissionUrl = p->otherPermissionUrl;
-				ImportUI->licenseName = p->licenseName;
-				ImportUI->otherLicenseUrl = p->otherLicenseUrl;
+			if (a) {
+				ImportUI->TitleAuthor = TEXT("\"") + a->title + TEXT("\"") + TEXT(" / ") + TEXT("\"") + a->author + TEXT("\"");
+				ImportUI->Thumbnail = a->thumbnail;
+				ImportUI->allowedUserName = a->allowedUserName;
+				ImportUI->violentUsageName = a->violentUsageName;
+				ImportUI->sexualUsageName = a->sexualUsageName;
+				ImportUI->commercialUsageName = a->commercialUsageName;
+				ImportUI->otherPermissionUrl = a->otherPermissionUrl;
+				ImportUI->licenseName = a->licenseName;
+				ImportUI->otherLicenseUrl = a->otherLicenseUrl;
 
-				refPointerToLic = p;
+				refPointerToLic = a;
+			}
+			if (b) {
+				ImportUI->Thumbnail = b->thumbnail;
+				ImportUI->LicenseString = b->LicenseString;
+				ImportUI->LicenseBool = b->LicenseBool;
+				ImportUI->LicenseStringArray = b->LicenseStringArray;
+				refPointerToLic = b;
 			}
 			{
 				const FString Extension = FPaths::GetExtension(fullFileName);
