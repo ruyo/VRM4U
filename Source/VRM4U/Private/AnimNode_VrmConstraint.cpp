@@ -138,14 +138,15 @@ void FAnimNode_VrmConstraint::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 		if (a.Value.type == EVRMConstraintType::Roll) {
 			auto& roll = a.Value.constraintRoll;
 
-			auto srcCurrentTrans = Output.Pose.GetComponentSpaceTransform(srcPoseBoneIndex);
+			auto srcCurrentTrans = Output.Pose.GetLocalSpaceTransform(srcPoseBoneIndex);
 			auto srcCurrentRot = srcCurrentTrans.GetRotation();
 
 			auto dstCurrentTrans = Output.Pose.GetComponentSpaceTransform(dstPoseBoneIndex);
 			auto dstCurrentRot = dstCurrentTrans.GetRotation();
 
 			{
-				auto r = (srcRefRot.Inverse() * srcCurrentRot);
+				//auto r = (srcRefRot.Inverse() * srcCurrentRot);
+				auto r = srcCurrentRot;
 				//auto r = (srcCurrentRot);
 				FVector axis;
 				decltype(FVector::X) angle;
@@ -170,7 +171,7 @@ void FAnimNode_VrmConstraint::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 				auto d = FVector::DotProduct(axis, v);
 				r = FQuat(v, angle * roll.weight * d);
 
-				r = dstParentTrans.GetRotation() * dstRefRot * r;
+				r = dstParentTrans.GetRotation() * r;
 				dstCurrentTrans.SetRotation(r);
 				Output.Pose.SetComponentSpaceTransform(dstPoseBoneIndex, dstCurrentTrans);
 			}
