@@ -216,7 +216,10 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		}
 
 		if (1) {
-			auto *p = ULoaderBPFunctionLibrary::GetVRMMeta(fullFileName);
+			UVrmLicenseObject* a = nullptr;
+			UVrm1LicenseObject* b = nullptr;
+			ULoaderBPFunctionLibrary::GetVRMMeta(fullFileName,a,b);
+			auto* p = a;
 			if (p) {
 				ImportUI->TitleAuthor = TEXT("\"") + p->title + TEXT("\"") + TEXT(" / ") + TEXT("\"") + p->author + TEXT("\"");
 				ImportUI->Thumbnail = p->thumbnail;

@@ -68,7 +68,7 @@ public:
 	bool ConvertModel(UVrmAssetListObject *vrmAssetList);
 	bool ConvertMorphTarget(UVrmAssetListObject *vrmAssetList);
 
-	UVrmLicenseObject *GetVRMMeta(const aiScene *mScenePtr);
+	void GetVRMMeta(const aiScene *mScenePtr, UVrmLicenseObject *& a, UVrm1LicenseObject *& b);
 	bool ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint8* pData, size_t dataSize);
 	bool ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiScene *mScenePtr, const uint8* pData, size_t dataSize);
 	bool ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize);

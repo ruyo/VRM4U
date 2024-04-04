@@ -176,12 +176,14 @@ public:
 	class USkeleton* Skeleton;
 
 	//
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VRM1_License")
+	TArray<FLicenseBoolDataPair> LicenseBool;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VRM1_License")
 	TArray<FLicenseStringDataPair> LicenseString;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
-	TArray<FLicenseBoolDataPair> LicenseBool;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VRM1_License")
+	TArray<FLicenseStringDataArray> LicenseStringArray;
 
 	//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License_Personation/CharacterizationPermission")

@@ -34,12 +34,15 @@ bool VRMConverter::Init(const uint8* pFileData, size_t dataSize, const aiScene *
 }
 
 
-static UVrmLicenseObject *tmpLicense = nullptr;
-UVrmLicenseObject* VRMConverter::GetVRMMeta(const aiScene *mScenePtr) {
-	tmpLicense = nullptr;
-	VRMConverter::ConvertVrmMeta(nullptr, mScenePtr, nullptr, 0);
+static UVrmLicenseObject* tmpLicense0 = nullptr;
+static UVrm1LicenseObject* tmpLicense1 = nullptr;
+void VRMConverter::GetVRMMeta(const aiScene *mScenePtr, UVrmLicenseObject *& a, UVrm1LicenseObject *& b) {
+	tmpLicense0 = nullptr;
+	tmpLicense1 = nullptr;
+	ConvertVrmMeta(nullptr, mScenePtr, nullptr, 0);
 
-	return tmpLicense;
+	a = tmpLicense0;
+	b = tmpLicense1;
 }
 
 bool VRMConverter::ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint8* pData, size_t dataSize) {
@@ -77,7 +80,8 @@ bool VRMConverter::ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint
 
 bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize) {
 
-	tmpLicense = nullptr;
+	tmpLicense0 = nullptr;
+	tmpLicense1 = nullptr;
 	VRM::VRMMetadata* SceneMeta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
 
 	UVrmMetaObject* MetaObject = nullptr;
@@ -130,7 +134,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 			MetaObject->VrmAssetListObject = vrmAssetList;
 		}
 		else {
-			tmpLicense = lic0;
+			tmpLicense0 = lic0;
+			tmpLicense1 = lic1;
 		}
 
 		if (VRMConverter::Options::Get().IsVRM10Model()) {

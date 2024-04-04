@@ -397,7 +397,7 @@ namespace {
 #endif
 }
 
-UVrmLicenseObject* ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath) {
+void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& a, UVrm1LicenseObject*& b) {
 
 	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:OrigFileName=%s"), *filepath);
 
@@ -435,7 +435,7 @@ UVrmLicenseObject* ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath) {
 		UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta: mScenePtr=%p"), mScenePtr);
 	}
 	if (mScenePtr == nullptr) {
-		return nullptr;
+		return;
 	}
 	UTexture2D* NewTexture2D = nullptr;
 
@@ -541,9 +541,14 @@ UVrmLicenseObject* ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath) {
 		}
 	}
 	VRMConverter vc;
-	auto *p = vc.GetVRMMeta(mScenePtr);
+	UVrmLicenseObject* m = nullptr;
+	UVrm1LicenseObject* m1 = nullptr;
+	vc.GetVRMMeta(mScenePtr, m, m1);
+	auto* p = m;
 	p->thumbnail = NewTexture2D;
-	return p;
+
+	a = m;
+	b = m1;
 }
 
 bool ULoaderBPFunctionLibrary::VRMSetLoadMaterialType(EVRMImportMaterialType type) {
