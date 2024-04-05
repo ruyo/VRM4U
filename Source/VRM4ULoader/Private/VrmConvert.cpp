@@ -482,6 +482,11 @@ bool VRMConverter::Options::IsRemoveDegenerateTriangles() const {
 	return ImportOption->bRemoveDegenerateTriangles;
 }
 
+bool VRMConverter::Options::IsUE5Material() const {
+	if (ImportOption == nullptr) return false;
+	return ImportOption->bUseUE5Material;
+}
+
 static bool bbVRM0 = false;
 static bool bbVRM10 = false;
 void VRMConverter::Options::SetVRM0Model(bool bVRM) {

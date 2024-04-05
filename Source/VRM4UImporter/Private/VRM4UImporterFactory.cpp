@@ -193,8 +193,8 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 	if (fullFileName.IsEmpty()) {
 		return nullptr;
 	}
-	
-	static UVrmImportUI *ImportUI = nullptr;
+
+	static UVrmImportUI* ImportUI = nullptr;
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 	TAssetPtr<UObject> refPointerToLic;
 #else
@@ -218,7 +218,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		if (1) {
 			UVrmLicenseObject* a = nullptr;
 			UVrm1LicenseObject* b = nullptr;
-			ULoaderBPFunctionLibrary::GetVRMMeta(fullFileName,a,b);
+			ULoaderBPFunctionLibrary::GetVRMMeta(fullFileName, a, b);
 			if (a) {
 				ImportUI->TitleAuthor = TEXT("\"") + a->title + TEXT("\"") + TEXT(" / ") + TEXT("\"") + a->author + TEXT("\"");
 				ImportUI->Thumbnail = a->thumbnail;
@@ -282,7 +282,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		}
 
 		// Compute centered window position based on max window size, which include when all categories are expanded
-		const float FbxImportWindowWidth = 410.0f*2.f;
+		const float FbxImportWindowWidth = 410.0f * 2.f;
 		const float FbxImportWindowHeight = 750.0f;
 		FVector2D FbxImportWindowSize = FVector2D(FbxImportWindowWidth, FbxImportWindowHeight); // Max window size it can get based on current slate
 
@@ -337,11 +337,15 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 	//UObject* objFinder = StaticLoadObject(UVrmAssetListObject::StaticClass(), nullptr, TEXT("/VRM4U/VrmObjectListBP.VrmObjectListBP_C"));
 	//UObject* objFinder = NewObject<UVrmAssetListObject>(InParent, NAME_None, RF_Transactional);
 
+	auto& importOption = VRMConverter::Options::Get();
+	importOption.SetVrmOption(ImportUI->GenerateOptionData());
+
+
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 	TAssetPtr<UVrmAssetListObject> m;
 	TArray< TAssetPtr<UObject> > tt;
 #else
-	TSoftObjectPtr<UVrmAssetListObject> m;
+	TSoftObjectPtr<UVrmAssetListObject> vrmAssetList;
 	TArray< TSoftObjectPtr<UObject> > tt;
 #endif
 	tt.Add(InParent);
@@ -365,10 +369,16 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 				}
 			}
 		}
-
-		if (c == nullptr) {
-			FSoftObjectPath r(TEXT("/VRM4U/VrmAssetListObjectBP.VrmAssetListObjectBP"));
+		if (c == nullptr || VRMConverter::Options::Get().IsUE5Material()) {
+			FSoftObjectPath r(TEXT("/VRM4U/VrmAssetListObjectBPUE5.VrmAssetListObjectBPUE5"));
 			UObject *u = r.TryLoad();
+			if (u) {
+				c = (UClass*)(Cast<UBlueprint>(u)->GeneratedClass);
+			}
+		}
+		if (c == nullptr){
+			FSoftObjectPath r(TEXT("/VRM4U/VrmAssetListObjectBP.VrmAssetListObjectBP"));
+			UObject* u = r.TryLoad();
 			if (u) {
 				c = (UClass*)(Cast<UBlueprint>(u)->GeneratedClass);
 			}
@@ -380,12 +390,12 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 
 		{
 			if (ReimportBase) {
-				m = ReimportBase;
+				vrmAssetList = ReimportBase;
 			}
-			if (m) {
-				m->MarkPackageDirty();
+			if (vrmAssetList) {
+				vrmAssetList->MarkPackageDirty();
 			}else{
-				m = NewObject<UVrmAssetListObject>((UObject*)GetTransientPackage(), c.Get());
+				vrmAssetList = NewObject<UVrmAssetListObject>((UObject*)GetTransientPackage(), c.Get());
 			}
 		}
 
@@ -397,7 +407,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 	//auto aaa = NewObject<UObject>(c);
 
 	UVrmAssetListObject* mret = nullptr;
-	if (m) {
+	if (vrmAssetList) {
 		//auto a = NewObject<UVrmAssetListObject>(MatClass.Object, NAME_None, RF_Transactional);
 		//MatClass.Object; 
 		//ULoaderBPFunctionLibrary::LoadVRMFile(nullptr, fullFileName);
@@ -405,12 +415,10 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		GWarn->BeginSlowTask( NSLOCTEXT("UnrealEd", "ImportVRM", "Importing VRM"), true );
 
 		int ret = true;
-		auto &g = VRMConverter::Options::Get();
-		g.SetVrmOption(ImportUI->GenerateOptionData());
 
 		ULoaderBPFunctionLibrary::SetImportMode(true, Cast<UPackage>(InParent));
 		{
-			ret = ULoaderBPFunctionLibrary::LoadVRMFileLocal(m.Get(), mret, fullFileName);
+			ret = ULoaderBPFunctionLibrary::LoadVRMFileLocal(vrmAssetList.Get(), mret, fullFileName);
 		}
 
 		/*
@@ -444,7 +452,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		*/
 
 		ULoaderBPFunctionLibrary::SetImportMode(false, nullptr);
-		g.SetVrmOption(nullptr);
+		importOption.SetVrmOption(nullptr);
 
 		GWarn->EndSlowTask();
 

@@ -65,6 +65,8 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bMipmapGenerateMode);
 
+	c(bUseUE5Material);
+
 	c(bGenerateOutlineMaterial);
 
 	c(bMergeMaterial);

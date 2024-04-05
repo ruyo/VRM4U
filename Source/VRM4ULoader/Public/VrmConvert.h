@@ -143,6 +143,8 @@ public:
 
 		void ClearModelType();
 
+		bool IsUE5Material() const;
+
 		bool IsVRMModel() const;
 		bool IsVRM0Model() const;
 		bool IsVRM10Model() const;
