@@ -14,15 +14,15 @@ void FImportOptionData::init() {
 
 
 const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_vrm = {
-	{"Root",""},
-	{"Pelvis","hips"},
+	{"root",""},
+	{"pelvis","hips"},
 	{"spine_01","spine"},
 	{"spine_02","chest"},
 	{"spine_03","upperChest"},
 	{"clavicle_l","leftShoulder"},
-	{"UpperArm_L","leftUpperArm"},
+	{"upperarm_L","leftUpperArm"},
 	{"lowerarm_l","leftLowerArm"},
-	{"Hand_L","leftHand"},
+	{"hand_l","leftHand"},
 	{"index_01_l","leftIndexProximal"},
 	{"index_02_l","leftIndexIntermediate"},
 	{"index_03_l","leftIndexDistal"},
@@ -41,9 +41,9 @@ const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_vrm = {
 	{"lowerarm_twist_01_l",""},
 	{"upperarm_twist_01_l",""},
 	{"clavicle_r","rightShoulder"},
-	{"UpperArm_R","rightUpperArm"},
+	{"upperarm_r","rightUpperArm"},
 	{"lowerarm_r","rightLowerArm"},
-	{"Hand_R","rightHand"},
+	{"hand_r","rightHand"},
 	{"index_01_r","rightIndexProximal"},
 	{"index_02_r","rightIndexIntermediate"},
 	{"index_03_r","rightIndexDistal"},
@@ -63,16 +63,16 @@ const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_vrm = {
 	{"upperarm_twist_01_r",""},
 	{"neck_01","neck"},
 	{"head","head"},
-	{"Thigh_L","leftUpperLeg"},
+	{"thigh_l","leftUpperLeg"},
 	{"calf_l","leftLowerLeg"},
 	{"calf_twist_01_l",""},
-	{"Foot_L","leftFoot"},
+	{"foot_l","leftFoot"},
 	{"ball_l","leftToes"},
 	{"thigh_twist_01_l",""},
-	{"Thigh_R","rightUpperLeg"},
+	{"thigh_r","rightUpperLeg"},
 	{"calf_r","rightLowerLeg"},
 	{"calf_twist_01_r",""},
-	{"Foot_R","rightFoot"},
+	{"foot_r","rightFoot"},
 	{"ball_r","rightToes"},
 	{"thigh_twist_01_r",""},
 	{"ik_foot_root",""},
@@ -90,15 +90,15 @@ const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_vrm = {
 };
 
 const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_pmx = {
-	{"Root",TEXT("全ての親")},
-	{"Pelvis",TEXT("センター")},
+	{"root",TEXT("全ての親")},
+	{"pelvis",TEXT("センター")},
 	{"spine_01",TEXT("上半身")},
 	{"spine_02",TEXT("上半身")},
 	{"spine_03",TEXT("上半身2")},
 	{"clavicle_l",TEXT("左肩")},
-	{"UpperArm_L",TEXT("左腕")},
+	{"upperarm_l",TEXT("左腕")},
 	{"lowerarm_l",TEXT("左ひじ")},
-	{"Hand_L",TEXT("左手首")},
+	{"hand_l",TEXT("左手首")},
 	{"index_01_l",TEXT("左人指１")},
 	{"index_02_l",TEXT("左人指２")},
 	{"index_03_l",TEXT("左人指３")},
@@ -117,9 +117,9 @@ const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_pmx = {
 	{"lowerarm_twist_01_l",TEXT("")},
 	{"upperarm_twist_01_l",TEXT("")},
 	{"clavicle_r",TEXT("右肩")},
-	{"UpperArm_R",TEXT("右腕")},
+	{"upperarm_r",TEXT("右腕")},
 	{"lowerarm_r",TEXT("右ひじ")},
-	{"Hand_R",TEXT("右手首")},
+	{"hand_r",TEXT("右手首")},
 	{"index_01_r",TEXT("右人指１")},
 	{"index_02_r",TEXT("右人指２")},
 	{"index_03_r",TEXT("右人指３")},
@@ -139,16 +139,16 @@ const TArray<VRMUtil::VRMBoneTable> VRMUtil::table_ue4_pmx = {
 	{"upperarm_twist_01_r",TEXT("")},
 	{"neck_01",TEXT("首")},
 	{"head",TEXT("頭")},
-	{"Thigh_L",TEXT("左足")},
+	{"thigh_l",TEXT("左足")},
 	{"calf_l",TEXT("左ひざ")},
 	{"calf_twist_01_l",TEXT("")},
-	{"Foot_L",TEXT("左足首")},
+	{"foot_l",TEXT("左足首")},
 	{"ball_l",TEXT("左つま先")},
 	{"thigh_twist_01_l",TEXT("")},
-	{"Thigh_R",TEXT("右足")},
+	{"thigh_r",TEXT("右足")},
 	{"calf_r",TEXT("右ひざ")},
 	{"calf_twist_01_r",TEXT("")},
-	{"Foot_R",TEXT("右足首")},
+	{"foot_r",TEXT("右足首")},
 	{"ball_r",TEXT("右つま先")},
 	{"thigh_twist_01_r",TEXT("")},
 	{"ik_foot_root",TEXT("")},
@@ -375,15 +375,15 @@ const TArray<FString> VRMUtil::vrm_humanoid_parent_list = {
 //
 
 const TArray<FString> VRMUtil::ue4_humanoid_bone_list = {
-	"Root",
-	"Pelvis",
+	"root",
+	"pelvis",
 	"spine_01",
 	"spine_02",
 	"spine_03",
 	"clavicle_l",
-	"UpperArm_L",
+	"upperarm_L",
 	"lowerarm_l",
-	"Hand_L","leftHand",
+	"hand_l",
 	"index_01_l",
 	"index_02_l",
 	"index_03_l",
@@ -402,9 +402,9 @@ const TArray<FString> VRMUtil::ue4_humanoid_bone_list = {
 	"lowerarm_twist_01_l",
 	"upperarm_twist_01_l",
 	"clavicle_r",
-	"UpperArm_R",
+	"upperarm_r",
 	"lowerarm_r",
-	"Hand_R",
+	"hand_r",
 	"index_01_r",
 	"index_02_r",
 	"index_03_r",
@@ -424,16 +424,16 @@ const TArray<FString> VRMUtil::ue4_humanoid_bone_list = {
 	"upperarm_twist_01_r",
 	"neck_01",
 	"head",
-	"Thigh_L",
+	"thigh_l",
 	"calf_l",
 	"calf_twist_01_l",
-	"Foot_L",
+	"foot_l",
 	"ball_l",
 	"thigh_twist_01_l",
-	"Thigh_R",
+	"thigh_r",
 	"calf_r",
 	"calf_twist_01_r",
-	"Foot_R",
+	"foot_r",
 	"ball_r",
 	"thigh_twist_01_r",
 	"ik_foot_root",
@@ -451,15 +451,15 @@ const TArray<FString> VRMUtil::ue4_humanoid_bone_list = {
 };
 
 const TArray<FName> VRMUtil::ue4_humanoid_bone_list_name = {
-	"Root",
-	"Pelvis",
+	"root",
+	"pelvis",
 	"spine_01",
 	"spine_02",
 	"spine_03",
 	"clavicle_l",
-	"UpperArm_L",
+	"upperarm_l",
 	"lowerarm_l",
-	"Hand_L","leftHand",
+	"hand_l",
 	"index_01_l",
 	"index_02_l",
 	"index_03_l",
@@ -478,9 +478,9 @@ const TArray<FName> VRMUtil::ue4_humanoid_bone_list_name = {
 	"lowerarm_twist_01_l",
 	"upperarm_twist_01_l",
 	"clavicle_r",
-	"UpperArm_R",
+	"upperarm_r",
 	"lowerarm_r",
-	"Hand_R",
+	"hand_r",
 	"index_01_r",
 	"index_02_r",
 	"index_03_r",
@@ -500,16 +500,16 @@ const TArray<FName> VRMUtil::ue4_humanoid_bone_list_name = {
 	"upperarm_twist_01_r",
 	"neck_01",
 	"head",
-	"Thigh_L",
+	"thigh_l",
 	"calf_l",
 	"calf_twist_01_l",
-	"Foot_L",
+	"foot_l",
 	"ball_l",
 	"thigh_twist_01_l",
-	"Thigh_R",
+	"thigh_r",
 	"calf_r",
 	"calf_twist_01_r",
-	"Foot_R",
+	"foot_r",
 	"ball_r",
 	"thigh_twist_01_r",
 	"ik_foot_root",
@@ -610,11 +610,11 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 	if (bVRM || bBVH) {
 		{
 			RetargetParts t;
-			t.BoneUE4 = TEXT("UpperArm_R");
+			t.BoneUE4 = TEXT("upperarm_r");
 			t.rot = FRotator(50, 0, 0);
 			retargetTable.Push(t);
 
-			t.BoneUE4 = TEXT("UpperArm_L");
+			t.BoneUE4 = TEXT("upperarm_l");
 			t.rot = FRotator(-50, 0, 0);
 			retargetTable.Push(t);
 
@@ -628,11 +628,11 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 		}
 		{
 			RetargetParts t;
-			t.BoneUE4 = TEXT("Hand_R");
+			t.BoneUE4 = TEXT("hand_r");
 			t.rot = FRotator(0, 0, 0);
 			retargetTable.Push(t);
 
-			t.BoneUE4 = TEXT("Hand_L");
+			t.BoneUE4 = TEXT("hand_l");
 			t.rot = FRotator(0, 0, 0);
 			retargetTable.Push(t);
 		}
@@ -744,7 +744,7 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 			t.rot = FRotator(0, -30, 0);
 			retargetTable.Push(t);
 
-			t.BoneUE4 = TEXT("Hand_R");
+			t.BoneUE4 = TEXT("hand_r");
 			t.rot = FRotator(10, 0, 0);
 			retargetTable.Push(t);
 		}
@@ -754,7 +754,7 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 			t.rot = FRotator(-0, 30, 0);
 			retargetTable.Push(t);
 
-			t.BoneUE4 = TEXT("Hand_L");
+			t.BoneUE4 = TEXT("hand_l");
 			t.rot = FRotator(-10, 0, 0);
 			retargetTable.Push(t);
 		}
@@ -762,11 +762,11 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 	// foot
 	{
 		RetargetParts t;
-		t.BoneUE4 = TEXT("Thigh_R");
+		t.BoneUE4 = TEXT("thigh_r");
 		t.rot = FRotator(-5, 0, 0);
 		retargetTable.Push(t);
 
-		t.BoneUE4 = TEXT("Thigh_L");
+		t.BoneUE4 = TEXT("thigh_l");
 		t.rot = FRotator(5, 0, 0);
 		retargetTable.Push(t);
 
@@ -778,11 +778,11 @@ void VRMRetargetData::Setup(UVrmAssetListObject* InVrmAssetList, bool bVRM, bool
 		t.rot = FRotator(0, 0, 5);
 		retargetTable.Push(t);
 
-		t.BoneUE4 = TEXT("Foot_R");
+		t.BoneUE4 = TEXT("foot_r");
 		t.rot = FRotator(5, 0, -5);
 		retargetTable.Push(t);
 
-		t.BoneUE4 = TEXT("Foot_L");
+		t.BoneUE4 = TEXT("foot_l");
 		t.rot = FRotator(-5, 0, -5);
 		retargetTable.Push(t);
 	}
