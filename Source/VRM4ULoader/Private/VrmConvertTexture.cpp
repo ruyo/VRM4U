@@ -289,7 +289,9 @@ namespace {
 #endif
 	}
 
-	bool createAndAddMaterial(UMaterialInstanceConstant *dm, int matIndex, UVrmAssetListObject *vrmAssetList, const VRMConverter *vc) {
+	bool createAndAddMaterial(UMaterialInstanceConstant *dm, int matIndex, UVrmAssetListObject *vrmAssetList, const VRMConverter *vc,
+		const TArray<int> &TextureTypeToIndex
+	) {
 		auto i = matIndex;
 
 		// default set function
@@ -428,14 +430,20 @@ namespace {
 			TT tableParam[] = {
 				{TEXT("mtoon_tex_MainTex"),		vrmMat.textureProperties._MainTex},
 				{TEXT("mtoon_tex_ShadeTexture"),	vrmMat.textureProperties._ShadeTexture},
+				{TEXT("mtoon_tex_Shade"),			vrmMat.textureProperties._ShadeTexture},	// vrm1
 				{TEXT("mtoon_tex_BumpMap"),		vrmMat.textureProperties._BumpMap},
 				{TEXT("mtoon_tex_ReceiveShadowTexture"),	vrmMat.textureProperties._ReceiveShadowTexture},
 				{TEXT("mtoon_tex_ShadingGradeTexture"),	vrmMat.textureProperties._ShadingGradeTexture},
 				{TEXT("mtoon_tex_RimTexture"),			vrmMat.textureProperties._RimTexture},
+				{TEXT("mtoon_tex_RimMultiply"),					vrmMat.textureProperties._RimTexture},	// vrm1
 				{TEXT("mtoon_tex_SphereAdd"),	vrmMat.textureProperties._SphereAdd},
+				{TEXT("mtoon_tex_MatCap"),		vrmMat.textureProperties._SphereAdd},	// vrm1
 				{TEXT("mtoon_tex_EmissionMap"),	vrmMat.textureProperties._EmissionMap},
-				{TEXT("mtoon_tex_OutlineWidthTexture"),	vrmMat.textureProperties._OutlineWidthTexture},
-				{TEXT("mtoon_tex_UvAnimMaskTexture"),	vrmMat.textureProperties._UvAnimMaskTexture},
+				{TEXT("mtoon_tex_Emissive"),	vrmMat.textureProperties._EmissionMap},	// vrm1
+				{TEXT("mtoon_tex_OutlineWidthTexture"),			vrmMat.textureProperties._OutlineWidthTexture},
+				{TEXT("mtoon_tex_OutlineWidthMultiply"),		vrmMat.textureProperties._OutlineWidthTexture},		// vrm1
+				{TEXT("mtoon_tex_UvAnimMaskTexture")	,	vrmMat.textureProperties._UvAnimMaskTexture},
+				{TEXT("mtoon_tex_UvAnimationMask"),			vrmMat.textureProperties._UvAnimMaskTexture},		// vrm1
 			};
 
 			if (VRMConverter::Options::Get().IsVRM10Model()) {
@@ -460,6 +468,7 @@ namespace {
 				if (count == 1) {
 					// main => shade tex
 					LocalTextureSet(dm, *tableParam[1].key, vrmAssetList->Textures[t.value]);
+					LocalTextureSet(dm, *tableParam[2].key, vrmAssetList->Textures[t.value]);
 				}
 
 				//FTextureParameterValue *v = new (dm->TextureParameterValues) FTextureParameterValue();
@@ -468,6 +477,20 @@ namespace {
 				//v->ParameterInfo.Association = EMaterialParameterAssociation::GlobalParameter;
 				//v->ParameterValue = vrmAssetList->Textures[t.value];
 			}
+
+			{
+				auto n = TextureTypeToIndex[aiTextureType_NORMALS];
+				if (n >= 0) {
+					LocalTextureSet(dm, TEXT("mtoon_tex_Normal"), vrmAssetList->Textures[n]);
+				}
+			}
+			{
+				auto n = TextureTypeToIndex[aiTextureType_EMISSIVE];
+				if (n >= 0) {
+					LocalTextureSet(dm, TEXT("mtoon_tex_Emissive"), vrmAssetList->Textures[n]);
+				}
+			}
+
 
 		}
 
@@ -1154,7 +1177,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 
 					// mtoon
 					if (bMToon || VRMConverter::Options::Get().IsVRM10Model()) {
-						createAndAddMaterial(dm, iMat, vrmAssetList, this);
+						createAndAddMaterial(dm, iMat, vrmAssetList, this, TextureTypeToIndex);
 
 						if (matFlagOpaqueArray.IsValidIndex(iMat)) {
 							if (matFlagOpaqueArray[iMat]) {
