@@ -457,7 +457,17 @@ namespace {
 				}
 			}
 
+			// default texture
+			{
+				auto n = TextureTypeToIndex[aiTextureType_DIFFUSE];
+				if (n >= 0) {
+					LocalTextureSet(dm, TEXT("mtoon_tex_MainTex"), vrmAssetList->Textures[n]);
+					LocalTextureSet(dm, TEXT("gltf_tex_diffuse"), vrmAssetList->Textures[n]);
+					LocalTextureSet(dm, TEXT("mtoon_tex_Shade"), vrmAssetList->Textures[n]);
+				}
+			}
 
+			// mtoon texture
 			int count = 0;
 			for (auto &t : tableParam) {
 				++count;
@@ -478,6 +488,7 @@ namespace {
 				//v->ParameterValue = vrmAssetList->Textures[t.value];
 			}
 
+			// gltf default texture
 			{
 				auto n = TextureTypeToIndex[aiTextureType_NORMALS];
 				if (n >= 0) {
