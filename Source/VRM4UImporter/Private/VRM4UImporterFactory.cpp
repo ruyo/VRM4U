@@ -213,6 +213,20 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 			ImportUI->bMergePrimitive = true;
 			ImportUI->TitleAuthor.Empty();
 			ImportUI->Thumbnail = nullptr;
+
+			ImportUI->TitleAuthor.Empty();
+			ImportUI->Thumbnail = nullptr;
+			ImportUI->allowedUserName.Empty();
+			ImportUI->violentUsageName.Empty();
+			ImportUI->sexualUsageName.Empty();
+			ImportUI->commercialUsageName.Empty();
+			ImportUI->otherPermissionUrl.Empty();
+			ImportUI->licenseName.Empty();
+			ImportUI->otherLicenseUrl.Empty();
+
+			ImportUI->LicenseString.Empty();
+			ImportUI->LicenseBool.Empty();
+			ImportUI->LicenseStringArray.Empty();
 		}
 
 		if (1) {

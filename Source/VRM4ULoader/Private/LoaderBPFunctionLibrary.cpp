@@ -159,6 +159,37 @@ namespace {
 
 }
 
+
+static std::string GetExtAndSetModelTypeLocal(std::string e, const uint8* pDataLocal, size_t sizeLocal) {
+	std::string e_tmp = e;
+	VRMConverter::Options::Get().ClearModelType();
+
+	if (e.compare("vrm") == 0 || e.compare("glb") == 0 || e.compare("gltf") == 0) {
+
+		VRMConverter::Options::Get().SetVRM0Model(true);
+
+		extern bool VRMIsVRM10(const uint8 * pData, size_t size);
+		if (VRMIsVRM10(pDataLocal, sizeLocal)) {
+			VRMConverter::Options::Get().SetVRM10Model(true);
+		}
+	}
+
+	if (e.compare("vrma") == 0) {
+		VRMConverter::Options::Get().SetVRMAModel(true);
+		VRMConverter::Options::Get().SetNoMesh(true);
+		e_tmp = "vrm";
+		VRMConverter::Options::Get().SetBVHModel(true);
+	}
+
+	if (e.compare("bvh") == 0) {
+		VRMConverter::Options::Get().SetBVHModel(true);
+	}
+	if (e.compare("pmx") == 0) {
+		VRMConverter::Options::Get().SetPMXModel(true);
+	}
+	return e_tmp;
+}
+
 static bool RemoveObject(UObject* u) {
 	if (u == nullptr) return true;
 #if WITH_EDITOR
@@ -250,6 +281,99 @@ static bool RenewPkgAndSaveObject(UObject *u, bool bSave) {
 
 #endif
 	return true;
+}
+
+static UTexture2D* LocalGetTexture(const aiScene* mScenePtr, int texIndex) {
+
+	if (texIndex < 0 || texIndex >= (int)mScenePtr->mNumTextures) {
+		return nullptr;
+	}
+
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	TSharedPtr<IImageWrapper> ImageWrapper;
+	// Note: PNG format.  Other formats are supported
+	ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+
+	auto& t = *mScenePtr->mTextures[texIndex];
+	int Width = t.mWidth;
+	int Height = t.mHeight;
+#if	UE_VERSION_OLDER_THAN(4,25,0)
+#else
+	TArray<uint8> RawData;
+#endif
+	const TArray<uint8>* pRawData = nullptr;
+
+	if (Height == 0) {
+		if (ImageWrapper->SetCompressed(t.pcData, t.mWidth)) {
+
+		}
+		Width = ImageWrapper->GetWidth();
+		Height = ImageWrapper->GetHeight();
+
+		if (Width == 0 || Height == 0) {
+			return nullptr;
+		}
+
+#if	UE_VERSION_OLDER_THAN(4,25,0)
+		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, pRawData);
+#else
+		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData);
+		pRawData = &RawData;
+#endif
+	}
+	FString baseName;
+
+	auto *NewTexture2D = VRMLoaderUtil::CreateTexture(Width, Height, FString(TEXT("T_")) + baseName, GetTransientPackage());
+	//UTexture2D* NewTexture2D = _CreateTransient(Width, Height, PF_B8G8R8A8, t.mFilename.C_Str());
+
+	// Fill in the base mip for the texture we created
+	uint8* MipData = (uint8*)GetPlatformData(NewTexture2D)->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	if (pRawData) {
+		FMemory::Memcpy(MipData, pRawData->GetData(), pRawData->Num());
+	}
+	else {
+		for (int32 y = 0; y < Height; y++)
+		{
+			const aiTexel* c = &(t.pcData[y * Width]);
+			uint8* DestPtr = &MipData[y * Width * sizeof(FColor)];
+			for (int32 x = 0; x < Width; x++)
+			{
+				*DestPtr++ = c->b;
+				*DestPtr++ = c->g;
+				*DestPtr++ = c->r;
+				*DestPtr++ = c->a;
+				c++;
+			}
+		}
+	}
+	GetPlatformData(NewTexture2D)->Mips[0].BulkData.Unlock();
+
+	// Set options
+	NewTexture2D->SRGB = true;// bUseSRGB;
+	NewTexture2D->CompressionSettings = TC_Default;
+	NewTexture2D->AddressX = TA_Wrap;
+	NewTexture2D->AddressY = TA_Wrap;
+
+#if WITH_EDITORONLY_DATA
+	NewTexture2D->CompressionNone = false;
+	NewTexture2D->DeferCompression = true;
+
+	// nomipmap for tmporary thumbnail
+	//if (VRMConverter::Options::Get().IsMipmapGenerateMode()) {
+	//	NewTexture2D->MipGenSettings = TMGS_FromTextureGroup;
+	//} else {
+	NewTexture2D->MipGenSettings = TMGS_NoMipmaps;
+	//}
+	NewTexture2D->Source.Init(Width, Height, 1, 1, ETextureSourceFormat::TSF_BGRA8, pRawData->GetData());
+	//NewTexture2D->Source.Compress();
+#endif
+
+// Update the remote texture data
+	NewTexture2D->UpdateResource();
+#if WITH_EDITOR
+	NewTexture2D->PostEditChange();
+#endif
+	return NewTexture2D;
 }
 
 static void UpdateProgress(int prog) {
@@ -427,6 +551,8 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 		std::string e = TCHAR_TO_UTF8(*ext);
 #endif
 
+		e = GetExtAndSetModelTypeLocal(e, Res.GetData(), Res.Num());
+
 		mScenePtr = mImporter.ReadFileFromMemory(Res.GetData(), Res.Num(),
 			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes,
 			e.c_str());
@@ -451,105 +577,27 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 
 	UTexture2D* NewTexture2D = nullptr;
 
-	VRM::VRMMetadata *meta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
+	if (VRMConverter::Options::Get().IsVRM10Model()) {
+		int texIndex = vc.GetThumbnailTextureIndex();
+		NewTexture2D = LocalGetTexture(mScenePtr, texIndex);
+	}else{
+		VRM::VRMMetadata* meta = reinterpret_cast<VRM::VRMMetadata*>(mScenePtr->mVRMMeta);
 
-	//mScenePtr->mTextures[0]->mFilename
+		if (meta) {
+			for (int i = 0; i < meta->license.licensePairNum; ++i) {
 
-	if (meta) {
-		for (int i = 0; i < meta->license.licensePairNum; ++i) {
+				auto& p = meta->license.licensePair[i];
 
-			auto &p = meta->license.licensePair[i];
+				if (FString(TEXT("texture")) != p.Key.C_Str()) {
+					continue;
+				}
 
-			if (FString(TEXT("texture")) == p.Key.C_Str()) {
 				unsigned int texIndex = FCString::Atoi(*FString(p.Value.C_Str()));
-				if (texIndex >= 0 && texIndex < mScenePtr->mNumTextures) {
-
-					IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-					TSharedPtr<IImageWrapper> ImageWrapper;
-					// Note: PNG format.  Other formats are supported
-					ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
-
-					auto &t = *mScenePtr->mTextures[texIndex];
-					int Width = t.mWidth;
-					int Height = t.mHeight;
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
-					TArray<uint8> RawData;
-#endif
-					const TArray<uint8>* pRawData = nullptr;
-
-					if (Height == 0) {
-						if (ImageWrapper->SetCompressed(t.pcData, t.mWidth)) {
-
-						}
-						Width = ImageWrapper->GetWidth();
-						Height = ImageWrapper->GetHeight();
-
-						if (Width == 0 || Height == 0) {
-							continue;
-						}
-
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-						ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, pRawData);
-#else
-						ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData);
-						pRawData = &RawData;
-#endif
-					}
-					FString baseName;
-
-					NewTexture2D = VRMLoaderUtil::CreateTexture(Width, Height, FString(TEXT("T_")) + baseName, GetTransientPackage());
-					//UTexture2D* NewTexture2D = _CreateTransient(Width, Height, PF_B8G8R8A8, t.mFilename.C_Str());
-
-					// Fill in the base mip for the texture we created
-					uint8* MipData = (uint8*)GetPlatformData(NewTexture2D)->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-					if (pRawData) {
-						FMemory::Memcpy(MipData, pRawData->GetData(), pRawData->Num());
-					} else {
-						for (int32 y = 0; y < Height; y++)
-						{
-							const aiTexel *c = &(t.pcData[y*Width]);
-							uint8* DestPtr = &MipData[y * Width * sizeof(FColor)];
-							for (int32 x = 0; x < Width; x++)
-							{
-								*DestPtr++ = c->b;
-								*DestPtr++ = c->g;
-								*DestPtr++ = c->r;
-								*DestPtr++ = c->a;
-								c++;
-							}
-						}
-					}
-					GetPlatformData(NewTexture2D)->Mips[0].BulkData.Unlock();
-
-					// Set options
-					NewTexture2D->SRGB = true;// bUseSRGB;
-					NewTexture2D->CompressionSettings = TC_Default;
-					NewTexture2D->AddressX = TA_Wrap;
-					NewTexture2D->AddressY = TA_Wrap;
-
-#if WITH_EDITORONLY_DATA
-					NewTexture2D->CompressionNone = false;
-					NewTexture2D->DeferCompression = true;
-
-					// nomipmap for tmporary thumbnail
-					//if (VRMConverter::Options::Get().IsMipmapGenerateMode()) {
-					//	NewTexture2D->MipGenSettings = TMGS_FromTextureGroup;
-					//} else {
-						NewTexture2D->MipGenSettings = TMGS_NoMipmaps;
-					//}
-					NewTexture2D->Source.Init(Width, Height, 1, 1, ETextureSourceFormat::TSF_BGRA8, pRawData->GetData());
-					//NewTexture2D->Source.Compress();
-#endif
-
-		// Update the remote texture data
-					NewTexture2D->UpdateResource();
-#if WITH_EDITOR
-					NewTexture2D->PostEditChange();
-#endif
+				NewTexture2D = LocalGetTexture(mScenePtr, texIndex);
+				if (NewTexture2D) {
+					break;
 				}
 			}
-
 		}
 	}
 
@@ -661,31 +709,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 		std::string e_imp = TCHAR_TO_UTF8(*ext);
 #endif
 
-		VRMConverter::Options::Get().ClearModelType();
-
-		if (e.compare("vrm") == 0 || e.compare("glb") == 0 || e.compare("gltf") == 0) {
-
-			VRMConverter::Options::Get().SetVRM0Model(true);
-
-			extern bool VRMIsVRM10(const uint8 * pData, size_t size);
-			if (VRMIsVRM10(pFileDataData, dataSize)) {
-				VRMConverter::Options::Get().SetVRM10Model(true);
-			}
-		}
-
-		if (e.compare("vrma") == 0) {
-			VRMConverter::Options::Get().SetVRMAModel(true);
-			VRMConverter::Options::Get().SetNoMesh(true);
-			e_imp = "vrm";
-			VRMConverter::Options::Get().SetBVHModel(true);
-		}
-
-		if (e.compare("bvh") == 0) {
-			VRMConverter::Options::Get().SetBVHModel(true);
-		}
-		if (e.compare("pmx") == 0) {
-			VRMConverter::Options::Get().SetPMXModel(true);
-		}
+		e_imp = GetExtAndSetModelTypeLocal(e, pFileDataData, dataSize);
 
 		mScenePtr = mImporter.ReadFileFromMemory(pFileDataData, dataSize,
 			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes,
