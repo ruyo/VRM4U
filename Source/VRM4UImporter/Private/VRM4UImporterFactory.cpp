@@ -247,6 +247,15 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 				refPointerToLic = a;
 			}
 			if (b) {
+				{
+					auto *p = b->LicenseString.FindByPredicate([](const FLicenseStringDataPair &pair) {
+						if (pair.key == TEXT("name")) return true;
+						return false;
+						});
+					if (p) {
+						ImportUI->TitleAuthor = p->value;
+					}
+				}
 				ImportUI->Thumbnail = b->thumbnail;
 				ImportUI->LicenseString = b->LicenseString;
 				ImportUI->LicenseBool = b->LicenseBool;

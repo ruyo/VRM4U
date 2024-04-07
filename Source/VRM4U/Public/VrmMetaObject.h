@@ -226,10 +226,17 @@ public:
 	TArray<FVrmBlendShapeMaterialList> MaterialList;
 
 	// vrm10
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	bool isBinary = false;
+
 	// none, block, blend
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FString overrideBlink;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FString overrideLookAt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	FString overrideMouth;
 
 };
