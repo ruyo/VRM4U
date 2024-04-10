@@ -64,6 +64,8 @@ if %UE4VER% == 5.1 set isRetargeterEnable=FALSE
 if %isRetargeterEnable% == FALSE (
 del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAnimInstanceRetargetFromMannequin.cpp"
 del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAnimInstanceRetargetFromMannequin.h"
+del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAnimInstanceTemplate.cpp"
+del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAnimInstanceTemplate.h"
 )
 
 set isRenderModuleEnable=TRUE
