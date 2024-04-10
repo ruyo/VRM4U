@@ -81,13 +81,19 @@ void UAnimGraphNode_VrmSpringBone::ValidateAnimNodePostCompile(FCompilerResultsL
 	if (Node.VrmMetaObject == nullptr) {
 		//MessageLog.Warning(*LOCTEXT("VrmNoMetaObject", "@@ - You must set VrmMetaObject").ToString(), this);
 	} else {
-		if (Node.VrmMetaObject->SkeletalMesh) {
-			if (VRMGetSkeleton(Node.VrmMetaObject->SkeletalMesh) != CompiledClass->GetTargetSkeleton()) {
-				MessageLog.Warning(*LOCTEXT("VrmDifferentSkeleton", "@@ - You must set VrmMetaObject has same skeleton").ToString(), this);
+		auto *targetSkeleton = CompiledClass->GetTargetSkeleton();
+		if (targetSkeleton) {
+			if (Node.VrmMetaObject->SkeletalMesh) {
+				if (VRMGetSkeleton(Node.VrmMetaObject->SkeletalMesh) != targetSkeleton) {
+					MessageLog.Warning(*LOCTEXT("VrmDifferentSkeleton", "@@ - You must set VrmMetaObject has same skeleton").ToString(), this);
+				}
+			}
+			if (targetSkeleton->GetReferenceSkeleton().GetRawBoneNum() <= 0) {
+				MessageLog.Warning(*LOCTEXT("VrmNoBone", "@@ - Skeleton bad data").ToString(), this);
 			}
 		}
-		if (CompiledClass->GetTargetSkeleton()->GetReferenceSkeleton().GetRawBoneNum() <= 0) {
-			MessageLog.Warning(*LOCTEXT("VrmNoBone", "@@ - Skeleton bad data").ToString(), this);
+		else {
+			//MessageLog.Warning(*LOCTEXT("VrmNoBone", "@@ - no target skeleton").ToString(), this);
 		}
 	}
 
