@@ -334,7 +334,7 @@ public:
 	}
 #else
 	void SetIKRig(const ERetargetSourceOrTarget SourceOrTarget, UIKRigDefinition* IKRig) const {
-#if VRM4U_USE_EDITOR_RIG || WITH_EDITOR
+#if VRM4U_USE_EDITOR_RIG
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
 		c->SetIKRig(SourceOrTarget, IKRig);
 #else
@@ -382,13 +382,59 @@ public:
 #endif
 	}
 
-	void SetRootMotionSetting() {
+	void SetChainSetting() {
+#if VRM4U_USE_EDITOR_RIG
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
-		auto cs = c->GetRetargetChainSettings(TEXT("Root"));
 
-		cs.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
+		{
+			auto cs = c->GetRetargetChainSettings(TEXT("Root"));
+			cs.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
+			c->SetRetargetChainSettings(TEXT("Root"), cs);
+		}
+		{
+			TArray<FString> table = {
+				TEXT("FootRootIK"),
+				TEXT("LeftFootIK"),
+				TEXT("RightFootIK"),
+				TEXT("HandRootIK"),
+				TEXT("LeftHandIK"),
+				TEXT("RightHandIK"),
+			};
+			for (auto s : table) {
+				auto cs = c->GetRetargetChainSettings(*s);
+				cs.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
+				c->SetRetargetChainSettings(*s, cs);
+			}
+		}
+		{
+			TArray<FString> table = {
+				TEXT("LeftLeg"),
+				TEXT("RightLeg"),
+				TEXT("LeftArm"),
+				TEXT("RightArm"),
+			};
+			for (auto s : table) {
+				auto cs = c->GetRetargetChainSettings(*s);
+				cs.FK.PoleVectorMatching = 1.f;
+				c->SetRetargetChainSettings(*s, cs);
+			}
+		}
+		{
+			TArray<FString> table = {
+				TEXT("LeftArm"),
+				TEXT("RightArm"),
+			};
+			for (auto s : table) {
+				auto cs = c->GetRetargetChainSettings(*s);
+				cs.IK.bAffectedByIKWarping = false;
+				c->SetRetargetChainSettings(*s, cs);
+			}
+		}
 
-		c->SetRetargetChainSettings(TEXT("Root"), cs);
+#else
+		auto r = Retargeter->GetChainMapByName(TEXT("Root"));
+		r->Settings.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
+#endif
 	}
 };
 #endif // 5.0
@@ -991,7 +1037,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				}
 #endif
 			}
-			c.SetRootMotionSetting();
+			c.SetChainSetting();
 		}
 #endif // 5.2
 #endif

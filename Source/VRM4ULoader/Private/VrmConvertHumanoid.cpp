@@ -240,11 +240,15 @@ bool VRMConverter::ConvertHumanoid(UVrmAssetListObject *vrmAssetList) {
 			if (i == 0) {
 				ss = VRM4U_DuplicateObject<USkeletalMesh>(src_sk, p, *name_mesh);
 				base = VRM4U_DuplicateObject<USkeleton>(src_k, p, *name_skeleton);
-				rr = VRM4U_NewObject<UNodeMappingContainer>(p, *name_rig, RF_Public | RF_Standalone);
+				if (src_rig) {
+					rr = VRM4U_NewObject<UNodeMappingContainer>(p, *name_rig, RF_Public | RF_Standalone);
+				}
 			}else {
 				ss = VRM4U_DuplicateObject<USkeletalMesh>(src_sk, p, *name_mesh);
 				base = VRM4U_DuplicateObject<USkeleton>(src_k, p, *name_skeleton);
-				rr = VRM4U_NewObject<UNodeMappingContainer>(p, *name_rig, RF_Public | RF_Standalone);
+				if (src_rig) {
+					rr = VRM4U_NewObject<UNodeMappingContainer>(p, *name_rig, RF_Public | RF_Standalone);
+				}
 			}
 		}
 #else

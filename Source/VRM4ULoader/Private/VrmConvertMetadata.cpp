@@ -606,7 +606,9 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 					int t = (*m).value.GetInt();
 					if (t >= 0 && t < vrmAssetList->Textures.Num()) {
 						lic1->thumbnail = vrmAssetList->Textures[t];
+#if WITH_EDITORONLY_DATA
 						vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
+#endif
 					}
 				}
 			}else{
