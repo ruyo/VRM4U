@@ -381,6 +381,15 @@ public:
 		c->AutoAlignAllBones(SourceOrTarget);
 #endif
 	}
+
+	void SetRootMotionSetting() {
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		auto cs = c->GetRetargetChainSettings(TEXT("Root"));
+
+		cs.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
+
+		c->SetRetargetChainSettings(TEXT("Root"), cs);
+	}
 };
 #endif // 5.0
 
@@ -982,7 +991,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				}
 #endif
 			}
-
+			c.SetRootMotionSetting();
 		}
 #endif // 5.2
 #endif
