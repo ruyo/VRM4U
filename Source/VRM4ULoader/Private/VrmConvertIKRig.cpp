@@ -383,9 +383,10 @@ public:
 	}
 
 	void SetChainSetting() {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
 #if VRM4U_USE_EDITOR_RIG
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
-
 		{
 			auto cs = c->GetRetargetChainSettings(TEXT("Root"));
 			cs.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
@@ -434,7 +435,8 @@ public:
 #else
 		auto r = Retargeter->GetChainMapByName(TEXT("Root"));
 		r->Settings.FK.TranslationMode = ERetargetTranslationMode::GloballyScaled;
-#endif
+#endif // rig
+#endif // 5.2
 	}
 };
 #endif // 5.0

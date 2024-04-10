@@ -10,7 +10,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
-static_assert(0, "Available for UE5.3+. delete h/cpp files");
+static_assert(0, "Available for UE5.2+. delete h/cpp files");
 #endif
 
 #include "Retargeter/IKRetargeter.h"
