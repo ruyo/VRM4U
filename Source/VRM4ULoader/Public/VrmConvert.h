@@ -199,12 +199,23 @@ extern FString VRM4U_GetPackagePath(UPackage* Outer);
 extern UPackage* VRM4U_CreatePackage(UPackage* Outer, FName Name);
 
 template< class T >
-T* VRM4U_NewObject(UPackage* Outer, FName Name, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr, bool bCopyTransientsFromClassDefaults = false, FObjectInstancingGraph* InInstanceGraph = nullptr) {
-	UPackage* pkg = Outer;
+T* VRM4U_NewObject(UObject* Outer, FName Name, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr, bool bCopyTransientsFromClassDefaults = false, FObjectInstancingGraph* InInstanceGraph = nullptr) {
+	UPackage* pkg = Cast<UPackage>(Outer);
 	if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
-		pkg = VRM4U_CreatePackage(Outer, Name);
+		pkg = VRM4U_CreatePackage(pkg, Name);
 	}
 	decltype(auto) r = NewObject<T>(pkg, Name, Flags, Template, bCopyTransientsFromClassDefaults, InInstanceGraph);
+	r->MarkPackageDirty();
+	return r;
+}
+
+template< class T >
+T* VRM4U_NewObject(UObject* Outer, UClass* Class, FName Name, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr, bool bCopyTransientsFromClassDefaults = false, FObjectInstancingGraph* InInstanceGraph = nullptr) {
+	UPackage* pkg = Cast<UPackage>(Outer);
+	if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
+		pkg = VRM4U_CreatePackage(pkg, Name);
+	}
+	decltype(auto) r = NewObject<T>(pkg, Class, Name, Flags, Template, bCopyTransientsFromClassDefaults, InInstanceGraph);
 	r->MarkPackageDirty();
 	return r;
 }

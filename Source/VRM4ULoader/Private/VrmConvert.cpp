@@ -634,6 +634,7 @@ VrmConvert::~VrmConvert()
 }
 
 FString VRM4U_GetPackagePath(UPackage* Outer) {
+	if (Outer == nullptr) return "";
 	if (Outer != GetTransientPackage()) {
 		FString s = Outer->GetPathName();
 		FString s1, s2;
@@ -646,6 +647,7 @@ FString VRM4U_GetPackagePath(UPackage* Outer) {
 
 
 UPackage* VRM4U_CreatePackage(UPackage* Outer, FName Name) {
+	if (Outer == nullptr) return nullptr;
 	UPackage* pkg = Outer;
 	if (Outer != GetTransientPackage()) {
 		FString s = Outer->GetPathName();
