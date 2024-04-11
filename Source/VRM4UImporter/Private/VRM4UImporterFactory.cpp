@@ -365,7 +365,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
-	TAssetPtr<UVrmAssetListObject> m;
+	TAssetPtr<UVrmAssetListObject> vrmAssetList;
 	TArray< TAssetPtr<UObject> > tt;
 #else
 	TSoftObjectPtr<UVrmAssetListObject> vrmAssetList;
