@@ -38,6 +38,11 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/vrm/vrmmeta.h>
 
+#if WITH_EDITOR
+#include "Kismet2/KismetEditorUtilities.h"
+#endif
+
+
 #define LOCTEXT_NAMESPACE "VRM4U"
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
@@ -2396,6 +2401,41 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		ase->PostEditChange();
 	}
 
+	{
+		//sk = VRM4U_NewObject<USkeletalMesh>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+		//UMyAnimInstance::StaticClass()
+		ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+		//AutoDestroy autoDestroy(ska);
+		auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+		skc->SetSkeletalMeshAsset(sk);
+
+
+		/*
+
+		//NewObject<UAnimInstance>(skc, UVrmAnimInstanceTemplate::StaticClass(), TEXT("anim_aaa"), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+
+		//NewObject<>(
+		auto* a = VRM4U_NewObject<UAnimBlueprint>(vrmAssetList->Package, TEXT("anim_aaa"), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+		//auto* a = VRM4U_NewObject<UAnimBlueprint>(skc, UVrmAnimInstanceTemplate::StaticClass(), TEXT("anim_aaa"), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, UVrmAnimInstanceTemplate::StaticClass() );
+		//VRM4U_NewObject<UAnimInstance>(vrmAssetList->Package, TEXT("anim_aaa"), EObjectFlags::RF_Public | RF_Transient);
+		//a->SetPreviewMesh(sk);
+		//a->GetAnimBlueprintSkeletonClass
+		a->TargetSkeleton = k;
+		sk->SetPostProcessAnimBlueprint(UVrmAnimInstanceTemplate::StaticClass());
+
+		FSoftObjectPath r(TEXT("/Game/NewAnimBlueprint.NewAnimBlueprint"));
+		UObject* u = r.TryLoad();
+
+		//auto bb = Cast<UAnimBlueprint>(StaticDuplicateObject(u, VRM4U_CreatePackage(vrmAssetList->Package, TEXT("aaaaaaa")), TEXT("aaaaaaa"), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, UAnimBlueprint::StaticClass()));
+		auto bb = Cast<UAnimBlueprint>(VRM4U_StaticDuplicateObject(u, vrmAssetList->Package, TEXT("aaaaaaa"), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, UAnimBlueprint::StaticClass()));
+		bb->TargetSkeleton = k;
+
+#if WITH_EDITOR
+		FKismetEditorUtilities::CompileBlueprint(bb);
+#endif
+*/
+
+	}
 #endif
 
 	return true;

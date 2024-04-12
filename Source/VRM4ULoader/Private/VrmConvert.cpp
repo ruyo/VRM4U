@@ -664,6 +664,17 @@ UPackage* VRM4U_CreatePackage(UPackage* Outer, FName Name) {
 }
 
 
+UObject* VRM4U_StaticDuplicateObject(UObject const* SourceObject, UObject* DestOuter, const FName DestName, EObjectFlags FlagMask, UClass* DestClass, EDuplicateMode::Type DuplicateMode, EInternalObjectFlags InternalFlagsMask) {
+
+	if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
+		DestOuter = VRM4U_CreatePackage(Cast<UPackage>(DestOuter), DestName);
+	}
+
+	return StaticDuplicateObject(SourceObject,
+		DestOuter, DestName,
+		FlagMask, DestClass, DuplicateMode, InternalFlagsMask);
+}
+
 
 
 

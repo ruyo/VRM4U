@@ -230,7 +230,8 @@ T* VRM4U_DuplicateObject(const T *src, UPackage* Outer, FName Name) {
 	r->MarkPackageDirty();
 	return r;
 }
-//	ss = DuplicateObject<USkeletalMesh>(src_sk, p, *name_mesh)
+
+extern UObject* VRM4U_StaticDuplicateObject(UObject const* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EObjectFlags FlagMask = RF_AllFlags, UClass* DestClass = nullptr, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags_AllFlags);
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 template<typename T>
