@@ -125,7 +125,11 @@ namespace {
 		}
 		if (sol == nullptr) return;
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
+		sol->SetEnabled(false);
+#else
 		sol->SetEnabled(true);
+#endif
 
 		// hip
 		for (auto& modelName : assetList->VrmMetaObject->humanoidBoneTable) {
