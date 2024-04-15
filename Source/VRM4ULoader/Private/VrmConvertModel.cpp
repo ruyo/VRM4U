@@ -2404,10 +2404,10 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 	{
 		//sk = VRM4U_NewObject<USkeletalMesh>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		//UMyAnimInstance::StaticClass()
-		ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+		//ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 		//AutoDestroy autoDestroy(ska);
-		auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
-		skc->SetSkeletalMeshAsset(sk);
+		//auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+		//skc->SetSkeletalMeshAsset(sk);
 
 
 		/*

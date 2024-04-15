@@ -85,6 +85,19 @@
 
 //#include "Engine/.h"
 
+#if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#else
+#define VRM4U_USE_AUTOALIGN 1
+#endif
+#endif
+
+#ifndef VRM4U_USE_AUTOALIGN
+#define VRM4U_USE_AUTOALIGN 0
+#endif
+
+
+
 namespace {
 
 #if WITH_EDITOR
@@ -112,7 +125,7 @@ namespace {
 		}
 		if (sol == nullptr) return;
 
-		sol->SetEnabled(false);
+		sol->SetEnabled(true);
 
 		// hip
 		for (auto& modelName : assetList->VrmMetaObject->humanoidBoneTable) {
@@ -193,6 +206,10 @@ namespace {
 				TEXT("leftLowerLeg"),
 				TEXT("rightLowerLeg"),
 
+				TEXT("leftFoot"),
+				TEXT("rightFoot"),
+				
+
 				TEXT("hips"),
 				TEXT("spine"),
 				TEXT("chest"),
@@ -215,7 +232,7 @@ namespace {
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
-							s->RotationStiffness = 1.f;
+							s->RotationStiffness = 0.95f;
 						}
 
 						// arm
@@ -232,8 +249,8 @@ namespace {
 							}
 						}
 
-						// upperleg
-						if (i == 4 || i == 5 || i == 6 || i == 7) {
+						// only lower leg
+						if (i == 6 || i == 7) {
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
@@ -248,13 +265,22 @@ namespace {
 							}
 						}
 
-						// shoulder
-						if (i >= 8) {
+						// foot
+						if (i == 8 || i == 9) {
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
-							if (i == 8) {
+							s->RotationStiffness = 0.85f;
+						}
+
+						// spine
+						if (i >= 10) {
+							sol->AddBoneSetting(*t.Value);
+							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
+							if (s == nullptr) continue;
+
+							if (i == 10) {
 								s->RotationStiffness = 1.f;
 							} else {
 								s->RotationStiffness = 0.9f;
@@ -382,6 +408,19 @@ public:
 #endif
 	}
 
+	void SetCurrentRetargetPose(FName NewCurrentPose, const ERetargetSourceOrTarget SourceOrTarget) const {
+#if	!WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
+#else
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		c->SetCurrentRetargetPose(NewCurrentPose, SourceOrTarget);
+#endif
+	}
+
+	TMap<FName, FIKRetargetPose>& GetRetargetPoses(const ERetargetSourceOrTarget SourceOrTarget) const {
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		return c->GetRetargetPoses(SourceOrTarget);
+	};
+
 	void SetChainSetting() {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
@@ -407,6 +446,7 @@ public:
 				c->SetRetargetChainSettings(*s, cs);
 			}
 		}
+		/*
 		{
 			TArray<FString> table = {
 				TEXT("LeftLeg"),
@@ -431,6 +471,7 @@ public:
 				c->SetRetargetChainSettings(*s, cs);
 			}
 		}
+		*/
 
 #else
 		auto r = Retargeter->GetChainMapByName(TEXT("Root"));
@@ -800,7 +841,12 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			};
 			TArray<TT> table = {
 				{TEXT("Spine"),		TEXT("spine"),				TEXT("chest"),},
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 				{TEXT("Head"),		TEXT("neck"),				TEXT("head"),},
+#else
+				{TEXT("Neck"),		TEXT("neck"),				TEXT("neck"),},
+				{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
+#endif
 				{TEXT("RightArm"),	TEXT("rightUpperArm"),		TEXT("rightHand"),},
 				{TEXT("LeftArm"),	TEXT("leftUpperArm"),		TEXT("leftHand"),},
 				{TEXT("RightLeg"),	TEXT("rightUpperLeg"),		TEXT("rightToes"),},
@@ -1027,16 +1073,12 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					}
 				}
 
-#if !WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
-#else
-				// auto align
-				{
-					FName PoseName = "POSE_Auto";
-					const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
-					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
+#if VRM4U_USE_AUTOALIGN
+				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), ERetargetSourceOrTarget::Target);
+				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), ERetargetSourceOrTarget::Source);
 
-					c.AutoAlignAllBones(ERetargetSourceOrTarget::Target);
-				}
+				c.AutoAlignAllBones(ERetargetSourceOrTarget::Source);
+				c.AutoAlignAllBones(ERetargetSourceOrTarget::Target);
 #endif
 			}
 			c.SetChainSetting();
