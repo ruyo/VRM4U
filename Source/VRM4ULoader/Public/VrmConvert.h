@@ -231,7 +231,12 @@ T* VRM4U_DuplicateObject(const T *src, UPackage* Outer, FName Name) {
 	return r;
 }
 
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+extern UObject* VRM4U_StaticDuplicateObject(UObject const* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EObjectFlags FlagMask = RF_AllFlags, UClass* DestClass = nullptr, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags::AllFlags);
+#else
 extern UObject* VRM4U_StaticDuplicateObject(UObject const* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EObjectFlags FlagMask = RF_AllFlags, UClass* DestClass = nullptr, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags_AllFlags);
+#endif
+
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 template<typename T>
