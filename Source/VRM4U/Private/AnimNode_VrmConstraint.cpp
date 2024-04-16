@@ -262,5 +262,56 @@ void FAnimNode_VrmConstraint::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 	if (PreviewSkelMeshComp->GetWorld() == nullptr) {
 		return;
 	}
+
+	ESceneDepthPriorityGroup Priority = SDPG_World;
+	if (bPreviewForeground) Priority = SDPG_Foreground;
+
+
+	const TArray<FLinearColor> color = {
+	FLinearColor(1.f, 0, 0),
+	FLinearColor(1.f, 0.5, 0),
+	FLinearColor(1.f, 0, 0.5),
+	};
+
+	for (const auto& c : MetaObjectLocal->VRMConstraintMeta) {
+		int colType = 0;
+		FString sourceName;
+		switch (c.Value.type) {
+		case EVRMConstraintType::Rotation:
+			sourceName = c.Value.constraintRotation.sourceName;
+			colType = 0;
+			break;
+		case EVRMConstraintType::Aim:
+			sourceName = c.Value.constraintAim.sourceName;
+			colType = 1;
+			break;
+		case EVRMConstraintType::Roll:
+			sourceName = c.Value.constraintRoll.sourceName;
+			colType = 2;
+			break;
+		}
+
+		FString targetName = c.Key;
+
+		const FTransform t1 = PreviewSkelMeshComp->GetSocketTransform(*sourceName);
+		const FTransform t2 = PreviewSkelMeshComp->GetSocketTransform(*targetName);
+
+		DrawWireSphere(PDI, t1, color[colType], 1, 32, Priority);
+
+		PDI->DrawLine(
+			t1.GetLocation(),
+			t2.GetLocation(),
+			color[colType] / 2.f,
+			Priority);
+	}
+
+
+//	PDI->DrawLine(
+	//	t.GetLocation(),
+	//	t2.GetLocation(),
+	//	color[springNo % color.Num()] / 2.f,
+	//	Priority);
+
+
 #endif
 }

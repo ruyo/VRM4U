@@ -26,6 +26,12 @@ class UAnimGraphNode_VrmConstraint : public UAnimGraphNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, Category=Settings)
 	FAnimNode_VrmConstraint Node;
 
+	UPROPERTY(EditAnywhere, Category = Preview)
+	bool bPreviewLive = true;
+
+	UPROPERTY(EditAnywhere, Category = Preview)
+	bool bPreviewForeground = false;
+
 public:
 	// UEdGraphNode interface
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;

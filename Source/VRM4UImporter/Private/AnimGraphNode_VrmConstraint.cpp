@@ -79,6 +79,20 @@ FEditorModeID UAnimGraphNode_VrmConstraint::GetEditorMode() const
 
 void UAnimGraphNode_VrmConstraint::Draw(FPrimitiveDrawInterface* PDI, USkeletalMeshComponent * PreviewSkelMeshComp) const
 {
+	if (PreviewSkelMeshComp)
+	{
+		/*
+		if (FAnimNode_VrmSpringBone* ActiveNode = GetActiveInstanceNode<FAnimNode_VrmSpringBone>(PreviewSkelMeshComp->GetAnimInstance()))
+		{
+			if (bPreviewLive) {
+				ActiveNode->ConditionalDebugDraw(PDI, PreviewSkelMeshComp, bPreviewForeground);
+			}
+		}
+		*/
+		if (bPreviewLive) {
+			Node.ConditionalDebugDraw(PDI, PreviewSkelMeshComp, bPreviewForeground);
+		}
+	}
 }
 
 
