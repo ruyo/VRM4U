@@ -33,8 +33,9 @@ public:
 	void OnObjectImported(UFactory* ImportFactory, UObject* InObject) {
 	}
 
-	void OnObjectReimported(UObject* InObject)
-	{
+	void OnObjectReimported(UObject* InObject)	{
+		auto *p = Cast<UVrmAssetListObject>(InObject);
+		if (p == nullptr) return;
 	}
 
 	void OnPostEngineInit() {
