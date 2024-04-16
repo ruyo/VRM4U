@@ -879,11 +879,12 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(UObject *obj) {
 
 		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
 		
-
-		FSoftObjectPath r = target;
-		UObject* u = r.ResolveObject();
-		if (u == nullptr) r.TryLoad();
-		return Cast<UVrmAssetListObject>(u);
+		if (IsInGameThread()) {
+			FSoftObjectPath r = target;
+			UObject* u = r.ResolveObject();
+			if (u == nullptr) r.TryLoad();
+			return Cast<UVrmAssetListObject>(u);
+		}
 	}
 
 
