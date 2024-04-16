@@ -121,7 +121,7 @@ public:
 
 	/** Save as single uasset file */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Single uasset file"))
-	bool bSingleUAssetFile = true;
+	bool bSingleUAssetFile = false;
 
 	/** Use GridTexture by Default */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Texture] Use DummyGrid by DefaultBaseTexture"))

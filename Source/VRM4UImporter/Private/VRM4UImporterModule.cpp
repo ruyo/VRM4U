@@ -29,6 +29,23 @@ class FVRM4UImporterModule : public FDefaultModuleImpl
 	TArray< TSharedPtr<IAssetTypeActions> >  AssetTypeActions;
 
 public:
+
+	void OnObjectImported(UFactory* ImportFactory, UObject* InObject) {
+	}
+
+	void OnObjectReimported(UObject* InObject)
+	{
+	}
+
+	void OnPostEngineInit() {
+		if (GEditor)
+		{
+			GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetPostImport.AddRaw(this, &FVRM4UImporterModule::OnObjectImported);
+			GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetReimport.AddRaw(this, &FVRM4UImporterModule::OnObjectReimported);
+		}
+	}
+
+
 	virtual void StartupModule() override
 	{
 		{
@@ -62,6 +79,12 @@ public:
 			);
 
 			PropertyEditorModule.NotifyCustomizationModuleChanged();
+		}
+		{
+			if (GIsEditor)
+			{
+				FCoreDelegates::OnPostEngineInit.AddRaw(this, &FVRM4UImporterModule::OnPostEngineInit);
+			}
 		}
 	}
 

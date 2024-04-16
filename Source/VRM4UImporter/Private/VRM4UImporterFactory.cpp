@@ -274,11 +274,12 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 					ImportUI->ModelScale = 0.01f;
 				}
 			}
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-#else
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 			{
-				ImportUI->bSingleUAssetFile = false;
+				ImportUI->bSingleUAssetFile = true;
 			}
+#else
+			// 5.2でも動くが、デフォルトをOFFにする
 #endif
 
 
@@ -477,6 +478,11 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		ULoaderBPFunctionLibrary::SetImportMode(false, nullptr);
 		importOption.SetVrmOption(nullptr);
 
+		if (GEditor) {
+			GEditor->GetEditorSubsystem<UImportSubsystem>()->BroadcastAssetPostImport(this, mret);
+		}
+
+
 		GWarn->EndSlowTask();
 
 		//bool bDeleteSucceeded = ObjectTools::DeleteSingleObject( ExistingObject );
@@ -486,9 +492,8 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 			return nullptr;
 		}
 	}
-
 	//return InParent;
-	return mret->GetOuter();
+	return mret;// ->GetOuter();
 }
 UObject* UVRM4UImporterFactory::FactoryCreateText(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, const TCHAR* Type, const TCHAR*& Buffer, const TCHAR* BufferEnd, FFeedbackContext* Warn)
 {

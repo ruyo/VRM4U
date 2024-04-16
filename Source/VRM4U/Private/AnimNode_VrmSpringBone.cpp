@@ -70,12 +70,20 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 
 	Super::Initialize_AnyThread(Context);
 
+	VrmMetaObject_Internal = VrmMetaObject;
+	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
+		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(Context.AnimInstanceProxy->GetSkelMeshComponent()->SkeletalMesh);
+		if (VrmAssetListObject_Internal) {
+			VrmMetaObject_Internal = VrmAssetListObject_Internal->VrmMetaObject;
+		}
+	}
+
 	if (SpringManager.Get()) {
 		SpringManager.Get()->reset();
 	}
 	else {
-		if (VrmMetaObject) {
-			if (VrmMetaObject->GetVRMVersion() >= 1) {
+		if (VrmMetaObject_Internal) {
+			if (VrmMetaObject_Internal->GetVRMVersion() >= 1) {
 				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
 			}
 		}
@@ -98,8 +106,8 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread_local(const FAnimationInitial
 		SpringManager.Get()->reset();
 	}
 	else {
-		if (VrmMetaObject) {
-			if (VrmMetaObject->GetVRMVersion() >= 1) {
+		if (VrmMetaObject_Internal) {
+			if (VrmMetaObject_Internal->GetVRMVersion() >= 1) {
 				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());
 			}
 		}
@@ -186,10 +194,10 @@ void FAnimNode_VrmSpringBone::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 	auto BoneSpace = EBoneControlSpace::BCS_WorldSpace;
 	{
 
-		if (VrmMetaObject == nullptr) {
+		if (VrmMetaObject_Internal == nullptr) {
 			return;
 		}
-		if (VRMGetSkeleton(VrmMetaObject->SkeletalMesh) != Output.AnimInstanceProxy->GetSkeleton()) {
+		if (VRMGetSkeleton(VrmMetaObject_Internal->SkeletalMesh) != Output.AnimInstanceProxy->GetSkeleton()) {
 			//skip for renamed bone
 			//return;
 		}
@@ -204,7 +212,7 @@ void FAnimNode_VrmSpringBone::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 				return;
 			}
 			if (SpringManager->bInit == false) {
-				SpringManager->init(VrmMetaObject, Output);
+				SpringManager->init(VrmMetaObject_Internal.Get(), Output);
 				return;
 			}
 
@@ -291,7 +299,17 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 {
 #if WITH_EDITOR
 
-	if (VrmMetaObject == nullptr || PreviewSkelMeshComp == nullptr) {
+	auto MetaObjectLocal = VrmMetaObject_Internal;
+
+	if (MetaObjectLocal == nullptr && EnableAutoSearchMetaData) {
+		auto *p = VRMUtil::GetAssetListObject(PreviewSkelMeshComp->SkeletalMesh);
+		if (p) {
+			MetaObjectLocal = p->VrmMetaObject;
+		}
+	}
+
+
+	if (MetaObjectLocal == nullptr || PreviewSkelMeshComp == nullptr) {
 		return;
 	}
 	if (PreviewSkelMeshComp->GetWorld() == nullptr) {
@@ -301,11 +319,11 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 	ESceneDepthPriorityGroup Priority = SDPG_World;
 	if (bPreviewForeground) Priority = SDPG_Foreground;
 
-	if (VrmMetaObject->VRM1SpringBoneMeta.Springs.Num() > 0) {
+	if (MetaObjectLocal->VRM1SpringBoneMeta.Springs.Num() > 0) {
 		// vrm1
 
 		// col
-		for (const auto& c : VrmMetaObject->VRM1SpringBoneMeta.Colliders) {
+		for (const auto& c : MetaObjectLocal->VRM1SpringBoneMeta.Colliders) {
 			const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*c.boneName);
 
 			float r = (c.radius) * 100.f;
@@ -362,8 +380,8 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 		// spring col
 
-		for (int springNo = 0; springNo < VrmMetaObject->VRM1SpringBoneMeta.Springs.Num(); ++springNo) {
-			const auto& s = VrmMetaObject->VRM1SpringBoneMeta.Springs[springNo];
+		for (int springNo = 0; springNo < MetaObjectLocal->VRM1SpringBoneMeta.Springs.Num(); ++springNo) {
+			const auto& s = MetaObjectLocal->VRM1SpringBoneMeta.Springs[springNo];
 
 
 			const TArray<FLinearColor> color = {
@@ -393,7 +411,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		}
 	}
 
-	for (const auto &colMeta : VrmMetaObject->VRMColliderMeta) {
+	for (const auto &colMeta : MetaObjectLocal->VRMColliderMeta) {
 		const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*colMeta.boneName);
 
 		for (const auto &col : colMeta.collider) {
@@ -423,7 +441,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		TArray<SData> dataList;
 		TArray<int32> boneList;
 
-		for (const auto spr : VrmMetaObject->VRMSpringMeta) {
+		for (const auto spr : MetaObjectLocal->VRMSpringMeta) {
 			for (const auto boneName : spr.boneNames) {
 				int32_t boneIndex = PreviewSkelMeshComp->GetBoneIndex(*boneName);
 				boneList.AddUnique(boneIndex);

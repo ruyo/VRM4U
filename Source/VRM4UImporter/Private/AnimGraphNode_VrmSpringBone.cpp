@@ -78,13 +78,13 @@ UAnimGraphNode_VrmSpringBone::UAnimGraphNode_VrmSpringBone(const FObjectInitiali
 
 void UAnimGraphNode_VrmSpringBone::ValidateAnimNodePostCompile(FCompilerResultsLog& MessageLog, UAnimBlueprintGeneratedClass* CompiledClass, int32 CompiledNodeIndex) {
 
-	if (Node.VrmMetaObject == nullptr) {
+	if (Node.VrmMetaObject_Internal == nullptr) {
 		//MessageLog.Warning(*LOCTEXT("VrmNoMetaObject", "@@ - You must set VrmMetaObject").ToString(), this);
 	} else {
 		auto *targetSkeleton = CompiledClass->GetTargetSkeleton();
 		if (targetSkeleton) {
-			if (Node.VrmMetaObject->SkeletalMesh) {
-				if (VRMGetSkeleton(Node.VrmMetaObject->SkeletalMesh) != targetSkeleton) {
+			if (Node.VrmMetaObject_Internal->SkeletalMesh) {
+				if (VRMGetSkeleton(Node.VrmMetaObject_Internal->SkeletalMesh) != targetSkeleton) {
 					MessageLog.Warning(*LOCTEXT("VrmDifferentSkeleton", "@@ - You must set VrmMetaObject has same skeleton").ToString(), this);
 				}
 			}
@@ -105,11 +105,11 @@ void UAnimGraphNode_VrmSpringBone::ValidateAnimNodeDuringCompilation(USkeleton* 
 	// Temporary fix where skeleton is not fully loaded during AnimBP compilation and thus virtual bone name check is invalid UE-39499 (NEED FIX) 
 	if (ForSkeleton && !ForSkeleton->HasAnyFlags(RF_NeedPostLoad))
 	{
-		if (Node.VrmMetaObject == nullptr) {
+		if (Node.VrmMetaObject_Internal == nullptr) {
 			//MessageLog.Warning(*LOCTEXT("VrmNoMetaObject", "@@ - You must set VrmMetaObject").ToString(), this);
 		} else {
-			if (Node.VrmMetaObject->SkeletalMesh){
-				if (VRMGetSkeleton(Node.VrmMetaObject->SkeletalMesh) != ForSkeleton) {
+			if (Node.VrmMetaObject_Internal->SkeletalMesh){
+				if (VRMGetSkeleton(Node.VrmMetaObject_Internal->SkeletalMesh) != ForSkeleton) {
 			//		MessageLog.Warning(*LOCTEXT("VrmDifferentSkeleton", "@@ - You must set VrmMetaObject has same skeleton").ToString(), this);
 				}
 			}

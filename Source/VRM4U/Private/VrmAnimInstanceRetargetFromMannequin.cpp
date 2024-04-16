@@ -193,7 +193,7 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 
 				auto& constraint = *Node_Constraint.Get();
 
-				constraint.VrmMetaObject = dstMeta;
+				constraint.VrmMetaObject_Internal = dstMeta;
 				constraint.bCallByAnimInstance = true;
 
 				FAnimationInitializeContext InitContext(this);
@@ -244,7 +244,7 @@ bool FVrmAnimInstanceRetargetFromMannequinProxy::Evaluate(FPoseContext& Output) 
 
 				auto& springBone = *Node_SpringBone.Get();
 
-				springBone.VrmMetaObject = dstMeta;
+				springBone.VrmMetaObject_Internal = dstMeta;
 				springBone.bCallByAnimInstance = true;
 				springBone.CurrentDeltaTime = CurrentDeltaTime;
 

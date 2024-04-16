@@ -419,7 +419,7 @@ bool VRMConverter::Options::IsForceTwoSided() const {
 }
 
 bool VRMConverter::Options::IsSingleUAssetFile() const {
-	if (ImportOption == nullptr) return true;
+	if (ImportOption == nullptr) return false;
 
 	if (ImportOption->bUEFN) return false;
 

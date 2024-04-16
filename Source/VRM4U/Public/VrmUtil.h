@@ -389,7 +389,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bForceTwoSided = false;
 
-	bool bSingleUAssetFile = true;
+	bool bSingleUAssetFile = false;
 
 	bool bDefaultGridTextureMode = false;
 
@@ -510,6 +510,8 @@ public:
 	static FString MakeName(const FString& str, bool IsJoint = false);
 
 	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
+
+	static class UVrmAssetListObject* GetAssetListObject(UObject*);
 };
 
 class VRM4U_API VRMRetargetData {

@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 
 #include "VrmMetaObject.h"
+#include "VrmAssetListObject.h"
 #include "VrmUtil.h"
 
 #include <algorithm>
@@ -25,6 +26,13 @@ void FAnimNode_VrmConstraint::Initialize_AnyThread(const FAnimationInitializeCon
 	bCallInitialized = true;
 	Super::Initialize_AnyThread(Context);
 
+	VrmMetaObject_Internal = VrmMetaObject;
+	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
+		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(Context.AnimInstanceProxy->GetSkelMeshComponent()->SkeletalMesh);
+		if (VrmAssetListObject_Internal) {
+			VrmMetaObject_Internal = VrmAssetListObject_Internal->VrmMetaObject;
+		}
+	}
 }
 void FAnimNode_VrmConstraint::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context) {
 	Super::CacheBones_AnyThread(Context);
@@ -62,11 +70,11 @@ void FAnimNode_VrmConstraint::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 
 	UpdateCache(Output);
 
-	if (VrmMetaObject == nullptr) {
+	if (VrmMetaObject_Internal == nullptr) {
 		return;
 	}
 
-	for (auto& a : VrmMetaObject->VRMConstraintMeta) {
+	for (auto& a : VrmMetaObject_Internal->VRMConstraintMeta) {
 
 		int32 dstBoneIndex = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(*(a.Key));
 		FCompactPoseBoneIndex dstPoseBoneIndex(dstBoneIndex);
@@ -238,7 +246,17 @@ void FAnimNode_VrmConstraint::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 {
 #if WITH_EDITOR
 
-	if (VrmMetaObject == nullptr || PreviewSkelMeshComp == nullptr) {
+	auto MetaObjectLocal = VrmMetaObject_Internal;
+
+	if (MetaObjectLocal == nullptr && EnableAutoSearchMetaData) {
+		auto* p = VRMUtil::GetAssetListObject(PreviewSkelMeshComp->SkeletalMesh);
+		if (p) {
+			MetaObjectLocal = p->VrmMetaObject;
+		}
+	}
+
+
+	if (MetaObjectLocal == nullptr || PreviewSkelMeshComp == nullptr) {
 		return;
 	}
 	if (PreviewSkelMeshComp->GetWorld() == nullptr) {

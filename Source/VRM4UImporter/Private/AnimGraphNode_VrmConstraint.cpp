@@ -29,11 +29,11 @@ UAnimGraphNode_VrmConstraint::UAnimGraphNode_VrmConstraint(const FObjectInitiali
 
 void UAnimGraphNode_VrmConstraint::ValidateAnimNodePostCompile(FCompilerResultsLog& MessageLog, UAnimBlueprintGeneratedClass* CompiledClass, int32 CompiledNodeIndex) {
 
-	if (Node.VrmMetaObject == nullptr) {
+	if (Node.VrmMetaObject_Internal == nullptr) {
 		//MessageLog.Warning(*LOCTEXT("VrmNoMetaObject", "@@ - You must set VrmMetaObject").ToString(), this);
 	} else {
-		if (Node.VrmMetaObject->SkeletalMesh) {
-			if (VRMGetSkeleton(Node.VrmMetaObject->SkeletalMesh) != CompiledClass->GetTargetSkeleton()) {
+		if (Node.VrmMetaObject_Internal->SkeletalMesh) {
+			if (VRMGetSkeleton(Node.VrmMetaObject_Internal->SkeletalMesh) != CompiledClass->GetTargetSkeleton()) {
 				MessageLog.Warning(*LOCTEXT("VrmDifferentSkeleton", "@@ - You must set VrmMetaObject has same skeleton").ToString(), this);
 			}
 		}

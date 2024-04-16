@@ -863,3 +863,30 @@ int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneInd
 
 	return Children.Num();
 }
+
+
+UVrmAssetListObject* VRMUtil::GetAssetListObject(UObject *obj) {
+	
+	if (Cast<USkeletalMesh>(obj)) {
+		const FString full = obj->GetPathName();
+		const FString baseName = obj->GetName();
+		const FString path = FPaths::GetPath(full);
+
+		FString core = baseName;
+		core.RemoveFromStart(TEXT("SK_"));
+
+		FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
+
+		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+		
+
+		FSoftObjectPath r = target;
+		UObject* u = r.ResolveObject();
+		if (u == nullptr) r.TryLoad();
+		return Cast<UVrmAssetListObject>(u);
+	}
+
+
+	return nullptr;
+}
+
