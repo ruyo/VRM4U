@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
+#include "Misc/Paths.h"
+
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
 
