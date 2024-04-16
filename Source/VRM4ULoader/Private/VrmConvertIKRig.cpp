@@ -421,8 +421,13 @@ public:
 	}
 
 	TMap<FName, FIKRetargetPose>& GetRetargetPoses(const ERetargetSourceOrTarget SourceOrTarget) const {
+#if	!WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
+		static TMap<FName, FIKRetargetPose> a;
+		return a;
+#else
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
 		return c->GetRetargetPoses(SourceOrTarget);
+#endif
 	};
 
 	void SetChainSetting() {

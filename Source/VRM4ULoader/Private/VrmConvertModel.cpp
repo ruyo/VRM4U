@@ -2406,15 +2406,17 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		if (u) {
 			FString name = FString(TEXT("ABP_Post_")) + vrmAssetList->BaseFileName;
 
-			//auto b = Cast<UVrmAnimInstanceTemplate>(VRM4U_StaticDuplicateObject(u, vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone));
 			auto b = Cast<UAnimBlueprint>(VRM4U_StaticDuplicateObject(u, vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone));
 			if (b) {
+				b->MarkPackageDirty();
 				b->TargetSkeleton = k;
+				b->SetPreviewMesh(sk);
 #if WITH_EDITOR
 				FKismetEditorUtilities::CompileBlueprint(b);
 #endif
-				b->MarkPackageDirty();
-				sk->SetPostProcessAnimBlueprint(b->GetClass());
+				UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(b->GeneratedClass);
+				sk->SetPostProcessAnimBlueprint(bpClass);
+				sk->PostEditChange();
 			}
 		}
 	}

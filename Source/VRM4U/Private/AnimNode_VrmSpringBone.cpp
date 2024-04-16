@@ -37,6 +37,7 @@ SOFTWARE.
 #include "DrawDebugHelpers.h"
 
 #include "VrmMetaObject.h"
+#include "VrmAssetListObject.h"
 #include "VrmUtil.h"
 
 #include "VrmSpringBone.h"

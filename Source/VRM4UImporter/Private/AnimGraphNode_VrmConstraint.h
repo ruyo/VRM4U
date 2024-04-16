@@ -30,7 +30,7 @@ class UAnimGraphNode_VrmConstraint : public UAnimGraphNode_SkeletalControlBase
 	bool bPreviewLive = true;
 
 	UPROPERTY(EditAnywhere, Category = Preview)
-	bool bPreviewForeground = false;
+	bool bPreviewForeground = true;
 
 public:
 	// UEdGraphNode interface
