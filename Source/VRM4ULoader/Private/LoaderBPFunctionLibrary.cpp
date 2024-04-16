@@ -835,6 +835,9 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 	}
 	out->VrmMetaObject->SkeletalMesh = out->SkeletalMesh;
 
+	VRMSetPhysicsAsset(out->VrmMetaObject->SkeletalMesh, nullptr);
+
+
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("VRM Save"))
 		
