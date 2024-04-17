@@ -28,7 +28,7 @@ void FAnimNode_VrmConstraint::Initialize_AnyThread(const FAnimationInitializeCon
 
 	VrmMetaObject_Internal = VrmMetaObject;
 	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
-		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(Context.AnimInstanceProxy->GetSkelMeshComponent()->SkeletalMesh);
+		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
 		if (VrmAssetListObject_Internal) {
 			VrmMetaObject_Internal = VrmAssetListObject_Internal->VrmMetaObject;
 		}
@@ -249,7 +249,7 @@ void FAnimNode_VrmConstraint::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 	auto MetaObjectLocal = VrmMetaObject_Internal;
 
 	if (MetaObjectLocal == nullptr && EnableAutoSearchMetaData) {
-		auto* p = VRMUtil::GetAssetListObject(PreviewSkelMeshComp->SkeletalMesh);
+		auto* p = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(PreviewSkelMeshComp));
 		if (p) {
 			MetaObjectLocal = p->VrmMetaObject;
 		}

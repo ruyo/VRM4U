@@ -38,7 +38,7 @@ public:
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 	//TWeakObjectPtr<USkeletalMeshComponent> RetargetSourceMeshComponent = nullptr;
-	TAssetPtr<UIKRetargeter> Retargeter;
+	TSoftObjectPtr<UIKRetargeter> Retargeter;
 	TSharedPtr<FAnimNode_RetargetPoseFromMesh> Node_Retarget;
 
 	void CustomInitialize();
