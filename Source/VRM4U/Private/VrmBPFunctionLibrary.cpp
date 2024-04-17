@@ -1672,8 +1672,11 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 		ase->AddNewRawTrack(BoneName, &RawTrack);
-#else
+#elif UE_VERSION_OLDER_THAN(5,2,0)
 		ase->GetController().AddBoneTrack(BoneName);
+		ase->GetController().SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
+#else
+		ase->GetController().AddBoneCurve(BoneName);
 		ase->GetController().SetBoneTrackKeys(BoneName, RawTrack.PosKeys, RawTrack.RotKeys, RawTrack.ScaleKeys);
 #endif
 
@@ -1691,8 +1694,14 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 		ase->SequenceLength = totalTime;
 		ase->MarkRawDataAsModified();
-#else
+#elif UE_VERSION_OLDER_THAN(5,2,0)
 		ase->GetController().SetPlayLength(totalTime);
+		//ase->MarkRawDataAsModified();
+		ase->SetUseRawDataOnly(true);
+		ase->FlagDependentAnimationsAsRawDataOnly();
+		ase->UpdateDependentStreamingAnimations();
+#else
+		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
 		//ase->MarkRawDataAsModified();
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
