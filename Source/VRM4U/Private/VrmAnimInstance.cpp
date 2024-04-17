@@ -324,13 +324,6 @@ void UVrmAnimInstance::NativeUpdateAnimation(float DeltaSeconds) {
 	}
 }
 void UVrmAnimInstance::NativePostEvaluateAnimation() {
-	auto targetComponent = Cast<USkeletalMeshComponent>(this);
-	if (targetComponent) {
-		//for (auto &a : targetComponent->BoneSpaceTransforms) {
-			//a.SetIdentity();
-		//}
-	}
-
 	if (BaseSkeletalMeshComponent) {
 		if (BaseSkeletalMeshComponent->AnimScriptInstance) {
 			IAnimClassInterface* AnimClassInterface = IAnimClassInterface::GetFromClass(this->GetClass());
