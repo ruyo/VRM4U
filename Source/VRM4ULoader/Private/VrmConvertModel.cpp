@@ -1829,13 +1829,20 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				ENQUEUE_RENDER_COMMAND(UpdateCommand)(
 					[sk, Triangles, Weight](FRHICommandListImmediate& RHICmdList)
 				{
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#define VRM4U_RHI_CMD_LIST
+#else
+#define VRM4U_RHI_CMD_LIST RHICmdList
+#endif
+
 					FSkeletalMeshLODRenderData &d = sk->GetResourceForRendering()->LODRenderData[0];
 
 					if (d.MultiSizeIndexContainer.IsIndexBufferValid()) {
 						d.MultiSizeIndexContainer.GetIndexBuffer()->ReleaseResource();
 					}
 					d.MultiSizeIndexContainer.RebuildIndexBuffer(sizeof(uint32), Triangles);
-					d.MultiSizeIndexContainer.GetIndexBuffer()->InitResource();
+					d.MultiSizeIndexContainer.GetIndexBuffer()->InitResource(VRM4U_RHI_CMD_LIST);
 
 					//d.AdjacencyMultiSizeIndexContainer.CopyIndexBuffer(Triangles);
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -1888,10 +1895,10 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 #endif
 
-					d.StaticVertexBuffers.PositionVertexBuffer.UpdateRHI();
-					d.StaticVertexBuffers.StaticMeshVertexBuffer.UpdateRHI();
+					d.StaticVertexBuffers.PositionVertexBuffer.UpdateRHI(VRM4U_RHI_CMD_LIST);
+					d.StaticVertexBuffers.StaticMeshVertexBuffer.UpdateRHI(VRM4U_RHI_CMD_LIST);
 
-					d.MultiSizeIndexContainer.GetIndexBuffer()->UpdateRHI();
+					d.MultiSizeIndexContainer.GetIndexBuffer()->UpdateRHI(VRM4U_RHI_CMD_LIST);
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 					d.AdjacencyMultiSizeIndexContainer.GetIndexBuffer()->UpdateRHI();
 #endif
@@ -2202,7 +2209,10 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		}
 		Controller.SetNumberOfFrames(FrameNum - 1);
 #endif
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
 		Controller.UpdateCurveNamesFromSkeleton(k, ERawCurveTrackTypes::RCT_Float);
+#endif
 
 		//Controller.OpenBracket(LOCTEXT("VRM4U", "Importing BVH"), false);
 

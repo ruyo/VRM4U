@@ -1151,13 +1151,9 @@ bool ULoaderBPFunctionLibrary::CopyVirtualBone(USkeletalMesh *dstMesh, const USk
 				int32 bone2 = VRMGetRefSkeleton(dstMesh).FindBoneIndex(n);
 
 				auto getBoneTransform = [](auto &mesh, int32 bone) {
-#if WITH_EDITOR
-					return VRMGetRetargetBasePose(mesh)[bone];
-#else
 					auto &f = VRMGetRefSkeleton(mesh).GetRefBonePose();
 					if (bone < f.Num()) return f[bone];
 					return FTransform();
-#endif
 				};
 
 				FTransform f1;
