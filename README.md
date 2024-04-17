@@ -100,6 +100,13 @@ VRM4Uの開発を支援したい という奇特な方は[こちら](https://ruy
 ありがとうございます。
 
 ### リリース履歴
+- 2024/04/17
+    - Blenderで出力したVRMファイルを読み込めないのを対応した(glTFの読み込み優先度を上げた)
+    - マネキン骨名を小文字で統一した
+    - PostProcessAnimBlueprintを自動生成、SkeletalMeshに設定した
+    - SpringBone、Constraintノードで利用するMetaファイルを自動サーチできるようにした
+    - IKRetargeterにRootMotion設定を追加した
+    - VRM10: 揺れ骨のコライダ対応、Constraintにデバッグ表示を追加、ライセンスの取り込み対応
 - 2024/04/02
     - UE5の配布バイナリパスが間違っていたのを修正
     - UE5.4: リターゲットポーズにAutoを追加
