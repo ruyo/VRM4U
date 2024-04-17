@@ -14,6 +14,15 @@ UVrmPoseableMeshComponent::UVrmPoseableMeshComponent(const FObjectInitializer& O
 	bTickInEditor = true;
 }
 
+void UVrmPoseableMeshComponent::OnRegister() {
+	Super::OnRegister();
+	if (bUseDefaultMaterial) {
+		this->OverrideMaterials.Empty();
+	}
+	Init();
+}
+
+
 void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
