@@ -867,7 +867,7 @@ int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneInd
 }
 
 
-UVrmAssetListObject* VRMUtil::GetAssetListObject(UObject *obj) {
+UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 	
 	if (Cast<USkeletalMesh>(obj)) {
 		const FString full = obj->GetPathName();
