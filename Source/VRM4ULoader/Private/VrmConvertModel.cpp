@@ -2415,7 +2415,11 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				FKismetEditorUtilities::CompileBlueprint(b);
 #endif
 				UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(b->GeneratedClass);
+#if	UE_VERSION_OLDER_THAN(4,27,0)
+				sk->PostProcessAnimBlueprint = bpClass;
+#else
 				sk->SetPostProcessAnimBlueprint(bpClass);
+#endif
 				sk->PostEditChange();
 			}
 		}
