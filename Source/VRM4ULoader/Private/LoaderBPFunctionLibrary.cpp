@@ -557,9 +557,14 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes,
 			e.c_str());
 
+		UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta: mScenePtr=%p"), mScenePtr);
+
+		if (mScenePtr == nullptr) {
+			return;
+		}
+
 		//UE_LOG(LogVRM4ULoader, Log, TEXT("VRM:(%3.3lf secs) ReadFileFromMemory"), FPlatformTime::Seconds() - StartTime);
 
-		UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta: mScenePtr=%p"), mScenePtr);
 
 		{
 			// vrm version check
@@ -570,9 +575,6 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 				vc.Init(Res.GetData(), Res.Num(), nullptr);
 			}
 		}
-	}
-	if (mScenePtr == nullptr) {
-		return;
 	}
 
 	UTexture2D* NewTexture2D = nullptr;
