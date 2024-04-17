@@ -478,9 +478,12 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		ULoaderBPFunctionLibrary::SetImportMode(false, nullptr);
 		importOption.SetVrmOption(nullptr);
 
+#if	UE_VERSION_OLDER_THAN(4,22,0)
+#else
 		if (GEditor) {
 			GEditor->GetEditorSubsystem<UImportSubsystem>()->BroadcastAssetPostImport(this, mret);
 		}
+#endif
 
 
 		GWarn->EndSlowTask();

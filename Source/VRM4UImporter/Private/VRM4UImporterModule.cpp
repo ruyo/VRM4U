@@ -41,8 +41,11 @@ public:
 	void OnPostEngineInit() {
 		if (GEditor)
 		{
+#if	UE_VERSION_OLDER_THAN(4,22,0)
+#else
 			GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetPostImport.AddRaw(this, &FVRM4UImporterModule::OnObjectImported);
 			GEditor->GetEditorSubsystem<UImportSubsystem>()->OnAssetReimport.AddRaw(this, &FVRM4UImporterModule::OnObjectReimported);
+#endif
 		}
 	}
 
