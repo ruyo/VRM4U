@@ -39,6 +39,7 @@ void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick T
 		MorphTargetWeights = MPCPtr->MorphTargetWeights;
 		ActiveMorphTargets = MPCPtr->ActiveMorphTargets;
 
+		/*
 		if (ActiveMorphTargets.Num() == 0){
 			auto* p = Cast<USkeletalMeshComponent>(MPCPtr);
 			if (p) {
@@ -52,6 +53,7 @@ void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick T
 				}
 			}
 		}
+		*/
 	}
 #endif
 }

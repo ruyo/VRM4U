@@ -877,15 +877,29 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 		FString core = baseName;
 		core.RemoveFromStart(TEXT("SK_"));
 
-		FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
-
-		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
-		
-		if (IsInGameThread()) {
-			FSoftObjectPath r = target;
-			UObject* u = r.ResolveObject();
-			if (u == nullptr) r.TryLoad();
-			return Cast<UVrmAssetListObject>(u);
+		{
+			FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
+			FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+			if (IsInGameThread()) {
+				FSoftObjectPath r = target;
+				UObject* u = r.ResolveObject();
+				if (u == nullptr) u = r.TryLoad();
+				if (u) {
+					return Cast<UVrmAssetListObject>(u);
+				}
+			}
+		}
+		{
+			FString targetBase = FString(TEXT("")) + core + FString(TEXT("_vrmassetlist"));
+			FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+			if (IsInGameThread()) {
+				FSoftObjectPath r = target;
+				UObject* u = r.ResolveObject();
+				if (u == nullptr) u = r.TryLoad();
+				if (u) {
+					return Cast<UVrmAssetListObject>(u);
+				}
+			}
 		}
 	}
 
