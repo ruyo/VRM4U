@@ -769,7 +769,7 @@ bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, cons
 
 
 	// vrm1
-	{
+	if (vrmAssetList->SkeletalMesh){
 		auto& sk = vrmAssetList->SkeletalMesh;
 		auto& refSkeleton = VRMGetRefSkeleton(sk);
 
