@@ -2229,11 +2229,36 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 			for (uint32_t animNo = 0; animNo < aiData->mNumAnimations; animNo++) {
 				aiAnimation* aiA = aiData->mAnimations[animNo];
-				
+
 				for (uint32_t chanNo = 0; chanNo < aiA->mNumChannels; chanNo++) {
 					aiNodeAnim* aiNA = aiA->mChannels[chanNo];
 
 					FRawAnimSequenceTrack RawTrack;
+
+					bool isRootBone = false;
+					FName NodeName = UTF8_TO_TCHAR(aiNA->mNodeName.C_Str());
+					if (VRMConverter::Options::Get().IsVRMAModel()) {
+						if (vrmAssetList->VrmMetaObject) {
+							for (auto& t : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
+
+								if (t.Value == NodeName.ToString()) {
+									NodeName = *t.Key;
+									break;
+								}
+							}
+						}
+					}
+					{
+						auto ind = k->GetReferenceSkeleton().FindBoneIndex(NodeName);
+						if (ind != INDEX_NONE) {
+							ind = k->GetReferenceSkeleton().GetParentIndex(ind);
+							if (ind == INDEX_NONE) {
+								// root bone. no parent.
+
+								isRootBone = true;
+							}
+						}
+					}
 
 					{
 						for (uint32_t i = 0; i < aiNA->mNumPositionKeys; ++i) {
@@ -2246,6 +2271,10 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							FVector pos(-v.x, v.z, v.y);
 							pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
 							if (VRMConverter::Options::Get().IsVRM10Model() || VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
+								//pos.X *= -1.f;
+								//pos.Y *= -1.f;
+							}
+							if (VRMConverter::Options::Get().IsVRMAModel() && isRootBone) {
 								pos.X *= -1.f;
 								pos.Y *= -1.f;
 							}
@@ -2348,16 +2377,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 						}
 #else
 						{
-							FName NodeName = UTF8_TO_TCHAR(aiNA->mNodeName.C_Str());
-							
 							if (VRMConverter::Options::Get().IsVRMAModel()) {
-								if (vrmAssetList->VrmMetaObject) {
-									for (auto& t : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 
-										if (t.Value == NodeName.ToString()) {
-											NodeName = *t.Key;
-											break;
-										}
+								if (isRootBone){
+									auto dif = FRotator(0, 0, -90).Quaternion();
+									for (auto& r : RawTrack.RotKeys) {
+										//r = FQuat4f(FQuat(r) * dif);
 									}
 								}
 							}

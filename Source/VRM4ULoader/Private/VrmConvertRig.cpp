@@ -626,7 +626,25 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 #endif // editor
 #endif //420
 
-	{
+	if (VRMConverter::Options::Get().IsVRMAModel()) {
+		// for expression curve
+		for (int i = 0; i < k->GetReferenceSkeleton().GetRawBoneNum(); ++i) {
+			k->SetBoneTranslationRetargetingMode(i, EBoneTranslationRetargetingMode::Animation);
+		}
+
+		if (vrmAssetList && vrmAssetList->VrmMetaObject) {
+			for (auto& t : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
+				auto i = k->GetReferenceSkeleton().FindBoneIndex(*t.Value);
+				if (i != INDEX_NONE) {
+					if (t.Key.Compare(TEXT("hips"), ESearchCase::IgnoreCase) == 0) {
+					} else {
+						k->SetBoneTranslationRetargetingMode(i, EBoneTranslationRetargetingMode::Skeleton);
+					}
+				}
+			}
+		}
+	}else{
+
 		FString PelvisBoneName;
 		if (vrmAssetList && vrmAssetList->VrmMetaObject) {
 			for (auto& t : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
@@ -636,7 +654,6 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 		}
-
 
 		int bone = -1;
 		for (int i = 0; i < k->GetReferenceSkeleton().GetRawBoneNum(); ++i) {

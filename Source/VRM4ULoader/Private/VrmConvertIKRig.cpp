@@ -961,17 +961,25 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			ikr->TargetMeshOffset.Set(100, 0, 0);
 #endif
 
+			auto SourceOrTargetVRM = ERetargetSourceOrTarget::Target;
+			auto SourceOrTargetMannequin = ERetargetSourceOrTarget::Source;
+
+			if (Options::Get().IsVRMAModel()) {
+				SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
+				SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
+
+			}
 
 			SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
-			c.SetIKRig(ERetargetSourceOrTarget::Target, rig_ik);
+			c.SetIKRig(SourceOrTargetVRM, rig_ik);
 
 			FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
 			UObject* u = r.TryLoad();
 			if (u) {
 				auto r2 = Cast<UIKRigDefinition>(u);
 				if (r2) {
-					c.SetIKRig(ERetargetSourceOrTarget::Source, r2);
+					c.SetIKRig(SourceOrTargetMannequin, r2);
 				}
 			}
 
@@ -1014,8 +1022,8 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				{
 					//name
 					FName PoseName = "POSE_A";
-					const FName NewPoseName = c.CreateRetargetPose(PoseName, ERetargetSourceOrTarget::Target);
-					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(ERetargetSourceOrTarget::Target, NewPoseName);
+					const FName NewPoseName = c.CreateRetargetPose(PoseName, SourceOrTargetVRM);
+					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(SourceOrTargetVRM, NewPoseName);
 
 					FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 					const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
@@ -1076,18 +1084,18 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #if UE_VERSION_OLDER_THAN(5,4,0)
 							NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
 #else
-							NewPose->SortHierarchically(ikr->GetIKRig(ERetargetSourceOrTarget::Target)->GetSkeleton());
+							NewPose->SortHierarchically(ikr->GetIKRig(SourceOrTargetVRM)->GetSkeleton());
 #endif
 						}
 					}
 				}
 
 #if VRM4U_USE_AUTOALIGN
-				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), ERetargetSourceOrTarget::Target);
-				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), ERetargetSourceOrTarget::Source);
+				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
+				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
-				c.AutoAlignAllBones(ERetargetSourceOrTarget::Source);
-				c.AutoAlignAllBones(ERetargetSourceOrTarget::Target);
+				c.AutoAlignAllBones(SourceOrTargetMannequin);
+				c.AutoAlignAllBones(SourceOrTargetVRM);
 #endif
 			}
 			c.SetChainSetting();

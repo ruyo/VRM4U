@@ -385,7 +385,6 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 						f.SetRotation(FRotator(0, 0, -90).Quaternion());
 						m *= f.ToMatrixNoScale();
 					}
-				} else {
 				}
 				FTransform localpose;
 				localpose.SetFromMatrix(m);

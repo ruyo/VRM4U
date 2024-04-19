@@ -111,6 +111,9 @@ bool VRMIsVRM10(const uint8_t* pData, size_t size) {
 		if (doc["extensions"].HasMember("VRMC_vrm")) {
 			return true;
 		}
+		if (doc["extensions"].HasMember("VRMC_vrm_animation")) {
+			return true;
+		}
 	}
 	return false;
 }

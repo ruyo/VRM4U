@@ -208,6 +208,8 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 
 		// to default
 		{
+			ImportUI->bVrm10RemoveLocalRotation = false;
+
 			ImportUI->ModelScale = 1.0f;
 			ImportUI->bMergeMaterial = true;
 			ImportUI->bMergePrimitive = true;
@@ -272,6 +274,9 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 				}
 				if (Extension.ToLower() == TEXT("bvh")) {
 					ImportUI->ModelScale = 0.01f;
+				}
+				if (Extension.ToLower() == TEXT("vrma")) {
+					ImportUI->bVrm10RemoveLocalRotation = true;
 				}
 			}
 #if	UE_VERSION_OLDER_THAN(5,2,0)

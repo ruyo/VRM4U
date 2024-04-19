@@ -177,8 +177,8 @@ static std::string GetExtAndSetModelTypeLocal(std::string e, const uint8* pDataL
 	if (e.compare("vrma") == 0) {
 		VRMConverter::Options::Get().SetVRMAModel(true);
 		VRMConverter::Options::Get().SetNoMesh(true);
+		VRMConverter::Options::Get().SetVRM10Model(true);
 		e_tmp = "vrm";
-		VRMConverter::Options::Get().SetBVHModel(true);
 	}
 
 	if (e.compare("bvh") == 0) {
