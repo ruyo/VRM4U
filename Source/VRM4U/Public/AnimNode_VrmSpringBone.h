@@ -70,7 +70,7 @@ struct VRM4U_API FAnimNode_VrmSpringBone : public FAnimNode_SkeletalControlBase
 	bool bIgnorePhysicsResetOnTeleport = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta=(PinHiddenByDefault))
-	bool bIgnorePhysicsCollision = false;
+	bool bIgnorePhysicsCollision = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta=(PinHiddenByDefault))
 	bool bIgnoreVRMCollision = false;
