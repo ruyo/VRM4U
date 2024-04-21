@@ -2274,9 +2274,14 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 								//pos.X *= -1.f;
 								//pos.Y *= -1.f;
 							}
-							if (VRMConverter::Options::Get().IsVRMAModel() && isRootBone) {
-								pos.X *= -1.f;
-								pos.Y *= -1.f;
+							if (VRMConverter::Options::Get().IsVRMAModel() ) {
+								if (isRootBone) {
+									pos.X *= -1.f;
+									pos.Y *= -1.f;
+								}else {
+									pos.Set(v.x, v.y, v.z);
+									pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
+								}
 							}
 #if UE_VERSION_OLDER_THAN(5,0,0)
 							RawTrack.PosKeys.Add(pos);
@@ -2313,9 +2318,17 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 								}
 #else
 								q = FQuat4f(-v.x, v.y, v.z, -v.w);
+
 								{
-									auto d = FQuat4f(FVector3f(1, 0, 0), -PI / 2.f);
-									q = d * q * d.Inverse();
+									//auto d = FQuat4f(FVector3f(1, 0, 0), -PI / 2.f);
+									//q = d * q * d.Inverse();
+
+									
+									q = FQuat4f(v.x, v.y, v.z, v.w);
+
+									if (isRootBone) {
+										q = FQuat4f(FVector3f(1,0,0), PI/2.f) * q;
+									}
 								}
 #endif
 
