@@ -76,7 +76,12 @@ void FAnimNode_VrmConstraint::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 
 	for (auto& a : VrmMetaObject_Internal->VRMConstraintMeta) {
 
+
 		int32 dstBoneIndex = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(*(a.Key));
+		if (Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().GetRefBonePose().IsValidIndex(dstBoneIndex) == false) {
+			continue;
+		}
+
 		FCompactPoseBoneIndex dstPoseBoneIndex(dstBoneIndex);
 		auto dstRefTrans = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().GetRefBonePose()[dstBoneIndex];
 		auto dstRefRot = dstRefTrans.GetRotation();

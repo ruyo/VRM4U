@@ -544,6 +544,13 @@ namespace VRM1Spring {
 
 				auto& state = JointStateMap.FindOrAdd(j1.boneNo);
 
+				if (RefSkeletonTransform.IsValidIndex(j1.boneNo) == false) {
+					continue;
+				}
+				if (RefSkeletonTransform.IsValidIndex(j2.boneNo) == false) {
+					continue;
+			}
+
 				state.initialLocalMatrix = RefSkeletonTransform[j1.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j1.boneNo].GetRotation();
 
@@ -604,6 +611,13 @@ namespace VRM1Spring {
 				if (state == nullptr) continue;
 
 				//int myParentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
+
+				if (RefSkeletonTransform.IsValidIndex(j1.boneNo) == false) {
+					continue;
+				}
+				if (RefSkeletonTransform.IsValidIndex(j2.boneNo) == false) {
+					continue;
+				}
 
 				if (jointNo == 0) {
 					// 揺れ骨の根本
