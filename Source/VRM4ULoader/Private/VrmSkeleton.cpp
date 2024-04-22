@@ -88,16 +88,17 @@ FMatrix convertAiMatToFMatrix(aiMatrix4x4 t) {
 
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
 		m.M[0][0] = t.a1; m.M[1][0] = t.a2; m.M[2][0] = t.a3; m.M[3][0] = t.a4 * 100.f;
-		m.M[0][1] = -t.c1; m.M[1][1] = -t.c2; m.M[2][1] = -t.c3; m.M[3][1] = -t.c4 * 100.f;//t.b4*100.f;
-		m.M[0][2] = t.b1; m.M[1][2] = t.b2; m.M[2][2] = t.b3; m.M[3][2] = t.b4 * 100.f;//t.c4*100.f;
-		m.M[0][3] = t.d1; m.M[1][3] = t.d2; m.M[2][3] = t.d3; m.M[3][3] = t.d4;
-
-		m.M[0][0] = t.a1; m.M[1][0] = t.a2; m.M[2][0] = t.a3; m.M[3][0] = t.a4 * 100.f;
 		m.M[0][1] = t.b1; m.M[1][1] = t.b2; m.M[2][1] = t.b3; m.M[3][1] = t.b4 * 100.f;//t.b4*100.f;
 		m.M[0][2] = t.c1; m.M[1][2] = t.c2; m.M[2][2] = t.c3; m.M[3][2] = t.c4 * 100.f;//t.c4*100.f;
 		m.M[0][3] = t.d1; m.M[1][3] = t.d2; m.M[2][3] = t.d3; m.M[3][3] = t.d4;
 
-		// rot after
+		// rot
+		{
+			FTransform f;
+			f.SetRotation(FRotator(0, 0, 90).Quaternion());
+
+			m = f.ToMatrixNoScale() * m * f.ToMatrixNoScale().Inverse();
+		}
 	}
 
 	if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
@@ -379,13 +380,6 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 			{
 				FMatrix m = convertAiMatToFMatrix(node->mTransformation);
 
-				if (ParentIndex == INDEX_NONE) {
-					if (VRMConverter::Options::Get().IsVRM10Model()) {
-						FTransform f;
-						f.SetRotation(FRotator(0, 0, -90).Quaternion());
-						m *= f.ToMatrixNoScale();
-					}
-				}
 				FTransform localpose;
 				localpose.SetFromMatrix(m);
 
@@ -427,11 +421,6 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 					FMatrix m = convertAiMatToFMatrix(bone->mOffsetMatrix);
 					if (ParentIndex == INDEX_NONE) {
 					} else {
-						if (VRMConverter::Options::Get().IsVRM10Model()) {
-							//FTransform f;
-							//f.SetRotation(FRotator(0, 0, 90).Quaternion());
-							//m *= f.ToMatrixNoScale();
-						}
 					}
 
 

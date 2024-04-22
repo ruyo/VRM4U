@@ -1028,7 +1028,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 						for (int vertexNo = 0; vertexNo < info[meshNo].Vertices.Num(); ++vertexNo) {
 							FVector v_orig = info[meshNo].Vertices[vertexNo];
-							v_orig.Set(mesh->mVertices[vertexNo].x, mesh->mVertices[vertexNo].y, mesh->mVertices[vertexNo].z);
+							//v_orig.Set(mesh->mVertices[vertexNo].x, mesh->mVertices[vertexNo].y, mesh->mVertices[vertexNo].z);
+							v_orig.Set(mesh->mVertices[vertexNo].x, -mesh->mVertices[vertexNo].z, mesh->mVertices[vertexNo].y);
 							FVector v(0, 0, 0);
 
 							if (weightTable.Find(vertexOffset + vertexNo) == nullptr) {
@@ -1055,6 +1056,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 									UE_LOG(LogVRM4ULoader, Warning, TEXT("BindPose -> TPose :: no pose transform %p %p"), tpose, bpose);
 								}
 							}
+							v.Set(v.X, v.Z, -v.Y);
 							info[meshNo].Vertices[vertexNo] = v / 100.f;
 						}
 						vertexOffset += mesh->mNumVertices;
@@ -1209,7 +1211,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 					v.PositionVertexBuffer.VertexPosition(currentVertex + i).Set(-a.X, a.Z, a.Y);
 					if (VRMConverter::Options::Get().IsVRM10Model()) {
-						v.PositionVertexBuffer.VertexPosition(currentVertex + i).Set(a.X, a.Y, a.Z);
+						v.PositionVertexBuffer.VertexPosition(currentVertex + i).Set(a.X, -a.Z, a.Y);
 					}else if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
 						v.PositionVertexBuffer.VertexPosition(currentVertex + i).X *= -1.f;
 						v.PositionVertexBuffer.VertexPosition(currentVertex + i).Y *= -1.f;
@@ -1237,7 +1239,11 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 						FVector n_tmp(-n.X, n.Z, n.Y);
 						FVector t_tmp(-mInfo.Tangents[i].X, mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
 
-						if (VRMConverter::Options::Get().IsVRM10Model() || VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
+						if (VRMConverter::Options::Get().IsVRM10Model()) {
+							n_tmp.Set(n.X, -n.Z, n.Y);
+							t_tmp.Set(mInfo.Tangents[i].X, -mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
+						}
+						if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
 							FVector tmpv(-1, -1, 1);
 							n_tmp *= tmpv;
 							t_tmp *= tmpv;
@@ -2270,19 +2276,23 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							}
 							FVector pos(-v.x, v.z, v.y);
 							pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
-							if (VRMConverter::Options::Get().IsVRM10Model() || VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
-								//pos.X *= -1.f;
+							if (VRMConverter::Options::Get().IsVRM10Model()) {
+								pos.Set(v.x, -v.z, v.y);
+								pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
+							}
+							if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
+									//pos.X *= -1.f;
 								//pos.Y *= -1.f;
 							}
-							if (VRMConverter::Options::Get().IsVRMAModel() ) {
-								if (isRootBone) {
-									pos.X *= -1.f;
-									pos.Y *= -1.f;
-								}else {
-									pos.Set(v.x, v.y, v.z);
-									pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
-								}
-							}
+							//if (VRMConverter::Options::Get().IsVRMAModel() ) {
+							//	if (isRootBone) {
+							//		pos.X *= -1.f;
+							//		pos.Y *= -1.f;
+							//	}else {
+							//		pos.Set(v.x, v.y, v.z);
+							//		pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
+							//	}
+							//}
 #if UE_VERSION_OLDER_THAN(5,0,0)
 							RawTrack.PosKeys.Add(pos);
 #else
@@ -2319,16 +2329,9 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 								q = FQuat4f(-v.x, v.y, v.z, -v.w);
 
-								{
-									//auto d = FQuat4f(FVector3f(1, 0, 0), -PI / 2.f);
-									//q = d * q * d.Inverse();
+								if (VRMConverter::Options::Get().IsVRM10Model()) {
 
-									
-									q = FQuat4f(v.x, v.y, v.z, v.w);
-
-									if (isRootBone) {
-										q = FQuat4f(FVector3f(1,0,0), PI/2.f) * q;
-									}
+									q = FQuat4f(v.x, -v.z, v.y, v.w);
 								}
 #endif
 

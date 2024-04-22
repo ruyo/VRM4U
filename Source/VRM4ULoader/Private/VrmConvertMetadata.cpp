@@ -151,6 +151,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	}
 
 
+	MetaObject->Version = 0;
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
 		MetaObject->Version = 1;
 	}

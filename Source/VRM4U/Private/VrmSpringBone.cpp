@@ -236,7 +236,7 @@ namespace VRMSpringBone {
 								float r = (hitRadius + c.radius) * 100.f;
 								//FVector v = collisionBoneTrans.TransformPosition(c.offset*100);
 								auto offs = c.offset;
-								offs.Set(-offs.X, offs.Z, offs.Y);
+								offs.Set(offs.X, -offs.Z, offs.Y);
 								offs *= 100;
 								FVector v = collisionBoneTrans.TransformPosition(offs);
 
@@ -703,12 +703,12 @@ namespace VRM1Spring {
 						}
 
 						auto offs = collider.offset;
-						offs.Set(offs.X, offs.Y, -offs.Z);
+						offs.Set(offs.X, -offs.Z, offs.Y);
 						offs *= 100;
 						offs = collisionBoneTrans.TransformVector(offs);
 
 						auto tail = collider.tail;
-						tail.Set(tail.X, tail.Y, -tail.Z);
+						tail.Set(tail.X, -tail.Z, tail.Y);
 						tail *= 100;
 						tail = collisionBoneTrans.TransformVector(tail);
 
