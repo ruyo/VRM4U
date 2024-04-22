@@ -568,22 +568,41 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	// vrma
 	if (VRMConverter::Options::Get().IsVRMAModel()) {
 		if (pData && dataSize) {
-			auto& humanBone = jsonData.doc["extensions"]["VRMC_vrm_animation"]["humanoid"]["humanBones"];
-			auto& origBone = jsonData.doc["nodes"];
+			{
+				auto& humanBone = jsonData.doc["extensions"]["VRMC_vrm_animation"]["humanoid"]["humanBones"];
+				auto& origBone = jsonData.doc["nodes"];
 
-			for (auto& g : humanBone.GetObject()) {
-				int nodeNo = g.value["node"].GetInt();
+				for (auto& g : humanBone.GetObject()) {
+					int nodeNo = g.value["node"].GetInt();
 
-				if (FString(g.name.GetString()) == "") {
-					continue;
-				}
+					if (FString(g.name.GetString()) == "") {
+						continue;
+					}
 
-				if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
-					MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
+					if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
+						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
+					}
+					else {
+						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+					}
 				}
-				else {
-					MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+			}
+			{
+				auto& ex = jsonData.doc["extensions"]["VRMC_vrm_animation"]["expressions"];
+				if (ex.HasMember("preset")) {
+					auto &p = ex["preset"];
+					for (auto &m : p.GetObject()) {
+						FVRMAnimationExpressionPreset meta;
+						meta.expressionName = m.name.GetString();
+						meta.expressionNode = m.value["node"].GetInt();
+						vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset.Add(meta);
+
+					}
 				}
+			}
+			{
+				auto& at = jsonData.doc["extensions"]["VRMC_vrm_animation"]["lookAt"];
+				vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at["node"].GetInt();
 			}
 		}
 	}

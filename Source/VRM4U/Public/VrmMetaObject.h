@@ -298,6 +298,44 @@ struct VRM4U_API FVRMConstraintRotation {
 	float weight = 1.f;
 };
 
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRMAnimationLookAt {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	int lookAtNode = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString lookAtNodeName;
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRMAnimationExpressionPreset {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString expressionName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	int expressionNode = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FString expressionNodeName;
+};
+
+
+USTRUCT(Blueprintable, BlueprintType)
+struct VRM4U_API FVRMAnimationMeta {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVRMAnimationLookAt lookAt;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	TArray<FVRMAnimationExpressionPreset> expressionPreset;
+		
+};
+
 
 USTRUCT(Blueprintable, BlueprintType)
 struct VRM4U_API FVRMConstraint {
@@ -353,6 +391,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	TMap<FString, FVRMConstraint> VRMConstraintMeta;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
+	FVRMAnimationMeta VRMAnimationMeta;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Rendering)
 	class USkeletalMesh *SkeletalMesh;
