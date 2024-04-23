@@ -2181,7 +2181,6 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #endif
 		Controller.ResetModel();
 
-
 		double AnimDeltaTime = 0.f;
 		{
 			for (uint32_t animNo = 0; animNo < aiData->mNumAnimations; animNo++) {
@@ -2394,12 +2393,25 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 						{
 							if (VRMConverter::Options::Get().IsVRMAModel()) {
+								auto &presetList = vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset;
+								for (auto& p : presetList) {
+									if (NodeName != p.expressionNodeName) continue;
 
-								if (isRootBone){
-									auto dif = FRotator(0, 0, -90).Quaternion();
-									for (auto& r : RawTrack.RotKeys) {
-										//r = FQuat4f(FQuat(r) * dif);
+									FFloatCurve c;
+									c.SetCurveTypeFlag(AACF_Editable, true);
+
+
+									auto boneNo = k->GetReferenceSkeleton().FindBoneIndex(*p.expressionNodeName);
+									if (boneNo != INDEX_NONE) {
+
+										for (int i = 0; i < RawTrack.PosKeys.Num(); ++i) {
+											c.UpdateOrAddKey(RawTrack.PosKeys[i].X / 100.f, i * AnimDeltaTime);
+										}
 									}
+									FAnimationCurveIdentifier f(*p.expressionName, ERawCurveTrackTypes::RCT_Float);
+									FName name;
+									Controller.AddCurve(f);
+									Controller.SetCurveKeys(f, c.FloatCurve.GetConstRefOfKeys());
 								}
 							}
 

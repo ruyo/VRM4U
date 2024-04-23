@@ -595,6 +595,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 						FVRMAnimationExpressionPreset meta;
 						meta.expressionName = m.name.GetString();
 						meta.expressionNode = m.value["node"].GetInt();
+						meta.expressionNodeName = jsonData.doc["nodes"].GetArray()[meta.expressionNode]["name"].GetString();
+
 						vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset.Add(meta);
 
 					}
