@@ -2395,7 +2395,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							if (VRMConverter::Options::Get().IsVRMAModel()) {
 								auto &presetList = vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset;
 								for (auto& p : presetList) {
-									if (NodeName != p.expressionNodeName) continue;
+									if (NodeName != *p.expressionNodeName) continue;
 
 									FFloatCurve c;
 									c.SetCurveTypeFlag(AACF_Editable, true);
@@ -2408,7 +2408,17 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 											c.UpdateOrAddKey(RawTrack.PosKeys[i].X / 100.f, i * AnimDeltaTime);
 										}
 									}
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+									FSmartName sm;
+									{
+										TArray<FName> a = {*p.expressionName };
+										k->RemoveSmartnamesAndModify(USkeleton::AnimCurveMappingName, a);
+									}
+									k->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, *p.expressionName, sm);
+									FAnimationCurveIdentifier f(sm, ERawCurveTrackTypes::RCT_Float);
+#else
 									FAnimationCurveIdentifier f(*p.expressionName, ERawCurveTrackTypes::RCT_Float);
+#endif
 									FName name;
 									Controller.AddCurve(f);
 									Controller.SetCurveKeys(f, c.FloatCurve.GetConstRefOfKeys());
