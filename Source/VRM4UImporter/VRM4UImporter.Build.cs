@@ -28,7 +28,9 @@ public class VRM4UImporter : ModuleRules
                 "BlueprintGraph",
 
 				"PropertyEditor",
-				"Persona"
+				"Persona",
+
+				"ToolMenus",
 			});
 
 		PrivateIncludePathModuleNames.AddRange(
