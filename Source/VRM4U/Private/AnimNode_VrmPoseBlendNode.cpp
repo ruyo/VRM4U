@@ -21,7 +21,6 @@ FAnimNode_VrmPoseBlendNode::FAnimNode_VrmPoseBlendNode() {
 
 void FAnimNode_VrmPoseBlendNode::Initialize_AnyThread(const FAnimationInitializeContext& Context) {
 	bCallInitialized = true;
-	Super::Initialize_AnyThread(Context);
 
 	if (!PoseAsset) {
 
@@ -30,4 +29,6 @@ void FAnimNode_VrmPoseBlendNode::Initialize_AnyThread(const FAnimationInitialize
 			SetPoseAsset(v->PoseFace);
 		}
 	}
+
+	Super::Initialize_AnyThread(Context);
 }
