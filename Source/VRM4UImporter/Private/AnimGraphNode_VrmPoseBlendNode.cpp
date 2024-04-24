@@ -88,7 +88,7 @@ FText UAnimGraphNode_VrmPoseBlendNode::GetNodeTitle(ENodeTitleType::Type TitleTy
 		}
 		else
 		{
-			return LOCTEXT("PoseByName_TitleNONE", "VRM4U Pose (None)");
+			return LOCTEXT("PoseByName_TitleNONE", "VRM4U Pose (Auto Search)");
 		}
 	}
 	else

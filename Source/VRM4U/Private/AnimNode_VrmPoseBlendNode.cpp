@@ -22,8 +22,7 @@ FAnimNode_VrmPoseBlendNode::FAnimNode_VrmPoseBlendNode() {
 void FAnimNode_VrmPoseBlendNode::Initialize_AnyThread(const FAnimationInitializeContext& Context) {
 	bCallInitialized = true;
 
-	if (!PoseAsset) {
-
+	if (EnableAutoSearchMetaData) {
 		auto v = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
 		if (v) {
 			SetPoseAsset(v->PoseFace);
