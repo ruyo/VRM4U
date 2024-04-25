@@ -91,6 +91,8 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 		if (SpringManager.IsValid() == false) {
 			SpringManager = MakeShareable(new VRMSpringBone::VRMSpringManager());
 		}
+		if (SpringManager.Get()) {
+		}
 	}
 }
 void FAnimNode_VrmSpringBone::Initialize_AnyThread_local(const FAnimationInitializeContext& Context) {
@@ -220,65 +222,6 @@ void FAnimNode_VrmSpringBone::EvaluateSkeletalControl_AnyThread(FComponentSpaceP
 			SpringManager->update(this, CurrentDeltaTime, Output, OutBoneTransforms);
 
 			SpringManager->applyToComponent(Output, OutBoneTransforms);
-
-/*
-			for (auto &springRoot : SpringManager->spring) {
-				for (auto &sChain : springRoot.SpringDataChain) {
-					int BoneChain = 0;
-
-					FTransform CurrentTransForm = FTransform::Identity;
-					for (auto &sData : sChain) {
-
-
-						//FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(sData.boneIndex);
-						FCompactPoseBoneIndex uu(sData.boneIndex);
-
-						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
-							continue;
-						}
-
-						FTransform NewBoneTM;
-
-						if (BoneChain == 0) {
-							NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
-							NewBoneTM.SetRotation(sData.m_resultQuat);
-
-							CurrentTransForm = NewBoneTM;
-						}else{
-
-							NewBoneTM = CurrentTransForm;
-							
-							auto c = RefSkeletonTransform[sData.boneIndex];
-							NewBoneTM = c * NewBoneTM;
-							NewBoneTM.SetRotation(sData.m_resultQuat);
-
-
-							//const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-							//NewBoneTM.SetLocation(ComponentTransform.TransformPosition(sData.m_currentTail));
-
-							CurrentTransForm = NewBoneTM;
-						}
-
-						FBoneTransform a(uu, NewBoneTM);
-
-						bool bFirst = true;
-						for (auto &t : OutBoneTransforms) {
-							if (t.BoneIndex == a.BoneIndex) {
-								bFirst = false;
-								break;
-							}
-						}
-
-						if (bFirst) {
-							OutBoneTransforms.Add(a);
-						}
-						BoneChain++;
-					}
-				}
-
-			}
-			OutBoneTransforms.Sort(FCompareBoneTransformIndex());
-			*/
 
 		}
 	}

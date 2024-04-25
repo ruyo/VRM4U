@@ -149,6 +149,8 @@ namespace VRM1Spring {
 	public:
 		FVector prevTail;
 		FVector currentTail;
+
+		FVector initialTail;
 		FVector boneAxis;
 		float boneLength = 0.f;
 		FTransform initialLocalMatrix;
