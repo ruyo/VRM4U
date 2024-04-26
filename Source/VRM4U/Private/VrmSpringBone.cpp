@@ -1,6 +1,5 @@
 ﻿#include "VrmSpringBone.h"
 
-
 VrmSpringBone::VrmSpringBone()
 {
 }
@@ -522,12 +521,14 @@ namespace VRMSpringBone {
 namespace VRM1Spring {
 
 	void VRM1SpringManager::reset() {
-		for (auto j : JointStateMap) {
+		for (auto &j : JointStateMap) {
 			j.Value.currentTail = j.Value.prevTail = j.Value.initialTail;
 		}
 	}
 
 	void VRM1SpringManager::init(const UVrmMetaObject* meta, FComponentSpacePoseContext& Output) {
+
+		if (meta == nullptr) return;
 
 		const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
 		FTransform ComponentToLocal = ComponentTransform.Inverse();
@@ -552,7 +553,7 @@ namespace VRM1Spring {
 				}
 				if (RefSkeletonTransform.IsValidIndex(j2.boneNo) == false) {
 					continue;
-			}
+				}
 
 				state.initialLocalMatrix = RefSkeletonTransform[j1.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j1.boneNo].GetRotation();
@@ -573,7 +574,7 @@ namespace VRM1Spring {
 						state.initialTail = ComponentToLocal.InverseTransformPosition(t.GetLocation());
 				}
 				{
-					FCompactPoseBoneIndex u(j2.boneNo);
+					FCompactPoseBoneIndex u(j1.boneNo);
 					auto t = Output.Pose.GetComponentSpaceTransform(u);
 
 					state.resultQuat = t.GetRotation();
@@ -586,6 +587,9 @@ namespace VRM1Spring {
 	void VRM1SpringManager::update(const FAnimNode_VrmSpringBone* animNode, float DeltaTime, FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
 
 		if (skeletalMesh == nullptr) {
+			return;
+		}
+		if (FMath::IsNearlyZero(DeltaTime)) {
 			return;
 		}
 
