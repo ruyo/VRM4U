@@ -21,6 +21,7 @@ if ($a.EngineAssociation -eq '4.27' -or $a.EngineAssociation -eq '4.26' -or $a.E
     $b
 
     $PluginArrayList = [System.Collections.ArrayList]$b.Plugins
+    $PluginArrayList.RemoveAt(2)
     $PluginArrayList.RemoveAt(1)
     $b.Plugins = $PluginArrayList
 
@@ -34,7 +35,7 @@ if ($a.EngineAssociation -eq '5.0' -or $a.EngineAssociation -eq '4.27' -or $a.En
     $b
 
     $ModuleArrayList = [System.Collections.ArrayList]$b.Modules
-    $ModuleArrayList.RemoveAt(3)
+    $ModuleArrayList.RemoveAt(4)
     $b.Modules = $ModuleArrayList
 
     $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
