@@ -66,7 +66,8 @@ bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port)
 	}
 	else
 	{
-		OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString(), GetTransientPackage()));
+		//OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString(), GetTransientPackage()));
+		OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString(), nullptr));
 
 #if WITH_EDITOR
 		// Allow it to tick in editor, so that messages are parsed.
