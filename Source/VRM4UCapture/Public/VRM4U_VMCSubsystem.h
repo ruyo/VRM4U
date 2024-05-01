@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/EngineSubsystem.h"
 #include "Misc/EngineVersionComparison.h"
+#include "UObject/StrongObjectPtr.h"
 
 #include "OSCServer.h"
 
