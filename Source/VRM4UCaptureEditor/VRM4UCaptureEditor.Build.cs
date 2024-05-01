@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class VRM4UCapture : ModuleRules
+public class VRM4UCaptureEditor : ModuleRules
 {
-	public VRM4UCapture(ReadOnlyTargetRules Target) : base(Target)
+	public VRM4UCaptureEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -23,10 +23,10 @@ public class VRM4UCapture : ModuleRules
                 "Renderer",
                 "Networking",
                 "Sockets",
-				"OSC",
 
 				"VRM4U",
-            });
+				"VRM4UCapture",
+			});
 
 		PrivateIncludePathModuleNames.AddRange(
 			new string[] {

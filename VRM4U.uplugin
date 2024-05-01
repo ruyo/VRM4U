@@ -36,6 +36,11 @@
       "LoadingPhase": "Default"
     },
     {
+      "Name": "VRM4UCaptureEditor",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    },
+    {
       "Name": "VRM4URender",
       "Type": "Runtime",
       "LoadingPhase": "PostConfigInit"
@@ -69,6 +74,11 @@
     {
       "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+",
       "Name": "IKRig",
+      "Enabled": true
+    },
+    {
+      "_comment_vrm4u_dummy": "OSC Plugin for Use UE5.0+",
+      "Name": "OSC",
       "Enabled": true
     }
   ],
