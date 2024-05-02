@@ -80,10 +80,11 @@ bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port)
 	}
 
 	//void OSCReceivedMessageEvent(const FOSCMessage & Message, const FString & IPAddress, uint16 Port);
-
+#if	UE_VERSION_OLDER_THAN(4,25,0)
+#else
 	//OSCServer->OnOscMessageReceivedNative.AddStatic(this, &UVRM4U_VMCSubsystem::OSCReceivedMessageEvent);
 	OSCServer->OnOscMessageReceivedNative.AddStatic(&UVRM4U_VMCSubsystem::OSCReceivedMessageEvent);
-
+#endif
 	return true;
 }
 
