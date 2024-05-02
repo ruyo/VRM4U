@@ -113,9 +113,12 @@ class UAnimGraphNode_VrmPoseBlendNode : public UAnimGraphNode_PoseHandler
 	virtual EAnimAssetHandlerType SupportsAssetClass(const UClass* AssetClass) const override;
 	// End of UAnimGraphNode_Base
 
+#if	UE_VERSION_OLDER_THAN(4,24,0)
+#else
 	// UK2Node interface
 	virtual void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 	// End of UK2Node interface
+#endif
 
 private:
 	FText GetNodeTitleForPoseAsset(ENodeTitleType::Type TitleType, UPoseAsset* InPoseAsset) const;
