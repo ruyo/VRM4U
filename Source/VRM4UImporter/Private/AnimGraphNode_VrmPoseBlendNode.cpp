@@ -14,29 +14,6 @@
 
 #define LOCTEXT_NAMESPACE "PoseBlendNode"
 
-// Action to add a pose asset blend node to the graph
-struct FNewPoseBlendNodeAction : public FEdGraphSchemaAction_K2NewNode
-{
-protected:
-	FAssetData AssetInfo;
-public:
-	FNewPoseBlendNodeAction(const FAssetData& InAssetInfo, FText Title)
-		: FEdGraphSchemaAction_K2NewNode(LOCTEXT("PoseAsset", "PoseAssets"), Title, LOCTEXT("EvalCurvesToMakePose", "Evaluates curves to produce a pose from pose asset"), 0, FText::FromString(InAssetInfo.GetObjectPathString()))
-	{
-		AssetInfo = InAssetInfo;
-
-		UAnimGraphNode_VrmPoseBlendNode* Template = NewObject<UAnimGraphNode_VrmPoseBlendNode>();
-		NodeTemplate = Template;
-	}
-
-	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override
-	{
-		UAnimGraphNode_VrmPoseBlendNode* SpawnedNode = CastChecked<UAnimGraphNode_VrmPoseBlendNode>(FEdGraphSchemaAction_K2NewNode::PerformAction(ParentGraph, FromPin, Location, bSelectNewNode));
-		SpawnedNode->Node.PoseAsset = Cast<UPoseAsset>(AssetInfo.GetAsset());
-
-		return SpawnedNode;
-	}
-};
 /////////////////////////////////////////////////////
 // UAnimGraphNode_VrmPoseBlendNode
 
