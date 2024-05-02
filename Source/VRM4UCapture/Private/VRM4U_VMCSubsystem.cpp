@@ -66,7 +66,8 @@ bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port)
 	}
 	else
 	{
-		//OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString(), GetTransientPackage()));
+#if	UE_VERSION_OLDER_THAN(4,25,0)
+#else
 		OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString()));
 
 #if WITH_EDITOR
@@ -77,6 +78,8 @@ bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port)
 			OSCServer->SetTickInEditor(true);
 		}
 #endif // WITH_EDITOR
+
+#endif
 	}
 
 	//void OSCReceivedMessageEvent(const FOSCMessage & Message, const FString & IPAddress, uint16 Port);
