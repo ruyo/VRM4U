@@ -76,6 +76,8 @@ FText UAnimGraphNode_VrmPoseBlendNode::GetNodeTitle(ENodeTitleType::Type TitleTy
 
 void UAnimGraphNode_VrmPoseBlendNode::GetMenuActions(FBlueprintActionDatabaseRegistrar& InActionRegistrar) const
 {
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
 	GetMenuActionsHelper(
 		InActionRegistrar,
 		GetClass(),
@@ -107,6 +109,7 @@ void UAnimGraphNode_VrmPoseBlendNode::GetMenuActions(FBlueprintActionDatabaseReg
 		{
 			UAnimGraphNode_AssetPlayerBase::SetupNewNode(InNewNode, bInIsTemplateNode, InAssetData);
 		});
+#endif
 }
 
 FText UAnimGraphNode_VrmPoseBlendNode::GetTitleGivenAssetInfo(const FText& AssetName)
@@ -129,6 +132,8 @@ bool UAnimGraphNode_VrmPoseBlendNode::DoesSupportTimeForTransitionGetter() const
 
 void UAnimGraphNode_VrmPoseBlendNode::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
 	if (!Context->bIsDebugging)
 	{
 		// add an option to convert to single frame
@@ -137,6 +142,7 @@ void UAnimGraphNode_VrmPoseBlendNode::GetNodeContextMenuActions(UToolMenu* Menu,
 			Section.AddMenuEntry(FAnimGraphCommands::Get().ConvertToPoseByName);
 		}
 	}
+#endif
 }
 
 EAnimAssetHandlerType UAnimGraphNode_VrmPoseBlendNode::SupportsAssetClass(const UClass* AssetClass) const
@@ -167,21 +173,12 @@ UAnimationAsset* UAnimGraphNode_VrmPoseBlendNode::GetAnimationAsset() const {
 
 	return PoseAsset;
 }
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
 TSubclassOf<UAnimationAsset> UAnimGraphNode_VrmPoseBlendNode::GetAnimationAssetClass() const {
 	return UPoseAsset::StaticClass();
 }
-void UAnimGraphNode_VrmPoseBlendNode::OnOverrideAssets(IAnimBlueprintNodeOverrideAssetsContext& InContext) const {
-/*
-	if (InContext.GetAssets().Num() > 0)
-	{
-		if (UPoseAsset* PoseAsset = Cast<UPoseAsset>(InContext.GetAssets()[0]))
-		{
-			FAnimNode_PoseHandler& AnimNode = InContext.GetAnimNode<FAnimNode_PoseHandler>();
-			AnimNode.SetPoseAsset(PoseAsset);
-		}
-	}
-	*/
-}
+#endif
 void UAnimGraphNode_VrmPoseBlendNode::SetAnimationAsset(UAnimationAsset* Asset) {
 	if (UPoseAsset* PoseAsset = Cast<UPoseAsset>(Asset))
 	{
