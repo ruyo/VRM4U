@@ -13,6 +13,7 @@
 
 #include "Windows/WindowsApplication.h"
 #include "GenericPlatform/GenericApplication.h"
+#include "Framework/Application/SlateApplication.h"
 #include "VrmDropFiles.h"
 #include "VrmRuntimeSettings.h"
 #include "Interfaces/IPluginManager.h"
