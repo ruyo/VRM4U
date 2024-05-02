@@ -27,6 +27,7 @@
 #include "Internationalization/Internationalization.h"
 
 #include "Animation/AnimSequence.h"
+#include "Animation/AnimBlueprint.h"
 #include "Async/ParallelFor.h"
 
 #include <assimp/Importer.hpp>
