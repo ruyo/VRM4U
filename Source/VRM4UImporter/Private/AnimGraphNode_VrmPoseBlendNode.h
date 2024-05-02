@@ -145,7 +145,8 @@ public:
 	virtual void SetAnimationAsset(UAnimationAsset* Asset) override;
 
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(4,26,0)
+#elif	UE_VERSION_OLDER_THAN(5,0,0)
 	virtual void OnProcessDuringCompilation(IAnimBlueprintCompilationContext& InCompilationContext, IAnimBlueprintGeneratedClassCompiledData& OutCompiledData) override {
 	}
 #endif

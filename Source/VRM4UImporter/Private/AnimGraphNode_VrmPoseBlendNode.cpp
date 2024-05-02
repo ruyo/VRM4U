@@ -6,11 +6,15 @@
 #include "ToolMenus.h"
 
 #include "AnimGraphCommands.h"
-#include "AssetRegistry/ARFilter.h"
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "BlueprintActionFilter.h"
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
+
+#if	UE_VERSION_OLDER_THAN(4,26,0)
+#else
+#include "AssetRegistry/ARFilter.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "PoseBlendNode"
 
