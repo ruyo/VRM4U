@@ -179,6 +179,18 @@ TSubclassOf<UAnimationAsset> UAnimGraphNode_VrmPoseBlendNode::GetAnimationAssetC
 	return UPoseAsset::StaticClass();
 }
 #endif
+void UAnimGraphNode_VrmPoseBlendNode::OnOverrideAssets(IAnimBlueprintNodeOverrideAssetsContext& InContext) const {
+	/*
+		if (InContext.GetAssets().Num() > 0)
+		{
+			if (UPoseAsset* PoseAsset = Cast<UPoseAsset>(InContext.GetAssets()[0]))
+			{
+				FAnimNode_PoseHandler& AnimNode = InContext.GetAnimNode<FAnimNode_PoseHandler>();
+				AnimNode.SetPoseAsset(PoseAsset);
+			}
+		}
+		*/
+}
 void UAnimGraphNode_VrmPoseBlendNode::SetAnimationAsset(UAnimationAsset* Asset) {
 	if (UPoseAsset* PoseAsset = Cast<UPoseAsset>(Asset))
 	{

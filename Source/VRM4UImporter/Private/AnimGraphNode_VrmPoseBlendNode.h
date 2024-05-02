@@ -140,6 +140,7 @@ public:
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 	virtual TSubclassOf<UAnimationAsset> GetAnimationAssetClass() const override;
+	virtual void OnOverrideAssets(IAnimBlueprintNodeOverrideAssetsContext & InContext) const override; 
 #endif
 	virtual void SetAnimationAsset(UAnimationAsset* Asset) override;
 
