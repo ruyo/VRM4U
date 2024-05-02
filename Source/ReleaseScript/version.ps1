@@ -9,7 +9,7 @@ if ($a.EngineAssociation -eq '4.23' -or $a.EngineAssociation -eq '4.22' -or $a.E
     $b = Get-Content ../../../VRM4U/VRM4U.uplugin -Encoding UTF8 | ConvertFrom-Json
     $b
 
-    $b.Modules[4].Type = 'Developer'
+    $b.Modules[5].Type = 'Developer'
 
     $b | ConvertTo-Json > ../../../VRM4U/VRM4U.uplugin
 }
