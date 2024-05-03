@@ -7,6 +7,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
 
+#include "VRM4U_VMCSubsystem.h"
+#include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
 #include "VrmUtil.h"
 
@@ -19,6 +21,16 @@ FAnimNode_VrmVMC::FAnimNode_VrmVMC()
 {
 }
 
+
+FAnimNode_VrmVMC::~FAnimNode_VrmVMC()
+{
+	//if (bCreateServer == false) return;
+	//UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
+	//if (subsystem == nullptr) return;
+	//subsystem->DestroyVMCServer(ServerAddress, Port);
+}
+
+
 //void FAnimNode_VrmVMC::Update_AnyThread(const FAnimationUpdateContext& Context) {
 //	Super::Update_AnyThread(Context);
 //	//Context.GetDeltaTime();
@@ -26,6 +38,20 @@ FAnimNode_VrmVMC::FAnimNode_VrmVMC()
 
 void FAnimNode_VrmVMC::Initialize_AnyThread(const FAnimationInitializeContext& Context) {
 	Super::Initialize_AnyThread(Context);
+
+	VrmMetaObject_Internal = VrmMetaObject;
+	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
+		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
+		if (VrmAssetListObject_Internal) {
+			VrmMetaObject_Internal = VrmAssetListObject_Internal->VrmMetaObject;
+		}
+	}
+
+
+	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
+	if (subsystem == nullptr) return;
+	subsystem->CreateVMCServer(ServerAddress, Port);
+	bCreateServer = true;
 }
 void FAnimNode_VrmVMC::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context) {
 	Super::CacheBones_AnyThread(Context);
@@ -57,6 +83,9 @@ void FAnimNode_VrmVMC::EvaluateComponentPose_AnyThread(FComponentSpacePoseContex
 void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms)
 {
 	check(OutBoneTransforms.Num() == 0);
+	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
+	if (subsystem == nullptr) return;
+
 
 	const auto Skeleton = Output.AnimInstanceProxy->GetSkeleton();
 	const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
@@ -66,17 +95,27 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	TArray<int> boneIndexTable;
 	TArray<FBoneTransform> tmpOutTransform;
 
+	auto VMCData= subsystem->FindVMCData(ServerAddress, Port);
+	if (VMCData == nullptr) return;
+	TMap<FString, FTransform>& BoneTrans = VMCData->BoneData;
+
+	{
+		auto& c = VMCData->CurveData;
+
+	}
+
+
 	//dstRefSkeleton.GetParentIndex
 
 	{
 
-		if (VrmMetaObject == nullptr) {
+		if (VrmMetaObject_Internal == nullptr) {
 			return;
 		}
 
 		bool bFirstBone = true;
 
-		for (const auto &t : VrmMetaObject->humanoidBoneTable) {
+		for (const auto &t : VrmMetaObject_Internal->humanoidBoneTable) {
 #if	UE_VERSION_OLDER_THAN(4,27,0)
 			auto *tmpVal = BoneTrans.Find(t.Key.ToLower());
 			if (tmpVal == nullptr) continue;
@@ -179,7 +218,7 @@ void FAnimNode_VrmVMC::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI, USkele
 {
 #if WITH_EDITOR
 
-	if (VrmMetaObject == nullptr || PreviewSkelMeshComp == nullptr) {
+	if (VrmMetaObject_Internal == nullptr || PreviewSkelMeshComp == nullptr) {
 		return;
 	}
 	if (PreviewSkelMeshComp->GetWorld() == nullptr) {

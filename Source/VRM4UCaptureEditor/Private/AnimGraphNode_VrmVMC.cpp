@@ -98,12 +98,12 @@ void UAnimGraphNode_VrmVMC::ValidateAnimNodeDuringCompilation(USkeleton* ForSkel
 
 FText UAnimGraphNode_VrmVMC::GetControllerDescription() const
 {
-	return LOCTEXT("VrmModifyBoneListRetarget", "VrmModifyBoneListRetarget");
+	return LOCTEXT("VrmVMC", "VrmVMC");
 }
 
 FText UAnimGraphNode_VrmVMC::GetTooltipText() const
 {
-	return LOCTEXT("AnimGraphNode_VrmModifyBoneListRetarget_Tooltip", "VrmModifyBoneListRetarget");
+	return LOCTEXT("AnimGraphNode_VrmVMC_Tooltip", "VrmVMC");
 }
 
 FText UAnimGraphNode_VrmVMC::GetNodeTitle(ENodeTitleType::Type TitleType) const

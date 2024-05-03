@@ -37,8 +37,8 @@
     },
     {
       "Name": "VRM4UCaptureEditor",
-      "Type": "Editor",
-      "LoadingPhase": "Default"
+      "Type": "UncookedOnly",
+      "LoadingPhase": "PreDefault"
     },
     {
       "Name": "VRM4URender",

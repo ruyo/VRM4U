@@ -23,11 +23,14 @@ class UOSCServer;
 struct FOSCAddress;
 struct FOSCMessage;
 
-struct FVMCServerData {
+struct FVMCData {
 	FString ServerAddress = "";
 	int Port = 0;
 
-	bool operator==(const FVMCServerData &Other) const {
+	TMap<FString, FTransform> BoneData;
+	TMap<FString, float> CurveData;
+
+	bool operator==(const FVMCData &Other) const {
 		if (Port != Other.Port) return false;
 		if (ServerAddress != Other.ServerAddress) return false;
 		return true;
@@ -46,10 +49,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = VRM4U)
 	bool CreateVMCServer(const FString ServerAddress, int port);
 
+	UFUNCTION(BlueprintCallable, Category = VRM4U)
+	void DestroyVMCServer(const FString ServerAddress, int port);
+
 	static void OSCReceivedMessageEvent(const FOSCMessage& Message, const FString& IPAddress, uint16 Port);
 
-	TArray< FVMCServerData > ServerDataList;
-
+	
+	TStrongObjectPtr<UOSCServer> FindOrAddServer(const FString ServerAddress, int port);
+		
+	TArray< FVMCData > ServerDataList;
 	TArray< TStrongObjectPtr<UOSCServer> > OSCServerList;
 
+	FVMCData *FindVMCData(FString serverName, int port);
 };

@@ -13,6 +13,7 @@
 
 class USkeletalMeshComponent;
 class UVrmMetaObject;
+class UVrmAssetListObject;
 
 /**
 *	Simple controller that replaces or adds to the translation/rotation of a single bone.
@@ -25,8 +26,19 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta=(PinHiddenByDefault))
 	const UVrmMetaObject *VrmMetaObject = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
-	TMap<FString, FTransform> BoneTrans;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
+	bool EnableAutoSearchMetaData = true;
+
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+	TAssetPtr<UVrmMetaObject> VrmMetaObject_Internal = nullptr;
+	TAssetPtr<UVrmAssetListObject> VrmAssetListObject_Internal = nullptr;
+#else
+	TSoftObjectPtr<UVrmMetaObject> VrmMetaObject_Internal = nullptr;
+	TSoftObjectPtr<UVrmAssetListObject> VrmAssetListObject_Internal = nullptr;
+#endif
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
+	//TMap<FString, FTransform> BoneTrans;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
 	bool bUseRemoteCenterPos = true;
@@ -34,7 +46,16 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
 	float ModelRelativeScale = 1.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
+	FString ServerAddress = "127.0.0.1";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
+	int Port = 39540;
+
+	bool bCreateServer = false;
+
 	FAnimNode_VrmVMC();
+	virtual ~FAnimNode_VrmVMC();
 
 	// FAnimNode_Base interface
 	virtual void GatherDebugData(FNodeDebugData& DebugData) override;
