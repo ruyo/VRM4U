@@ -16,11 +16,9 @@ public class VRM4UImporter : ModuleRules
 				"EditorStyle",
 				"ApplicationCore",
 				"Engine",
-				"Json",
 				"UnrealEd",
 				"Slate",
 				"SlateCore",
-				"MainFrame",
 				"VRM4U",
 				"VRM4ULoader",
 

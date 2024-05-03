@@ -12,17 +12,13 @@ public class VRM4UCaptureEditor : ModuleRules
 			new string[] {
 				"Core",
 				"CoreUObject",
-                "InputCore",
-                "ApplicationCore",
                 "Engine",
-				"Json",
-                "Slate",
-                "SlateCore",
-                "RenderCore",
-                "RHI",
-                "Renderer",
-                "Networking",
-                "Sockets",
+
+				"AnimGraphRuntime",
+				"AnimGraph",
+				"BlueprintGraph",
+
+				"UnrealEd",
 
 				"VRM4U",
 				"VRM4UCapture",
@@ -38,7 +34,6 @@ public class VRM4UCaptureEditor : ModuleRules
 
         PrivateIncludePaths.AddRange(
         new string[] {
-			// Relative to Engine\Plugins\Runtime\Oculus\OculusVR\Source
 			//"../Runtime/Renderer/Private",
         });
     }
