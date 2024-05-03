@@ -18,7 +18,7 @@ class FCompilerResultsLog;
 class FPrimitiveDrawInterface;
 class USkeletalMeshComponent;
 
-UCLASS(meta=(Keywords = "Modify Transform"))
+UCLASS(meta=(Keywords = "VRM4U"))
 class UAnimGraphNode_VrmConstraint : public UAnimGraphNode_SkeletalControlBase
 {
 	GENERATED_UCLASS_BODY()
