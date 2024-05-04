@@ -50,7 +50,7 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 	FString ServerAddress = "127.0.0.1";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
-	int Port = 39540;
+	int Port = 39539;
 
 	bool bCreateServer = false;
 

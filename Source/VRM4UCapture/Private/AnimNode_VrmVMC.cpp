@@ -83,14 +83,28 @@ void FAnimNode_VrmVMC::EvaluateComponentPose_AnyThread(FComponentSpacePoseContex
 void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms)
 {
 	check(OutBoneTransforms.Num() == 0);
+
+	if (VrmMetaObject_Internal == nullptr) {
+		return;
+	}
+
 	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
 	if (subsystem == nullptr) return;
-
 
 	const auto Skeleton = Output.AnimInstanceProxy->GetSkeleton();
 	const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
 	const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-	const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+	const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();// Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+
+	TArray<FTransform> RefSkeletonTransform_global = RefSkeletonTransform;
+	{
+		auto &g = RefSkeletonTransform_global;
+		for (int i = 0; i < RefSkeletonTransform.Num(); ++i) {
+			int parent = RefSkeleton.GetParentIndex(i);
+			if (parent < 0) continue;
+			g[i] = g[i] * g[parent];
+		}
+	}
 
 	TArray<int> boneIndexTable;
 	TArray<FBoneTransform> tmpOutTransform;
@@ -99,20 +113,11 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	if (VMCData == nullptr) return;
 	TMap<FString, FTransform>& BoneTrans = VMCData->BoneData;
 
-	{
-		auto& c = VMCData->CurveData;
-
+	for (auto& c : VMCData->CurveData) {
+		Output.Curve.Set(*c.Key, c.Value);
 	}
 
-
-	//dstRefSkeleton.GetParentIndex
-
 	{
-
-		if (VrmMetaObject_Internal == nullptr) {
-			return;
-		}
-
 		bool bFirstBone = true;
 
 		for (const auto &t : VrmMetaObject_Internal->humanoidBoneTable) {
@@ -152,22 +157,33 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 				f.Transform.SetTranslation(v);
 			}
 
+			{
+				auto r_refg = RefSkeletonTransform_global[index].GetRotation();
+				auto r_ref = RefSkeletonTransform[index].GetRotation();
+				auto r_vmc = f.Transform.GetRotation();
+
+				auto r_dif = r_refg.Inverse() * r_vmc * r_refg;
+				//auto r_dif = r_refg * r_vmc * r_refg.Inverse();
+
+				//f.Transform.SetRotation(r_dif * r_ref);
+				f.Transform.SetRotation(r_ref * r_dif);
+
+			}
 			//f.Transform.SetTranslation(RefSkeletonTransform[index].GetLocation());
 			tmpOutTransform.Add(f);
 			boneIndexTable.Add(index);
 		}
 
 		// bone hierarchy
-		// start with 1
-		for (int i = 1; i < tmpOutTransform.Num(); ++i) {
-			auto& a = tmpOutTransform[i];
+		for (int i = 0; i < tmpOutTransform.Num(); ++i) {
 			int parentBoneIndex = RefSkeleton.GetParentIndex(boneIndexTable[i]);
 			int parentInTable = boneIndexTable.Find(parentBoneIndex);
 
-			for (int j = 0; j < 100; ++j) {
+			for (int j = 0; j < 1000; ++j) {
 				if (parentInTable >= 0) {
 					break;
 				}
+				if (parentBoneIndex < 0) break;
 
 				// add outtransform with ref bone
 				FBoneTransform f(FCompactPoseBoneIndex(parentBoneIndex), RefSkeletonTransform[parentBoneIndex]);
