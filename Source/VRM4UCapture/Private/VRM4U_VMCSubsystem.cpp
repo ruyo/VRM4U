@@ -3,6 +3,7 @@
 
 #include "VRM4U_VMCSubsystem.h"
 
+#include "Engine/Engine.h"
 #include "UObject/StrongObjectPtr.h"
 #include "Misc/ScopeLock.h"
 #include "OSCManager.h"
