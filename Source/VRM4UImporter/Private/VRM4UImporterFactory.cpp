@@ -28,6 +28,7 @@
 #include "FileHelpers.h"
 #include "TickableEditorObject.h"
 
+#include "Interfaces/IMainFrameModule.h"
 #include "Widgets/SWindow.h"
 #include "Framework/Application/SlateApplication.h"
 #include "HAL/PlatformApplicationMisc.h"
