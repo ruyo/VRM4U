@@ -57,8 +57,12 @@ public:
 	
 	UOSCServer* FindOrAddServer(const FString ServerAddress, int port);
 
-	TArray< FVMCData > ServerDataList;
+	TArray< FVMCData > ServerDataList_Chache;
+	TArray< FVMCData > ServerDataList_Latest;
 	TArray< TStrongObjectPtr<UOSCServer> > OSCServerList;
 
-	FVMCData *FindVMCData(FString serverName, int port);
+	bool GetVMCData(FVMCData &DstData, FString serverName, int port);
+
+private:
+	FVMCData* FindVMCData(FString serverName, int port);
 };

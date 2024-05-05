@@ -813,7 +813,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 		}
 
 		//meta rename
-		vc.ConvertVrmMetaRenamed(out, mScenePtr, pFileDataData, dataSize);
+		vc.ConvertVrmMetaPost(out, mScenePtr, pFileDataData, dataSize);
 
 		ret &= vc.ConvertRig(out);
 		LogAndUpdate(TEXT("ConvertRig"));

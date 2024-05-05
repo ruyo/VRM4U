@@ -121,11 +121,13 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	TArray<int> boneIndexTable;
 	TArray<FBoneTransform> tmpOutTransform;
 
-	auto VMCData= subsystem->FindVMCData(ServerAddress, Port);
-	if (VMCData == nullptr) return;
-	TMap<FString, FTransform>& BoneTrans = VMCData->BoneData;
+	FVMCData VMCData;
+	if (subsystem->GetVMCData(VMCData, ServerAddress, Port) == false) {
+		return;
+	}
+	TMap<FString, FTransform>& BoneTrans = VMCData.BoneData;
 
-	for (auto& c : VMCData->CurveData) {
+	for (auto& c : VMCData.CurveData) {
 #if	UE_VERSION_OLDER_THAN(5,3,0)
 		{
 			SmartName::UID_Type NewUID;
@@ -196,7 +198,7 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 		}
 
 		// bone hierarchy
-		for (int i = 0; i < tmpOutTransform.Num(); ++i) {
+		for (int i = 1; i < tmpOutTransform.Num(); ++i) {
 			int parentBoneIndex = RefSkeleton.GetParentIndex(boneIndexTable[i]);
 			int parentInTable = boneIndexTable.Find(parentBoneIndex);
 

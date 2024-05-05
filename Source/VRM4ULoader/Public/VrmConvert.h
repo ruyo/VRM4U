@@ -73,7 +73,7 @@ public:
 	void GetVRMMeta(const aiScene *mScenePtr, UVrmLicenseObject *& a, UVrm1LicenseObject *& b);
 	bool ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint8* pData, size_t dataSize);
 	bool ConvertVrmMeta(UVrmAssetListObject *vrmAssetList, const aiScene *mScenePtr, const uint8* pData, size_t dataSize);
-	bool ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize);
+	bool ConvertVrmMetaPost(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize);
 
 	bool ConvertHumanoid(UVrmAssetListObject *vrmAssetList);
 	bool ConvertRig(UVrmAssetListObject *vrmAssetList);

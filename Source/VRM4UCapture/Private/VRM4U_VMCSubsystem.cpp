@@ -4,13 +4,9 @@
 #include "VRM4U_VMCSubsystem.h"
 
 #include "UObject/StrongObjectPtr.h"
+#include "Misc/ScopeLock.h"
 #include "OSCManager.h"
 #include "OSCServer.h"
-
-struct FCaptureData {
-	TMap<FString, FTransform> BoneInfo;
-	TMap<FString, float> BlendShapeInfo;
-};
 
 void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, const FString& IPAddress, uint16 Port) {
 
@@ -48,13 +44,29 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 		data->CurveData.FindOrAdd(str[0]) = f;
 	}
 
+	if (addressPath == TEXT("/VMC/Ext/OK")) {
+		FScopeLock lock(&subsystem->cs);
+		subsystem->ServerDataList_Chache = subsystem->ServerDataList_Latest;
+	}
+
 
 	// 
 	//GetAllFloats
 }
 
+bool UVRM4U_VMCSubsystem::GetVMCData(FVMCData &data, FString serverName, int port) {
+	for (auto& s : ServerDataList_Chache) {
+		if (s.ServerAddress == serverName) {
+			FScopeLock lock(&cs);
+			data = s;
+			return true;
+		}
+	}
+	return false;
+}
+
 FVMCData* UVRM4U_VMCSubsystem::FindVMCData(FString serverName, int port) {
-	for (auto& s : ServerDataList) {
+	for (auto& s : ServerDataList_Latest) {
 		if (s.ServerAddress == serverName) {
 			return &s;
 		}
@@ -72,7 +84,7 @@ UOSCServer* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, in
 		d.ServerAddress = ServerAddress;
 		d.Port = port;
 
-		ServerListNo = ServerDataList.Find(d);
+		ServerListNo = ServerDataList_Latest.Find(d);
 		if (ServerListNo >= 0) {
 			bool bRemove = false;
 			if (OSCServerList[ServerListNo].IsValid() == false) {
@@ -83,16 +95,16 @@ UOSCServer* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, in
 			if (bRemove){
 				// remove invalid data
 				OSCServerList.RemoveAt(ServerListNo);
-				ServerDataList.RemoveAt(ServerListNo);
+				ServerDataList_Latest.RemoveAt(ServerListNo);
 
 				return FindOrAddServer(ServerAddress, port);
 			}
 		}
 	}
 	if (ServerListNo < 0) {
-		ServerListNo = ServerDataList.AddDefaulted();
-		ServerDataList[ServerListNo].ServerAddress = ServerAddress;
-		ServerDataList[ServerListNo].Port = port;
+		ServerListNo = ServerDataList_Latest.AddDefaulted();
+		ServerDataList_Latest[ServerListNo].ServerAddress = ServerAddress;
+		ServerDataList_Latest[ServerListNo].Port = port;
 		ServerListNo = OSCServerList.AddDefaulted();
 
 		{

@@ -707,7 +707,21 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	return true;
 }
 
-bool VRMConverter::ConvertVrmMetaRenamed(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize) {
+bool VRMConverter::ConvertVrmMetaPost(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize) {
+
+	//sort
+	if (vrmAssetList && vrmAssetList->VrmMetaObject){
+		auto& t = vrmAssetList->VrmMetaObject->humanoidBoneTable;
+		auto& rk = VRMGetRefSkeleton(vrmAssetList->SkeletalMesh);
+		for (int i = 0; i < t.Num()-1; ++i) {
+
+			t.ValueSort([&rk](const FString A, const FString B) {
+				return rk.FindBoneIndex(*A) < rk.FindBoneIndex(*B);
+				}
+			);
+		}
+	}
+
 	if (VRMConverter::Options::Get().IsGenerateHumanoidRenamedMesh()) {
 		UPackage* package = GetTransientPackage();
 
