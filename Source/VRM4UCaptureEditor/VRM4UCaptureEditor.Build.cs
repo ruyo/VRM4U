@@ -20,6 +20,7 @@ public class VRM4UCaptureEditor : ModuleRules
 
 				"UnrealEd",
 				"AnimationEditMode",
+				"Persona",
 
 				"VRM4U",
 				"VRM4UCapture",
