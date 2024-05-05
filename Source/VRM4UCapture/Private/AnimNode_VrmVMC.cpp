@@ -5,6 +5,7 @@
 #include "AnimationRuntime.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
 
 #include "VRM4U_VMCSubsystem.h"
