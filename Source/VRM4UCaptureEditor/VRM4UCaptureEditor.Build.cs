@@ -19,6 +19,7 @@ public class VRM4UCaptureEditor : ModuleRules
 				"BlueprintGraph",
 
 				"UnrealEd",
+				"AnimationEditMode",
 
 				"VRM4U",
 				"VRM4UCapture",

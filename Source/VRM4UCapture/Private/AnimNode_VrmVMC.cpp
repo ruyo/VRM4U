@@ -52,6 +52,24 @@ void FAnimNode_VrmVMC::Initialize_AnyThread(const FAnimationInitializeContext& C
 	if (subsystem == nullptr) return;
 	subsystem->CreateVMCServer(ServerAddress, Port);
 	bCreateServer = true;
+
+	// init global reftransform
+	{
+		const auto Skeleton = Context.AnimInstanceProxy->GetSkeleton();
+		const auto RefSkeleton = Skeleton->GetReferenceSkeleton();
+		const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
+
+		RefSkeletonTransform_global = RefSkeletonTransform;
+		{
+			auto& g = RefSkeletonTransform_global;
+			for (int i = 0; i < RefSkeletonTransform.Num(); ++i) {
+				int parent = RefSkeleton.GetParentIndex(i);
+				if (parent < 0) continue;
+				g[i] = g[i] * g[parent];
+			}
+		}
+
+	}
 }
 void FAnimNode_VrmVMC::CacheBones_AnyThread(const FAnimationCacheBonesContext& Context) {
 	Super::CacheBones_AnyThread(Context);
@@ -94,16 +112,10 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	const auto Skeleton = Output.AnimInstanceProxy->GetSkeleton();
 	const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
 	const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-	const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();// Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+	const auto& RefSkeletonTransform = RefSkeleton.GetRefBonePose();
 
-	TArray<FTransform> RefSkeletonTransform_global = RefSkeletonTransform;
-	{
-		auto &g = RefSkeletonTransform_global;
-		for (int i = 0; i < RefSkeletonTransform.Num(); ++i) {
-			int parent = RefSkeleton.GetParentIndex(i);
-			if (parent < 0) continue;
-			g[i] = g[i] * g[parent];
-		}
+	if (RefSkeletonTransform_global.Num() != RefSkeletonTransform.Num()) {
+		return;
 	}
 
 	TArray<int> boneIndexTable;
@@ -114,7 +126,18 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	TMap<FString, FTransform>& BoneTrans = VMCData->BoneData;
 
 	for (auto& c : VMCData->CurveData) {
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+		{
+			SmartName::UID_Type NewUID;
+			FName NewName = *c.Key;
+
+			NewUID = Skeleton->GetUIDByName(USkeleton::AnimCurveMappingName, NewName);
+
+			Output.Curve.Set(NewUID, c.Value);
+		}
+#else
 		Output.Curve.Set(*c.Key, c.Value);
+#endif
 	}
 
 	{

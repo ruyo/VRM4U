@@ -54,6 +54,8 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 
 	bool bCreateServer = false;
 
+	TArray<FTransform> RefSkeletonTransform_global;
+
 	FAnimNode_VrmVMC();
 	virtual ~FAnimNode_VrmVMC();
 
