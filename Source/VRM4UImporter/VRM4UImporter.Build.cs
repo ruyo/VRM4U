@@ -28,6 +28,7 @@ public class VRM4UImporter : ModuleRules
 
 				"PropertyEditor",
 				"Persona",
+				"MainFrame",
 
 				//"ToolMenus",
 			});
