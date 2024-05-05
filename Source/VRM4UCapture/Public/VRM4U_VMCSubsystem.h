@@ -55,8 +55,8 @@ public:
 	static void OSCReceivedMessageEvent(const FOSCMessage& Message, const FString& IPAddress, uint16 Port);
 
 	
-	TStrongObjectPtr<UOSCServer> FindOrAddServer(const FString ServerAddress, int port);
-		
+	UOSCServer* FindOrAddServer(const FString ServerAddress, int port);
+
 	TArray< FVMCData > ServerDataList;
 	TArray< TStrongObjectPtr<UOSCServer> > OSCServerList;
 

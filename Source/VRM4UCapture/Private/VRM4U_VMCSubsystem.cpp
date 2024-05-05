@@ -62,7 +62,7 @@ FVMCData* UVRM4U_VMCSubsystem::FindVMCData(FString serverName, int port) {
 	return nullptr;
 }
 
-TStrongObjectPtr<UOSCServer> UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
+UOSCServer* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
 	if (port == 0) {
 		return nullptr;
 	}
@@ -73,72 +73,66 @@ TStrongObjectPtr<UOSCServer> UVRM4U_VMCSubsystem::FindOrAddServer(const FString 
 		d.Port = port;
 
 		ServerListNo = ServerDataList.Find(d);
+		if (ServerListNo >= 0) {
+			bool bRemove = false;
+			if (OSCServerList[ServerListNo].IsValid() == false) {
+				bRemove = true;
+			}else if (OSCServerList[ServerListNo]->IsActive() == false) {
+				bRemove = true;
+			}
+			if (bRemove){
+				// remove invalid data
+				OSCServerList.RemoveAt(ServerListNo);
+				ServerDataList.RemoveAt(ServerListNo);
+
+				return FindOrAddServer(ServerAddress, port);
+			}
+		}
 	}
 	if (ServerListNo < 0) {
 		ServerListNo = ServerDataList.AddDefaulted();
 		ServerDataList[ServerListNo].ServerAddress = ServerAddress;
 		ServerDataList[ServerListNo].Port = port;
-		OSCServerList.AddDefaulted();
+		ServerListNo = OSCServerList.AddDefaulted();
+
+		{
+#if	UE_VERSION_OLDER_THAN(4,25,0)
+#else
+			OSCServerList[ServerListNo].Reset(UOSCManager::CreateOSCServer(ServerAddress, port, false, true, FString(), this));
+
+			OSCServerList[ServerListNo]->OnOscMessageReceivedNative.RemoveAll(nullptr);
+			OSCServerList[ServerListNo]->OnOscMessageReceivedNative.AddStatic(&UVRM4U_VMCSubsystem::OSCReceivedMessageEvent);
+
+#if WITH_EDITOR
+			// Allow it to tick in editor, so that messages are parsed.
+			// Only doing it upon creation so that the user can make it non-tickable if desired (and manage that thereafter).
+			if (OSCServerList[ServerListNo])
+			{
+				OSCServerList[ServerListNo]->SetTickInEditor(true);
+			}
+#endif // WITH_EDITOR
+#endif
+		}
 	}
 
-	return OSCServerList[ServerListNo];
+	return OSCServerList[ServerListNo].Get();
 }
 
 void UVRM4U_VMCSubsystem::DestroyVMCServer(const FString ServerAddress, int port) {
-
-	auto OSCServer = FindOrAddServer(ServerAddress, port);
+	/*
+	auto OSCServer = FindOrAddServerRef(ServerAddress, port);
 	if (OSCServer.Get()) {
 		OSCServer->Stop();
 	}
-	OSCServer.Reset();
+	OSCServer = nullptr;
+	*/
 }
 
 
 bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port) {
 
-	auto OSCServer = FindOrAddServer(ServerAddress, port);
-	if (OSCServer)
-	{
-		if (OSCServer->IsActive()) {
-			return true;
-		}
-		OSCServer->Stop();
-	}
+	decltype(auto) OSCServer = FindOrAddServer(ServerAddress, port);
 
-	//const UVPUtilitiesEditorSettings* Settings = GetDefault<UVPUtilitiesEditorSettings>();
-	//const FString& ServerAddress = "";// Settings->OSCServerAddress;
-	uint16 ServerPort = port;// Settings->OSCServerPort;
-
-	if (OSCServer)
-	{
-		OSCServer->SetAddress(ServerAddress, ServerPort);
-		OSCServer->Listen();
-	}
-	else
-	{
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
-		OSCServer.Reset(UOSCManager::CreateOSCServer(ServerAddress, ServerPort, false, true, FString(), this));
-
-#if WITH_EDITOR
-		// Allow it to tick in editor, so that messages are parsed.
-		// Only doing it upon creation so that the user can make it non-tickable if desired (and manage that thereafter).
-		if (OSCServer)
-		{
-			OSCServer->SetTickInEditor(true);
-		}
-#endif // WITH_EDITOR
-
-#endif
-	}
-
-	//void OSCReceivedMessageEvent(const FOSCMessage & Message, const FString & IPAddress, uint16 Port);
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
-	//OSCServer->OnOscMessageReceivedNative.AddStatic(this, &UVRM4U_VMCSubsystem::OSCReceivedMessageEvent);
-	OSCServer->OnOscMessageReceivedNative.RemoveAll(nullptr);
-	OSCServer->OnOscMessageReceivedNative.AddStatic(&UVRM4U_VMCSubsystem::OSCReceivedMessageEvent);
-#endif
 	return true;
 }
 

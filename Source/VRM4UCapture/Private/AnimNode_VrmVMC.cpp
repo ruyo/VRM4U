@@ -163,9 +163,7 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 				auto r_vmc = f.Transform.GetRotation();
 
 				auto r_dif = r_refg.Inverse() * r_vmc * r_refg;
-				//auto r_dif = r_refg * r_vmc * r_refg.Inverse();
-
-				//f.Transform.SetRotation(r_dif * r_ref);
+				
 				f.Transform.SetRotation(r_ref * r_dif);
 
 			}
