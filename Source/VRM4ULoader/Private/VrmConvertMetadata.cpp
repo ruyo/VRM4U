@@ -235,7 +235,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 					int offset = 0;
 					for (int meshNo = 0; meshNo < tmpMeshID; ++meshNo) {
 						if (jsonData.doc["meshes"].GetArray()[meshNo].HasMember("primitives") == false) continue;
-						offset += jsonData.doc["meshes"].GetArray()[meshNo]["primitives"].Size() - 1;
+						//offset += jsonData.doc["meshes"].GetArray()[meshNo]["primitives"].Size() - 1;
 					}
 					targetShape.meshID = tmpMeshID + offset;
 				}
