@@ -57,7 +57,7 @@ public:
 	
 	UOSCServer* FindOrAddServer(const FString ServerAddress, int port);
 
-	TArray< FVMCData > ServerDataList_Chache;
+	TArray< FVMCData > ServerDataList_Cache;
 	TArray< FVMCData > ServerDataList_Latest;
 	TArray< TStrongObjectPtr<UOSCServer> > OSCServerList;
 

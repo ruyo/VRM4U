@@ -47,7 +47,7 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 
 	if (addressPath == TEXT("/VMC/Ext/OK")) {
 		FScopeLock lock(&subsystem->cs);
-		subsystem->ServerDataList_Chache = subsystem->ServerDataList_Latest;
+		subsystem->ServerDataList_Cache = subsystem->ServerDataList_Latest;
 	}
 
 
@@ -56,7 +56,7 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 }
 
 bool UVRM4U_VMCSubsystem::GetVMCData(FVMCData &data, FString serverName, int port) {
-	for (auto& s : ServerDataList_Chache) {
+	for (auto& s : ServerDataList_Cache) {
 		if (s.ServerAddress == serverName) {
 			FScopeLock lock(&cs);
 			data = s;
