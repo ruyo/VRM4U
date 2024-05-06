@@ -183,7 +183,7 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 				f.Transform.SetTranslation(v);
 			}
 
-			{
+			if (bIgnoreLocalRotation){
 				auto r_refg = RefSkeletonTransform_global[index].GetRotation();
 				auto r_ref = RefSkeletonTransform[index].GetRotation();
 				auto r_vmc = f.Transform.GetRotation();
@@ -191,7 +191,6 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 				auto r_dif = r_refg.Inverse() * r_vmc * r_refg;
 				
 				f.Transform.SetRotation(r_ref * r_dif);
-
 			}
 			//f.Transform.SetTranslation(RefSkeletonTransform[index].GetLocation());
 			tmpOutTransform.Add(f);

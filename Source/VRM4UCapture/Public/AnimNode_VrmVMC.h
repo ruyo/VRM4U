@@ -23,11 +23,11 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta=(PinHiddenByDefault))
-	const UVrmMetaObject *VrmMetaObject = nullptr;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
 	bool EnableAutoSearchMetaData = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta=(PinHiddenByDefault))
+	const UVrmMetaObject *VrmMetaObject = nullptr;
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 	TAssetPtr<UVrmMetaObject> VrmMetaObject_Internal = nullptr;
@@ -45,6 +45,9 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
 	float ModelRelativeScale = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
+	bool bIgnoreLocalRotation = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
 	FString ServerAddress = "127.0.0.1";
