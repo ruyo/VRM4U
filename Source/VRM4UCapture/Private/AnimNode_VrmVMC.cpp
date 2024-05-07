@@ -48,7 +48,6 @@ void FAnimNode_VrmVMC::Initialize_AnyThread(const FAnimationInitializeContext& C
 		}
 	}
 
-
 	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
 	if (subsystem == nullptr) return;
 	subsystem->CreateVMCServer(ServerAddress, Port);
@@ -144,6 +143,21 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	}
 
 	{
+
+		{
+			for (auto& a : BoneTrans) {
+				if (a.Key.Compare(TEXT("root"), ESearchCase::IgnoreCase)) {
+					continue;
+				}
+
+				FBoneTransform f(FCompactPoseBoneIndex(0), a.Value);
+				tmpOutTransform.Add(f);
+				boneIndexTable.Add(0);
+
+				break;
+			}
+		}
+
 		bool bFirstBone = true;
 
 		for (const auto &t : VrmMetaObject_Internal->humanoidBoneTable) {

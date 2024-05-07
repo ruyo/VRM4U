@@ -38,6 +38,9 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 		t.SetScale3D(FVector(curve[7], curve[9], curve[8]));
 	}
 
+	if (addressPath == TEXT("/VMC/Ext/Root/Pos")) {
+		data->BoneData.FindOrAdd(str[0]) = t;
+	}
 	if (addressPath == TEXT("/VMC/Ext/Bone/Pos")) {
 		data->BoneData.FindOrAdd(str[0]) = t;
 	}
