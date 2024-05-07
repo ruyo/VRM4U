@@ -121,6 +121,9 @@ static void renameToUE4Bone(USkeletalMesh *targetSK, UVrmMetaObject *meta, const
 
 	TMap<FName, FName> changeTable;
 
+	allbone[0].Name = TEXT("root");
+	allbone[0].ExportName = TEXT("root");
+
 	for (auto &a : allbone) {
 
 		FString toVRMBone;
