@@ -143,21 +143,6 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	}
 
 	{
-
-		{
-			for (auto& a : BoneTrans) {
-				if (a.Key.Compare(TEXT("root"), ESearchCase::IgnoreCase)) {
-					continue;
-				}
-
-				FBoneTransform f(FCompactPoseBoneIndex(0), a.Value);
-				tmpOutTransform.Add(f);
-				boneIndexTable.Add(0);
-
-				break;
-			}
-		}
-
 		bool bFirstBone = true;
 
 		for (const auto &t : VrmMetaObject_Internal->humanoidBoneTable) {
@@ -192,6 +177,27 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 					auto v = RefSkeletonTransform[index].GetLocation();
 					f.Transform.SetTranslation(v);
 				}
+
+
+				// root bone
+				FTransform RootTrans;
+				for (auto& a : BoneTrans) {
+					if (a.Key.Compare(TEXT("root"), ESearchCase::IgnoreCase)) {
+						continue;
+					}
+					RootTrans = a.Value;
+					break;
+				}
+				if (index == 0) {
+					// hip == root
+					f.Transform.SetTranslation(f.Transform.GetLocation() + RootTrans.GetLocation());
+				} else {
+					// orig root
+					FBoneTransform bt(FCompactPoseBoneIndex(0), RootTrans);
+					tmpOutTransform.Add(bt);
+					boneIndexTable.Add(0);
+				}
+
 			} else {
 				FVector v = RefSkeletonTransform[index].GetLocation();
 				f.Transform.SetTranslation(v);
