@@ -108,33 +108,30 @@ FText UAnimGraphNode_VrmVMC::GetTooltipText() const
 
 FText UAnimGraphNode_VrmVMC::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	//if ((TitleType == ENodeTitleType::ListView || TitleType == ENodeTitleType::MenuTitle) && (Node.BoneToModify.BoneName == NAME_None))
-	//if ((TitleType == ENodeTitleType::ListView || TitleType == ENodeTitleType::MenuTitle) && (Node.BoneNameToModify == NAME_None))
+	return GetControllerDescription();
+	//if ((TitleType == ENodeTitleType::ListView || TitleType == ENodeTitleType::MenuTitle) && (Node.SpringBone.BoneName == NAME_None))
 	//{
-		return GetControllerDescription();
+	//	return GetControllerDescription();
 	//}
-	// @TODO: the bone can be altered in the property editor, so we have to 
-	//        choose to mark this dirty when that happens for this to properly work
-		/*
-	else //if (!CachedNodeTitles.IsTitleCached(TitleType, this))
-	{
-		FFormatNamedArguments Args;
-		Args.Add(TEXT("ControllerDescription"), GetControllerDescription());
-		//Args.Add(TEXT("BoneName"), FText::FromName(Node.BoneToModify.BoneName));
-		Args.Add(TEXT("BoneName"), FText::FromName(Node.BoneNameToModify));
 
-		// FText::Format() is slow, so we cache this to save on performance
-		if (TitleType == ENodeTitleType::ListView || TitleType == ENodeTitleType::MenuTitle)
-		{
-			CachedNodeTitles.SetCachedTitle(TitleType, FText::Format(LOCTEXT("AnimGraphNode_ModifyBone_ListTitle", "{ControllerDescription} - Bone: {BoneName}"), Args), this);
-		}
-		else
-		{
-			CachedNodeTitles.SetCachedTitle(TitleType, FText::Format(LOCTEXT("AnimGraphNode_ModifyBone_Title", "{ControllerDescription}\nBone: {BoneName}"), Args), this);
-		}
+	/*
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ControllerDescription"), GetControllerDescription());
+	Args.Add(TEXT("Server"), FText::FromString(Node.ServerAddress));
+	Args.Add(TEXT("Port"), FText::FromString(FString::FromInt(Node.Port)));
+
+	if (TitleType == ENodeTitleType::ListView || TitleType == ENodeTitleType::MenuTitle)
+	{
+		CachedNodeTitles.SetCachedTitle(TitleType, FText::Format(LOCTEXT("AnimGraphNode_VrmVMC_ListTitle", "{ControllerDescription} - {Server}:{Port}"), Args), this);
 	}
+	else
+	{
+		CachedNodeTitles.SetCachedTitle(TitleType, FText::Format(LOCTEXT("AnimGraphNode_VrmVMC_ListTitle", "{ControllerDescription}\n{Server}:{Port}"), Args), this);
+	}
+
 	return CachedNodeTitles[TitleType];
 	*/
+
 }
 
 //void UAnimGraphNode_VrmVMC::CopyNodeDataToPreviewNode(FAnimNode_Base* InPreviewNode)

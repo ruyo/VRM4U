@@ -61,8 +61,9 @@ public:
 	TArray< FVMCData > ServerDataList_Latest;
 	TArray< TStrongObjectPtr<UOSCServer> > OSCServerList;
 
-	bool GetVMCData(FVMCData &DstData, FString serverName, int port);
+	bool CopyVMCData(FVMCData& DstData, FString serverName, int port);
+	bool CopyVMCDataAll(FVMCData& DstData);
 
 private:
-	FVMCData* FindVMCData(FString serverName, int port);
+	FVMCData* FindOrAddVMCData(FString serverName, int port);
 };

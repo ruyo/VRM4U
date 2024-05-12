@@ -14,7 +14,7 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
 	if (subsystem == nullptr) return;
 
-	auto data = subsystem->FindVMCData(IPAddress, (int)Port);
+	auto data = subsystem->FindOrAddVMCData(IPAddress, (int)Port);
 	if (data == nullptr) return;
 
 	FOSCAddress a = UOSCManager::GetOSCMessageAddress(Message);
@@ -58,7 +58,7 @@ void UVRM4U_VMCSubsystem::OSCReceivedMessageEvent(const FOSCMessage& Message, co
 	//GetAllFloats
 }
 
-bool UVRM4U_VMCSubsystem::GetVMCData(FVMCData &data, FString serverName, int port) {
+bool UVRM4U_VMCSubsystem::CopyVMCData(FVMCData &data, FString serverName, int port) {
 	for (auto& s : ServerDataList_Cache) {
 		if (s.ServerAddress == serverName) {
 			FScopeLock lock(&cs);
@@ -68,14 +68,29 @@ bool UVRM4U_VMCSubsystem::GetVMCData(FVMCData &data, FString serverName, int por
 	}
 	return false;
 }
+bool UVRM4U_VMCSubsystem::CopyVMCDataAll(FVMCData& data) {
+	FScopeLock lock(&cs);
+	for (auto& s : ServerDataList_Cache) {
+		if (data.Port == 0) {
+			data = s;
+			continue;
+		}
+		data.BoneData.Append(s.BoneData);
+		data.CurveData.Append(s.CurveData);
+	}
+	return true;
+}
 
-FVMCData* UVRM4U_VMCSubsystem::FindVMCData(FString serverName, int port) {
+FVMCData* UVRM4U_VMCSubsystem::FindOrAddVMCData(FString serverName, int port) {
 	for (auto& s : ServerDataList_Latest) {
 		if (s.ServerAddress == serverName) {
 			return &s;
 		}
 	}
-	return nullptr;
+	int ind = ServerDataList_Latest.AddDefaulted();
+	ServerDataList_Latest[ind].ServerAddress = serverName;
+	ServerDataList_Latest[ind].Port = port;
+	return &ServerDataList_Latest[ind];
 }
 
 UOSCServer* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
@@ -84,31 +99,16 @@ UOSCServer* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, in
 	}
 	int ServerListNo = -1;
 	{
-		FVMCData d;
-		d.ServerAddress = ServerAddress;
-		d.Port = port;
+		auto t = OSCServerList.FindByPredicate([&ServerAddress, &port](const TStrongObjectPtr<UOSCServer> & a) {
+			if (a->GetIpAddress(false) != ServerAddress) return false;
+			if (a->GetPort() != port) return false;
+			return true;
+		});
 
-		ServerListNo = ServerDataList_Latest.Find(d);
-		if (ServerListNo >= 0) {
-			bool bRemove = false;
-			if (OSCServerList[ServerListNo].IsValid() == false) {
-				bRemove = true;
-			}else if (OSCServerList[ServerListNo]->IsActive() == false) {
-				bRemove = true;
-			}
-			if (bRemove){
-				// remove invalid data
-				OSCServerList.RemoveAt(ServerListNo);
-				ServerDataList_Latest.RemoveAt(ServerListNo);
+		if (t) return t->Get();
 
-				return FindOrAddServer(ServerAddress, port);
-			}
-		}
 	}
 	if (ServerListNo < 0) {
-		ServerListNo = ServerDataList_Latest.AddDefaulted();
-		ServerDataList_Latest[ServerListNo].ServerAddress = ServerAddress;
-		ServerDataList_Latest[ServerListNo].Port = port;
 		ServerListNo = OSCServerList.AddDefaulted();
 
 		{
