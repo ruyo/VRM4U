@@ -142,15 +142,15 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
 
     ###
     swapBoneTable = [
-        ["Root",""],
-        ["Pelvis","hips"],
+        ["root",""],
+        ["pelvis","hips"],
         ["spine_01","spine"],
         ["spine_02","chest"],
         ["spine_03","upperChest"],
         ["clavicle_l","leftShoulder"],
-        ["UpperArm_L","leftUpperArm"],
+        ["upperArm_L","leftUpperArm"],
         ["lowerarm_l","leftLowerArm"],
-        ["Hand_L","leftHand"],
+        ["hand_L","leftHand"],
         ["index_01_l","leftIndexProximal"],
         ["index_02_l","leftIndexIntermediate"],
         ["index_03_l","leftIndexDistal"],
@@ -169,9 +169,9 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
         ["lowerarm_twist_01_l",""],
         ["upperarm_twist_01_l",""],
         ["clavicle_r","rightShoulder"],
-        ["UpperArm_R","rightUpperArm"],
+        ["upperArm_R","rightUpperArm"],
         ["lowerarm_r","rightLowerArm"],
-        ["Hand_R","rightHand"],
+        ["hand_R","rightHand"],
         ["index_01_r","rightIndexProximal"],
         ["index_02_r","rightIndexIntermediate"],
         ["index_03_r","rightIndexDistal"],
@@ -191,16 +191,16 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
         ["upperarm_twist_01_r",""],
         ["neck_01","neck"],
         ["head","head"],
-        ["Thigh_L","leftUpperLeg"],
+        ["thigh_L","leftUpperLeg"],
         ["calf_l","leftLowerLeg"],
         ["calf_twist_01_l",""],
-        ["Foot_L","leftFoot"],
+        ["foot_L","leftFoot"],
         ["ball_l","leftToes"],
         ["thigh_twist_01_l",""],
-        ["Thigh_R","rightUpperLeg"],
+        ["thigh_R","rightUpperLeg"],
         ["calf_r","rightLowerLeg"],
         ["calf_twist_01_r",""],
-        ["Foot_R","rightFoot"],
+        ["foot_R","rightFoot"],
         ["ball_r","rightToes"],
         ["thigh_twist_01_r",""],
 
@@ -568,6 +568,27 @@ with unreal.ScopedSlowTask(1, "Convert Bone") as slow_task_root:
                 print(f'disable linked node from {typePin.get_default_value()} : {namePin.get_default_value()}')
                 for toNoneNode in n.get_linked_target_nodes():
                     disableNode(toNoneNode)
+
+#    for n in node:
+#        pins = n.get_pins()
+#        for pin in pins:
+#            if (pin.is_array()):
+#                continue
+#            else:
+#                typePin = pin.find_sub_pin('Type')
+#                namePin = pin.find_sub_pin('Name')
+#                if (typePin == None):
+#                    continue
+#                if (typePin.get_default_value() == 'Bone'):
+#                            bonePin = pin
+#                            continue
+#                        if (typePin.get_default_value() == 'Control'):
+#                            if ('Name="pelvis"' in r_con.get_pin_default_value(n.find_pin('Items').get_pin_path())):
+#                                controlPin = pin
+#                                continue
+#                for item in pin.get_sub_pins():
+#                    checkAndSwapPinBoneToContorl(item)
+#                checkAndSwapPinBoneToContorl(pin)
 
 
 
