@@ -41,6 +41,9 @@ struct VRM4U_API FAnimNode_VrmPoseBlendNode : public FAnimNode_PoseBlendNode
 	//TSoftObjectPtr<FPoseLink> SourcePose_Internal = nullptr;
 #endif
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
+	bool bRemovePoseCurve = true;
+
 
 	bool bCallInitialized = false;
 
@@ -50,6 +53,8 @@ struct VRM4U_API FAnimNode_VrmPoseBlendNode : public FAnimNode_PoseBlendNode
 
 	// FAnimNode_SkeletalControlBase interface
 	virtual void Initialize_AnyThread(const FAnimationInitializeContext& Context) override;
+
+	virtual void Evaluate_AnyThread(FPoseContext& Output) override;
 
 
 private:
