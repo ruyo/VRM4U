@@ -42,7 +42,7 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 	Super::Evaluate_AnyThread(Output);
 
 	if (bRemovePoseCurve) {
-		auto* sk = Output.AnimInstanceProxy->GetSkelMeshComponent()->GetSkinnedAsset();
+		auto* sk = VRMGetSkinnedAsset(Output.AnimInstanceProxy->GetSkelMeshComponent());
 
 		auto& MorphList = sk->GetMorphTargets();
 
@@ -93,7 +93,11 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 #endif
 
 		for (auto a : removeList) {
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+			Output.Curve.Set(a, 0);
+#else
 			Output.Curve.InvalidateCurveWeight(a);
+#endif
 		}
 	}
 }
