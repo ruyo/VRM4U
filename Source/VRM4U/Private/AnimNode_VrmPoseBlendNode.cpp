@@ -47,7 +47,8 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 		auto& MorphList = sk->GetMorphTargets();
 
 
-#if	UE_VERSION_OLDER_THAN(5,3,0)
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#elif	UE_VERSION_OLDER_THAN(5,3,0)
 		TArray<SmartName::UID_Type> removeList;
 
 		auto* k = sk->GetSkeleton();
@@ -92,12 +93,16 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 			});
 #endif
 
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+
+#elif	UE_VERSION_OLDER_THAN(5,1,0)
 		for (auto a : removeList) {
-#if	UE_VERSION_OLDER_THAN(5,1,0)
 			Output.Curve.Set(a, 0);
-#else
-			Output.Curve.InvalidateCurveWeight(a);
-#endif
 		}
+#else
+		for (auto a : removeList) {
+			Output.Curve.InvalidateCurveWeight(a);
+		}
+#endif
 	}
 }
