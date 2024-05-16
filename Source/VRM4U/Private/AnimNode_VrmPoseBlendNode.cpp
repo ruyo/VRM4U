@@ -46,6 +46,36 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 
 		auto& MorphList = sk->GetMorphTargets();
 
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+		TArray<SmartName::UID_Type> removeList;
+
+		auto* k = sk->GetSkeleton();
+
+		auto CurveList = k->GetDefaultCurveUIDList();
+
+		//k->AddSmartNameAndModify(USkeleton::AnimCurveMappingName, *p.expressionName, sm);
+
+		auto* CurveMappingPtr = k->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
+
+		// 
+		TArray<FName> nameList;
+		CurveMappingPtr->FillUIDToNameArray(nameList);
+
+		TArray<SmartName::UID_Type> uidList;
+		CurveMappingPtr->FillUidArray(uidList);
+
+		for (int i = 0; i < nameList.Num(); ++i) {
+			auto* ind = MorphList.FindByPredicate([&nameList, &i](const TObjectPtr<UMorphTarget > morph) {
+				if (morph->GetName().Compare(nameList[i].ToString())) return false;
+				return true;
+				});
+
+			if (ind == nullptr) {
+				removeList.Add(uidList[i]);
+			}
+		}
+#else
 		TArray<FName> removeList;
 
 		Output.Curve.ForEachElement([&removeList, &MorphList](const UE::Anim::FCurveElement& InCurveElement)
@@ -60,6 +90,7 @@ void FAnimNode_VrmPoseBlendNode::Evaluate_AnyThread(FPoseContext& Output) {
 					removeList.Add(InCurveElement.Name);
 				}
 			});
+#endif
 
 		for (auto a : removeList) {
 			Output.Curve.InvalidateCurveWeight(a);
