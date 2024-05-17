@@ -25,10 +25,6 @@ FAnimNode_VrmVMC::FAnimNode_VrmVMC()
 
 FAnimNode_VrmVMC::~FAnimNode_VrmVMC()
 {
-	//if (bCreateServer == false) return;
-	//UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
-	//if (subsystem == nullptr) return;
-	//subsystem->DestroyVMCServer(ServerAddress, Port);
 }
 
 
@@ -122,15 +118,10 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 	TArray<FBoneTransform> tmpOutTransform;
 
 	FVMCData VMCData;
-	if (bApplyAllReceivedData) {
-		if (subsystem->CopyVMCDataAll(VMCData) == false) {
-			return;
-		}
-	} else {
-		if (subsystem->CopyVMCData(VMCData, ServerAddress, Port) == false) {
-			return;
-		}
+	if (subsystem->CopyVMCData(VMCData, ServerAddress, Port) == false) {
+		return;
 	}
+
 	if (VMCData.BoneData.Num() == 0 && VMCData.CurveData.Num() == 0) {
 		return;
 	}

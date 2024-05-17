@@ -58,9 +58,6 @@ struct VRM4UCAPTURE_API FAnimNode_VrmVMC : public FAnimNode_SkeletalControlBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
 	bool bApplyPerfectSync = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinShownByDefault))
-	bool bApplyAllReceivedData = true;
-
 	bool bCreateServer = false;
 
 	TArray<FTransform> RefSkeletonTransform_global;
