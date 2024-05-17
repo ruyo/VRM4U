@@ -10,9 +10,6 @@
 #include "OSCManager.h"
 #include "OSCServer.h"
 
-void UVrmVMCObject::BeginDestroy() {
-	DestroyServer();
-}
 void UVrmVMCObject::DestroyServer() {
 	ServerName = "";
 	port = 0;
