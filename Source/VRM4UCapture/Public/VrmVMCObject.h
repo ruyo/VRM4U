@@ -49,8 +49,6 @@ public:
 	FString ServerName;
 	uint16 port;
 
-	virtual void BeginDestroy();
-
 	void CreateServer(FString name, uint16 port);
 	void DestroyServer();
 	void OSCReceivedMessageEvent(const FOSCMessage& Message, const FString& IPAddress, uint16 Port);
