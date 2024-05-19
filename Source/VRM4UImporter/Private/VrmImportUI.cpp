@@ -87,6 +87,10 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bDebugOneBone);
 
+	c(bDebugNoMesh);
+
+	c(bDebugNoMaterial);
+
 	c(Skeleton);
 
 	return &data;

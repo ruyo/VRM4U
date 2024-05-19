@@ -424,6 +424,8 @@ public:
 	bool bSkipNoMeshBone = false;
 
 	bool bDebugOneBone = false;
+	bool bDebugNoMesh = false;
+	bool bDebugNoMaterial = false;
 
 	UPROPERTY()
 	class USkeleton* Skeleton = nullptr;

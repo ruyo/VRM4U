@@ -118,6 +118,8 @@ public:
 		bool IsGenerateRigIK() const;
 
 		bool IsDebugOneBone() const;
+		bool IsDebugNoMesh() const;
+		bool IsDebugNoMaterial() const;
 
 		bool IsMobileBone() const;
 
