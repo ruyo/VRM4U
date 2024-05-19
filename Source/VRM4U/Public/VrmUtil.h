@@ -409,7 +409,7 @@ public:
 	bool bMergeMaterial = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
-	bool bMergePrimitive = true;
+	bool bMergePrimitive = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bOptimizeVertex = true;

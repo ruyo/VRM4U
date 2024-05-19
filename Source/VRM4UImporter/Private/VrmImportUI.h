@@ -141,7 +141,7 @@ public:
 
 	/** Merge primitives using same material */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Optimize] Merge primitive"))
-	bool bMergePrimitive = true;
+	bool bMergePrimitive = false;
 
 	/** Use optimized MaterialInstance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="[Optimize] use opt material"))
