@@ -40,7 +40,9 @@ public:
 	virtual void InitializeComponent() override;
 	virtual void OnAttachmentChanged() override;
 
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 
 };

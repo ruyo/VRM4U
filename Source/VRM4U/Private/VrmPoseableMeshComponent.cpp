@@ -26,6 +26,7 @@ void UVrmPoseableMeshComponent::OnRegister() {
 	UpdateLeader();
 }
 
+#if WITH_EDITOR
 void UVrmPoseableMeshComponent::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	UpdateLeader();
@@ -33,6 +34,7 @@ void UVrmPoseableMeshComponent::PostEditChangeProperty(struct FPropertyChangedEv
 void UVrmPoseableMeshComponent::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) {
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
+#endif
 
 void UVrmPoseableMeshComponent::OnAttachmentChanged() {
 	Super::OnAttachmentChanged();
