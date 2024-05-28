@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OSCServer.h"
 #include "Misc/EngineVersionComparison.h"
+#include "UObject/StrongObjectPtr.h"
+
 
 #include "VrmVMCObject.generated.h"
 
+class UOSCServer;
 //struct FOSCAddress;
 struct FOSCMessage;
 
