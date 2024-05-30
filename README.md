@@ -28,7 +28,7 @@ VRM4UはUnrealEngine5(UE5, UE4)で動作する、VRMファイルのインポー�
      - 描画はForward/Deferred両方に対応しています。
 
 ## 動作環境
- - UE5.3〜5.0, UE4.27〜UE4.20
+ - UE5.4〜5.0, UE4.27〜UE4.20
  - Windows
  - Mac(要プロジェクトビルド)
  - mobile(Android, iOS)
