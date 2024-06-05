@@ -45,19 +45,17 @@ void UVrmPoseableMeshComponent::InitializeComponent() {
 }
 
 void UVrmPoseableMeshComponent::UpdateLeader() {
-	USkinnedMeshComponent* skin = Cast<USkinnedMeshComponent>(this->GetAttachParent());
-	USkeletalMeshComponent* skel = Cast<USkeletalMeshComponent>(skin);
 
 	if (bUseParentAsLeader) {
-		skin = Cast<USkinnedMeshComponent>(this->GetAttachParent());
-		skel = Cast<USkeletalMeshComponent>(skin);
-	}
+		USkinnedMeshComponent* skin = Cast<USkinnedMeshComponent>(this->GetAttachParent());
+		USkeletalMeshComponent* skel = Cast<USkeletalMeshComponent>(skin);
 #if	UE_VERSION_OLDER_THAN(5,1,0)
-	SetMasterPoseComponent(skin);
+		SetMasterPoseComponent(skin);
 #else
-	SetLeaderPoseComponent(skin);                                                     
+		SetLeaderPoseComponent(skin);
 #endif  
-	VRMCopyPoseAndMorphFromSkeletalComponent(skel);
+		VRMCopyPoseAndMorphFromSkeletalComponent(skel);
+	}
 }
 
 void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) {
