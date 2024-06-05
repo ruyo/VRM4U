@@ -20,11 +20,6 @@
 
 #endif
 
-class UVrmVMCObject;
-class UOSCServer; 
-struct FOSCAddress;
-struct FOSCMessage;
-
 
 UCLASS()
 class VRM4UCAPTURE_API UVRM4U_VMCSubsystem : public UEngineSubsystem
