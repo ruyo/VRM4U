@@ -2295,8 +2295,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 								pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
 							}
 							if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
-									//pos.X *= -1.f;
-								//pos.Y *= -1.f;
+								pos.X *= -1.f;
+								pos.Y *= -1.f;
 							}
 							//if (VRMConverter::Options::Get().IsVRMAModel() ) {
 							//	if (isRootBone) {
@@ -2343,8 +2343,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 								q = FQuat4f(-v.x, v.y, v.z, -v.w);
 
-								if (VRMConverter::Options::Get().IsVRM10Model()) {
+								if (VRMConverter::Options::Get().IsBVHModel()) {
+									auto d = FQuat4f(FVector3f(1, 0, 0), -PI / 2.f);
+									q = d * q * d.Inverse();
+								}
 
+								if (VRMConverter::Options::Get().IsVRM10Model()) {
 									q = FQuat4f(v.x, -v.z, v.y, v.w);
 								}
 #endif
