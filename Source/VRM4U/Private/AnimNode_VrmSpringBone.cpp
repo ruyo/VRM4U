@@ -355,6 +355,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		}
 	}
 
+	// vrm0
 	for (const auto &colMeta : MetaObjectLocal->VRMColliderMeta) {
 		const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*colMeta.boneName);
 
@@ -414,10 +415,28 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				}
 			}
 		}
-		for (int i = 0; i < dataList.Num(); ++i) {
-			const auto &name = PreviewSkelMeshComp->GetBoneName(dataList[i].bone);
+		const auto &RefBonePose = VRMGetRefSkeleton(VRMGetSkinnedAsset(PreviewSkelMeshComp)).GetRefBonePose();
 
-			FTransform t = PreviewSkelMeshComp->GetSocketTransform(name);
+		for (int i = 0; i < dataList.Num(); ++i) {
+			FTransform t;
+
+			{
+				TArray<int32> c;
+				VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(VRMGetSkinnedAsset(PreviewSkelMeshComp)), dataList[i].bone, c);
+				if (c.IsValidIndex(0)) {
+					const auto& name = PreviewSkelMeshComp->GetBoneName(c[0]);
+					t = PreviewSkelMeshComp->GetSocketTransform(name);
+				}
+				else {
+					const auto& name = PreviewSkelMeshComp->GetBoneName(dataList[i].bone);
+					t = PreviewSkelMeshComp->GetSocketTransform(name);
+					//t.SetLocation(t.GetLocation() * 1.7);
+					t.SetLocation(t.GetLocation() + RefBonePose[dataList[i].bone].GetLocation() * 0.7);
+				}
+			}
+
+
+
 			float r = dataList[i].radius * 100.f;
 			FVector v = t.GetLocation();
 
