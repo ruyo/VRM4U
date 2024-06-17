@@ -272,7 +272,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 			float r = (c.radius) * 100.f;
 			auto offs = c.offset;
-			offs.Set(offs.X, offs.Y, -offs.Z);
+			offs.Set(offs.X, -offs.Z, offs.Y);
 			offs *= 100;
 			offs = t.TransformVector(offs);
 
@@ -286,7 +286,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 			else {
 
 				auto tail = c.tail;
-				tail.Set(tail.X, tail.Y, -tail.Z);
+				tail.Set(tail.X, -tail.Z, tail.Y);
 				tail *= 100;
 				tail = t.TransformVector(tail);
 
@@ -362,7 +362,8 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		for (const auto &col : colMeta.collider) {
 			float r = (col.radius) * 100.f;
 			auto offs = col.offset;
-			offs.Set(-offs.X, offs.Z, offs.Y);
+			//offs.Set(offs.X, -offs.Z, offs.Y);	// 本来はこれが正しいが、VRM0の座標が間違っている
+			offs.Set(-offs.X, offs.Z, offs.Y);		// VRM0の仕様としては これ
 			offs *= 100;
 			FVector v = t.TransformPosition(offs);
 
