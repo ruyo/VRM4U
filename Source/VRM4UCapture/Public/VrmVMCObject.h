@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Misc/EngineVersionComparison.h"
-
+#include "UObject/StrongObjectPtr.h"
+#include "OSCServer.h"	// for game build link error
 
 #include "VrmVMCObject.generated.h"
 
-class UOSCServer;
-//struct FOSCAddress;
 struct FOSCMessage;
 
 struct FVMCData {

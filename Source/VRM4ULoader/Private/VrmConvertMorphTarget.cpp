@@ -182,17 +182,20 @@ static bool readMorph2(TArray<FMorphTargetDelta> &MorphDeltas, aiString targetNa
 				++VertexCount;
 
 				if (aiA.mVertices) {
+
+					auto aiV = aiA.mVertices[i] - aiM.mVertices[i];
+
 					v.PositionDelta.Set(
-						-aiA.mVertices[i][0] * 100.f,
-						aiA.mVertices[i][2] * 100.f,
-						aiA.mVertices[i][1] * 100.f
+						-aiV[0] * 100.f,
+						aiV[2] * 100.f,
+						aiV[1] * 100.f
 					);
 
 					if (VRMConverter::Options::Get().IsVRM10Model()) {
 						v.PositionDelta.Set(
-							aiA.mVertices[i][0] * 100.f,
-							-aiA.mVertices[i][2] * 100.f,
-							aiA.mVertices[i][1] * 100.f
+							aiV[0] * 100.f,
+							-aiV[2] * 100.f,
+							aiV[1] * 100.f
 						);
 					}
 				}
@@ -201,20 +204,23 @@ static bool readMorph2(TArray<FMorphTargetDelta> &MorphDeltas, aiString targetNa
 
 
 				if (bIncludeNormal) {
+
+					auto aiV = aiA.mNormals[i] - aiM.mNormals[i];
+
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 					FVector n(
 #else
 					FVector3f n(
 #endif
-						-aiA.mNormals[i][0],
-						aiA.mNormals[i][2],
-						aiA.mNormals[i][1]);
+						-aiV[0],
+						aiV[2],
+						aiV[1]);
 
 					if (VRMConverter::Options::Get().IsVRM10Model()) {
 						n.Set(
-							aiA.mNormals[i][0],
-							-aiA.mNormals[i][2],
-							aiA.mNormals[i][1]);
+							aiV[0],
+							-aiV[2],
+							aiV[1]);
 					}
 
 					if (n.Size() > 1.f) {

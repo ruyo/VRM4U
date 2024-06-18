@@ -104,7 +104,7 @@ namespace {
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 
-	static void LocalSolverSetup(UIKRigController* rigcon, UVrmAssetListObject *assetList) {
+	static void LocalSolverSetup(UIKRigController* rigcon, UVrmAssetListObject *assetList, int table_no=0xFFFF) {
 		if (rigcon == nullptr) return;
 
 		int sol_index = 0;
@@ -148,6 +148,18 @@ namespace {
 				TEXT("leftToes"),
 				TEXT("rightToes"),
 			};
+
+			if (table_no == 0){
+				// not change
+			}else if (table_no == 1){
+				TArray < FString > tmp = {
+					TEXT("leftHand"),
+					TEXT("rightHand"),
+					TEXT("leftFoot"),
+					TEXT("rightFoot"),
+				};
+				a = tmp;
+			}
 			for (int i = 0; i < a.Num(); ++i) {
 				for (auto& t : assetList->VrmMetaObject->humanoidBoneTable) {
 					if (t.Key.ToLower() == a[i].ToLower()) {
@@ -629,10 +641,10 @@ public:
 #endif
 #endif
 	}
-	void LocalSolverSetup(UVrmAssetListObject *vrmAssetList) {
+	void LocalSolverSetup(UVrmAssetListObject *vrmAssetList, int table_no=0xFFFF) {
 #if VRM4U_USE_EDITOR_RIG
 		auto* r = LocalGetController(RigDefinition);
-		::LocalSolverSetup(r, vrmAssetList);
+		::LocalSolverSetup(r, vrmAssetList, table_no);
 #else
 #endif
 	}
@@ -831,274 +843,294 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			}
 		}
 
-		UIKRigDefinition* rig_ik = nullptr;
+		UIKRigDefinition* table_rig_ik[2] = {};
 		{
-			FString name = FString(TEXT("IK_")) + vrmAssetList->BaseFileName + TEXT("_Mannequin");
-			rig_ik = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
-
-			SimpleRigController rigcon = SimpleRigController(rig_ik);
-			rigcon.SetSkeletalMesh(sk);
-
-			{
-				auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
-				rigcon.VRMAddRetargetChain(TEXT("Root"), s, s);
-			}
-			struct TT {
-				FString chain;
-				FString s1;
-				FString s2;
-			};
-			TArray<TT> table = {
-				{TEXT("Spine"),		TEXT("spine"),				TEXT("chest"),},
-#if	UE_VERSION_OLDER_THAN(5,4,0)
-				{TEXT("Head"),		TEXT("neck"),				TEXT("head"),},
-#else
-				{TEXT("Neck"),		TEXT("neck"),				TEXT("neck"),},
-				{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
-#endif
-				{TEXT("RightArm"),	TEXT("rightUpperArm"),		TEXT("rightHand"),},
-				{TEXT("LeftArm"),	TEXT("leftUpperArm"),		TEXT("leftHand"),},
-				{TEXT("RightLeg"),	TEXT("rightUpperLeg"),		TEXT("rightToes"),},
-				{TEXT("LeftLeg"),	TEXT("leftUpperLeg"),		TEXT("leftToes"),},
-
-				{TEXT("LeftThumb"),		TEXT("leftThumbProximal"),		TEXT("leftThumbDistal"),},
-				{TEXT("LeftIndex"),		TEXT("leftIndexProximal"),		TEXT("leftIndexDistal"),},
-				{TEXT("LeftMiddle"),	TEXT("leftMiddleProximal"),	TEXT("leftMiddleDistal"),},
-				{TEXT("LeftRing"),		TEXT("leftRingProximal"),		TEXT("leftRingDistal"),},
-				{TEXT("LeftPinky"),		TEXT("leftLittleProximal"),	TEXT("leftLittleDistal"),},
-
-				{TEXT("RightThumb"),	TEXT("rightThumbProximal"),	TEXT("rightThumbDistal"),},
-				{TEXT("RightIndex"),	TEXT("rightIndexProximal"),	TEXT("rightIndexDistal"),},
-				{TEXT("RightMiddle"),	TEXT("rightMiddleProximal"),	TEXT("rightMiddleDistal"),},
-				{TEXT("RightRing"),		TEXT("rightRingProximal"),		TEXT("rightRingDistal"),},
-				{TEXT("RightPinky"),	TEXT("rightLittleProximal"),	TEXT("rightLittleDistal"),},
-
-				{TEXT("LeftClavicle"),		TEXT("leftShoulder"),	TEXT("leftShoulder"),},
-				{TEXT("RightClavicle"),		TEXT("rightShoulder"),	TEXT("rightShoulder"),},
-
-				{TEXT("LeftHandIK"),		TEXT("ik_hand_l"),	TEXT("ik_hand_l"),},
-				{TEXT("RightHandIK"),		TEXT("ik_hand_r"),	TEXT("ik_hand_r"),},
-				{TEXT("HandGunIK"),			TEXT("ik_hand_gun"),	TEXT("ik_hand_gun"),},
-				{TEXT("FootRootIK"),		TEXT("ik_foot_root"),	TEXT("ik_foot_root"),},
-				{TEXT("HandRootIK"),		TEXT("ik_hand_root"),	TEXT("ik_hand_root"),},
+			FString table_name[2] = {
+				FString(TEXT("IK_")) + vrmAssetList->BaseFileName + TEXT("_Mannequin"),
+				FString(TEXT("IK_UEFN_")) + vrmAssetList->BaseFileName + TEXT("_Mannequin"),
 			};
 
-			for (auto& t : table) {
-				TT conv;
+			for (int ik_no=0; ik_no<2; ik_no++){
+				FString name = table_name[ik_no];
+				table_rig_ik[ik_no] = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+				auto rig_ik = table_rig_ik[ik_no];
+
+				SimpleRigController rigcon = SimpleRigController(rig_ik);
+				rigcon.SetSkeletalMesh(sk);
+
+				{
+					auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
+					rigcon.VRMAddRetargetChain(TEXT("Root"), s, s);
+				}
+				struct TT {
+					FString chain;
+					FString s1;
+					FString s2;
+					uint32_t mask = 0xFFFF;
+				};
+				TArray<TT> table = {
+					{TEXT("Spine"),		TEXT("spine"),				TEXT("chest"),},
+	#if	UE_VERSION_OLDER_THAN(5,4,0)
+					{TEXT("Head"),		TEXT("neck"),				TEXT("head"),},
+	#else
+					{TEXT("Neck"),		TEXT("neck"),				TEXT("neck"),},
+					{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
+	#endif
+					{TEXT("RightArm"),	TEXT("rightUpperArm"),		TEXT("rightHand"),},
+					{TEXT("LeftArm"),	TEXT("leftUpperArm"),		TEXT("leftHand"),},
+
+					// 0
+					{TEXT("RightLeg"),	TEXT("rightUpperLeg"),		TEXT("rightToes"),	0x01},
+					{TEXT("LeftLeg"),	TEXT("leftUpperLeg"),		TEXT("leftToes"),	0x01},
+
+					// 1
+					{TEXT("RightLeg"),	TEXT("rightUpperLeg"),		TEXT("rightFoot"),	0x02},
+					{TEXT("LeftLeg"),	TEXT("leftUpperLeg"),		TEXT("leftFoot"),	0x02},
+					{TEXT("RightToe"),	TEXT("rightToes"),		TEXT("rightToes"),		0x02},
+					{TEXT("LeftToe"),	TEXT("leftToes"),		TEXT("leftToes"),		0x02},
+
+					{TEXT("LeftThumb"),		TEXT("leftThumbProximal"),		TEXT("leftThumbDistal"),},
+					{TEXT("LeftIndex"),		TEXT("leftIndexProximal"),		TEXT("leftIndexDistal"),},
+					{TEXT("LeftMiddle"),	TEXT("leftMiddleProximal"),	TEXT("leftMiddleDistal"),},
+					{TEXT("LeftRing"),		TEXT("leftRingProximal"),		TEXT("leftRingDistal"),},
+					{TEXT("LeftPinky"),		TEXT("leftLittleProximal"),	TEXT("leftLittleDistal"),},
+
+					{TEXT("RightThumb"),	TEXT("rightThumbProximal"),	TEXT("rightThumbDistal"),},
+					{TEXT("RightIndex"),	TEXT("rightIndexProximal"),	TEXT("rightIndexDistal"),},
+					{TEXT("RightMiddle"),	TEXT("rightMiddleProximal"),	TEXT("rightMiddleDistal"),},
+					{TEXT("RightRing"),		TEXT("rightRingProximal"),		TEXT("rightRingDistal"),},
+					{TEXT("RightPinky"),	TEXT("rightLittleProximal"),	TEXT("rightLittleDistal"),},
+
+					{TEXT("LeftClavicle"),		TEXT("leftShoulder"),	TEXT("leftShoulder"),},
+					{TEXT("RightClavicle"),		TEXT("rightShoulder"),	TEXT("rightShoulder"),},
+
+					{TEXT("LeftHandIK"),		TEXT("ik_hand_l"),	TEXT("ik_hand_l"),},
+					{TEXT("RightHandIK"),		TEXT("ik_hand_r"),	TEXT("ik_hand_r"),},
+					{TEXT("HandGunIK"),			TEXT("ik_hand_gun"),	TEXT("ik_hand_gun"),},
+					{TEXT("FootRootIK"),		TEXT("ik_foot_root"),	TEXT("ik_foot_root"),},
+					{TEXT("HandRootIK"),		TEXT("ik_hand_root"),	TEXT("ik_hand_root"),},
+				};
+
+				for (auto& t : table) {
+					if ((t.mask & (1 << ik_no)) == 0) {
+						continue;
+					}
+					TT conv;
+					for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
+						if (modelName.Key == "" || modelName.Value == "") {
+							continue;
+						}
+						if (t.s1.ToLower() == modelName.Key.ToLower()) {
+							conv.s1 = modelName.Value;
+						}
+						if (t.s2.ToLower() == modelName.Key.ToLower()) {
+							conv.s2 = modelName.Value;
+						}
+					}
+					if (conv.s1 == "" || conv.s2 == "") {
+						// for ik bone
+						if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s1) >= 0) {
+							conv.s1 = t.s1;
+						}
+						if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s2) >= 0) {
+							conv.s2 = t.s2;
+						}
+					}
+					if (conv.s1 == "" || conv.s2 == "") continue;
+
+					{
+						FString s2 = conv.s2;
+						if (t.chain == TEXT("Spine")) {
+							// neck parent
+							for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
+								if (modelName.Key == "neck") {
+									auto& ref = VRMGetRefSkeleton(sk);
+									auto index = ref.FindRawBoneIndex(*modelName.Value);
+									auto tmp = ref.GetBoneName(ref.GetParentIndex(index));
+									s2 = tmp.ToString();
+								}
+							}
+						}
+						rigcon.VRMAddRetargetChain(*t.chain, *conv.s1, *s2);
+					}
+				}
+				rigcon.LocalSolverSetup(vrmAssetList, ik_no);
+
 				for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 					if (modelName.Key == "" || modelName.Value == "") {
 						continue;
 					}
-					if (t.s1.ToLower() == modelName.Key.ToLower()) {
-						conv.s1 = modelName.Value;
-					}
-					if (t.s2.ToLower() == modelName.Key.ToLower()) {
-						conv.s2 = modelName.Value;
+					if (modelName.Key == TEXT("hips")) {
+						rigcon.SetRetargetRoot(*modelName.Value);
 					}
 				}
-				if (conv.s1 == "" || conv.s2 == "") {
-					// for ik bone
-					if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s1) >= 0) {
-						conv.s1 = t.s1;
-					}
-					if (VRMGetRefSkeleton(sk).FindBoneIndex(*t.s2) >= 0) {
-						conv.s2 = t.s2;
-					}
-				}
-				if (conv.s1 == "" || conv.s2 == "") continue;
-
-				/*
-				FString baseBone;
-				for (auto& a : VRMUtil::table_ue4_vrm) {
-					if (a.BoneUE4 == "" || a.BoneVRM == "") {
-						continue;
-					}
-					if (a.BoneVRM.ToLower() == t.s1.ToLower()) {
-						baseBone = a.BoneUE4;
-					}
-				}
-				if (baseBone == "") continue;
-				*/
-
-				{
-					FString s2 = conv.s2;
-					if (t.chain == TEXT("Spine")) {
-						// neck parent
-						for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
-							if (modelName.Key == "neck") {
-								auto& ref = VRMGetRefSkeleton(sk);
-									auto index = ref.FindRawBoneIndex(*modelName.Value);
-									auto tmp = ref.GetBoneName(ref.GetParentIndex(index));
-									s2 = tmp.ToString();
-							}
-						}
-					}
-					rigcon.VRMAddRetargetChain(*t.chain, *conv.s1, *s2);
-				}
-			}
-			rigcon.LocalSolverSetup(vrmAssetList);
-
-			for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
-				if (modelName.Key == "" || modelName.Value == "") {
-					continue;
-				}
-				if (modelName.Key == TEXT("hips")) {
-					rigcon.SetRetargetRoot(*modelName.Value);
-				}
-			}
+			} // ik_no
 		} // skeleton ik
 
 
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
-
-		UIKRetargeter* ikr = nullptr;
 		{
-			FString name = FString(TEXT("RTG_")) + vrmAssetList->BaseFileName;
-			ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+			FString table_name[2] = {
+				FString(TEXT("RTG_")) + vrmAssetList->BaseFileName,
+				FString(TEXT("RTG_UEFN_")) + vrmAssetList->BaseFileName,
+			};
+			FString table_asset[2] = {
+				TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"),
+				TEXT("/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin"),
+			};
+
+			for (int ikr_no=0; ikr_no<2; ikr_no++){
+				UIKRetargeter* ikr = nullptr;
+
+				FString name = table_name[ikr_no];
+				ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
 #if WITH_EDITOR
-			ikr->TargetMeshOffset.Set(100, 0, 0);
+				ikr->TargetMeshOffset.Set(100, 0, 0);
 #endif
 
-			auto SourceOrTargetVRM = ERetargetSourceOrTarget::Target;
-			auto SourceOrTargetMannequin = ERetargetSourceOrTarget::Source;
+				auto SourceOrTargetVRM = ERetargetSourceOrTarget::Target;
+				auto SourceOrTargetMannequin = ERetargetSourceOrTarget::Source;
 
-			if (Options::Get().IsVRMAModel()) {
-				SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
-				SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
+				if (Options::Get().IsVRMAModel()) {
+					SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
+					SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
 
-			}
-
-			SimpleRetargeterController c = SimpleRetargeterController(ikr);
-
-			c.SetIKRig(SourceOrTargetVRM, rig_ik);
-
-			FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
-			UObject* u = r.TryLoad();
-			if (u) {
-				auto r2 = Cast<UIKRigDefinition>(u);
-				if (r2) {
-					c.SetIKRig(SourceOrTargetMannequin, r2);
 				}
-			}
 
-			if (vrmAssetList && vrmAssetList->VrmMetaObject) {
+				SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
-				auto & humanoidBoneTable = vrmAssetList->VrmMetaObject->humanoidBoneTable;
-				TArray<FString> KeyArray;
-				TArray<FString> ValueArray;
-				humanoidBoneTable.GenerateKeyArray(KeyArray);
-				humanoidBoneTable.GenerateValueArray(ValueArray);
+				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_no]);
 
-				auto FindKeyByValue = [humanoidBoneTable](const FString& SearchValue)
-					{
-						for (const auto& Pair : humanoidBoneTable)
-						{
-							if (Pair.Value.Compare(SearchValue, ESearchCase::IgnoreCase) == 0)
-							{
-								return Pair.Key;
-							}
-						}
-						return FString("");
-					};
+				FSoftObjectPath r(table_asset[ikr_no]);
 
-				VRMRetargetData retargetData;
-				retargetData.Setup(vrmAssetList,
-					VRMConverter::Options::Get().IsVRMModel(),
-					VRMConverter::Options::Get().IsBVHModel(),
-					VRMConverter::Options::Get().IsPMXModel());
-
-				auto FindRotData = [retargetData](const FString& boneVRM, FRotator &rot) {
-					for (auto& a : retargetData.retargetTable) {
-						if (a.BoneVRM.Compare(boneVRM, ESearchCase::IgnoreCase)) continue;
-
-						rot = a.rot;
-						return true;
+				///Script/IKRig.IKRigDefinition'/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin'
+				UObject* u = r.TryLoad();
+				if (u) {
+					auto r2 = Cast<UIKRigDefinition>(u);
+					if (r2) {
+						c.SetIKRig(SourceOrTargetMannequin, r2);
 					}
-					return false;
-				};
+				}
 
-				{
-					//name
-					FName PoseName = "POSE_A";
-					const FName NewPoseName = c.CreateRetargetPose(PoseName, SourceOrTargetVRM);
-					FIKRetargetPose* NewPose = c.GetRetargetPosesByName(SourceOrTargetVRM, NewPoseName);
+				if (vrmAssetList && vrmAssetList->VrmMetaObject) {
 
-					FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
-					const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
-					const FName RetargetRootBoneName = rig_ik->GetRetargetRoot();
-					for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
-					{
-						auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
+					auto& humanoidBoneTable = vrmAssetList->VrmMetaObject->humanoidBoneTable;
+					TArray<FString> KeyArray;
+					TArray<FString> ValueArray;
+					humanoidBoneTable.GenerateKeyArray(KeyArray);
+					humanoidBoneTable.GenerateValueArray(ValueArray);
 
-						auto str = FindKeyByValue(BoneName.ToString());
-						if (str == "") {
-							continue;
-						}
-						FRotator rot;
-						if (FindRotData(*str, rot) == false) {
-							continue;
-						}
-
-
-						// record a global space translation offset for the root bone
-						if (BoneName == RetargetRootBoneName)
+					auto FindKeyByValue = [humanoidBoneTable](const FString& SearchValue)
 						{
-							//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
-							//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
-							//	NewPose.SetRootTranslationDelta(GlobalImportedTransform.GetLocation() - GlobalRefTransform.GetLocation());
-						}
-
-						// record a local space delta rotation (if there is one)
-
-						const FTransform& LocalRefTransform = RefPose[BoneIndex];
-						const FTransform& LocalImportedTransform = FTransform(rot, FVector(0, 0, 0), FVector(1, 1, 1));
-						//const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
-
-						FQuat DeltaRotation = FQuat(rot);
-						if (VRMConverter::Options::Get().IsVRM10Model()) {
-
-							FTransform dstTrans;
-							auto dstIndex = BoneIndex;
-							while (dstIndex >= 0)
+							for (const auto& Pair : humanoidBoneTable)
 							{
-								dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
-								dstIndex = RefSkeleton.GetParentIndex(dstIndex);
-								if (dstIndex < 0) {
-									break;
+								if (Pair.Value.Compare(SearchValue, ESearchCase::IgnoreCase) == 0)
+								{
+									return Pair.Key;
 								}
 							}
+							return FString("");
+						};
 
-							//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
-							//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
-							//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
-							DeltaRotation = dstTrans.GetRotation().Inverse() * DeltaRotation * dstTrans.GetRotation();
+					VRMRetargetData retargetData;
+					retargetData.Setup(vrmAssetList,
+						VRMConverter::Options::Get().IsVRMModel(),
+						VRMConverter::Options::Get().IsBVHModel(),
+						VRMConverter::Options::Get().IsPMXModel());
+
+					auto FindRotData = [retargetData](const FString& boneVRM, FRotator& rot) {
+						for (auto& a : retargetData.retargetTable) {
+							if (a.BoneVRM.Compare(boneVRM, ESearchCase::IgnoreCase)) continue;
+
+							rot = a.rot;
+							return true;
 						}
+						return false;
+						};
 
-						const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
-						constexpr float MinAngleThreshold = 0.05f;
-						if (DeltaAngle >= MinAngleThreshold)
+					{
+						//name
+						FName PoseName = "POSE_A";
+						const FName NewPoseName = c.CreateRetargetPose(PoseName, SourceOrTargetVRM);
+						FIKRetargetPose* NewPose = c.GetRetargetPosesByName(SourceOrTargetVRM, NewPoseName);
+
+						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
+						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
+						const FName RetargetRootBoneName = table_rig_ik[ikr_no]->GetRetargetRoot();
+						for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 						{
-							NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
+							auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
+
+							auto str = FindKeyByValue(BoneName.ToString());
+							if (str == "") {
+								continue;
+							}
+							FRotator rot;
+							if (FindRotData(*str, rot) == false) {
+								continue;
+							}
+
+
+							// record a global space translation offset for the root bone
+							if (BoneName == RetargetRootBoneName)
+							{
+								//	FTransform GlobalRefTransform = FAnimationRuntime::GetComponentSpaceTransform(RefSkeleton, RefPose, BoneIndex);
+								//	FTransform GlobalImportedTransform = PoseAsset->GetComponentSpaceTransform(BoneName, LocalBoneTransformFromPose);
+								//	NewPose.SetRootTranslationDelta(GlobalImportedTransform.GetLocation() - GlobalRefTransform.GetLocation());
+							}
+
+							// record a local space delta rotation (if there is one)
+
+							const FTransform& LocalRefTransform = RefPose[BoneIndex];
+							const FTransform& LocalImportedTransform = FTransform(rot, FVector(0, 0, 0), FVector(1, 1, 1));
+							//const FQuat DeltaRotation = LocalRefTransform.GetRotation().Inverse() * LocalImportedTransform.GetRotation();
+
+							FQuat DeltaRotation = FQuat(rot);
+							if (VRMConverter::Options::Get().IsVRM10Model()) {
+
+								FTransform dstTrans;
+								auto dstIndex = BoneIndex;
+								while (dstIndex >= 0)
+								{
+									dstTrans = RefSkeleton.GetRefBonePose()[dstIndex].GetRelativeTransform(dstTrans);
+									dstIndex = RefSkeleton.GetParentIndex(dstIndex);
+									if (dstIndex < 0) {
+										break;
+									}
+								}
+
+								//DeltaRotation = LocalRefTransform.GetRotation().Inverse() * DeltaRotation * LocalRefTransform.GetRotation();
+								//DeltaRotation = LocalRefTransform.GetRotation() * DeltaRotation * LocalRefTransform.GetRotation().Inverse();
+								//DeltaRotation = dstTrans.GetRotation() * DeltaRotation * dstTrans.GetRotation().Inverse();
+								DeltaRotation = dstTrans.GetRotation().Inverse() * DeltaRotation * dstTrans.GetRotation();
+							}
+
+							const float DeltaAngle = FMath::RadiansToDegrees(DeltaRotation.GetAngle());
+							constexpr float MinAngleThreshold = 0.05f;
+							if (DeltaAngle >= MinAngleThreshold)
+							{
+								NewPose->SetDeltaRotationForBone(BoneName, DeltaRotation);
 #if UE_VERSION_OLDER_THAN(5,4,0)
-							NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
+								NewPose->SortHierarchically(ikr->GetTargetIKRig()->GetSkeleton());
 #else
-							NewPose->SortHierarchically(ikr->GetIKRig(SourceOrTargetVRM)->GetSkeleton());
+								NewPose->SortHierarchically(ikr->GetIKRig(SourceOrTargetVRM)->GetSkeleton());
 #endif
+							}
 						}
 					}
-				}
 
 #if VRM4U_USE_AUTOALIGN
-				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
-				c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
+					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
+					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
-				c.AutoAlignAllBones(SourceOrTargetMannequin);
-				c.AutoAlignAllBones(SourceOrTargetVRM);
+					c.AutoAlignAllBones(SourceOrTargetMannequin);
+					c.AutoAlignAllBones(SourceOrTargetVRM);
 #endif
+				}
+				c.SetChainSetting();
 			}
-			c.SetChainSetting();
 		}
 #endif // 5.2
 #endif

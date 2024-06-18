@@ -23,6 +23,19 @@ bool UVRM4U_VMCSubsystem::CopyVMCData(FVMCData &data, FString ServerAddress, int
 	return false;
 }
 
+bool UVRM4U_VMCSubsystem::GetVMCData(TMap<FString, FTransform>& BoneData, TMap<FString, float>& CurveData, FString ServerAddress, int port) {
+	FVMCData d;
+	if (CopyVMCData(d, ServerAddress, port) == false) {
+		return false;
+	}
+
+	BoneData = d.BoneData;
+	CurveData = d.CurveData;
+
+	return true;
+}
+
+
 bool UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
 
 	bool bFound = false;

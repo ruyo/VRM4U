@@ -212,7 +212,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 
 			ImportUI->ModelScale = 1.0f;
 			ImportUI->bMergeMaterial = true;
-			ImportUI->bMergePrimitive = true;
+			ImportUI->bMergePrimitive = false;
 			ImportUI->TitleAuthor.Empty();
 			ImportUI->Thumbnail = nullptr;
 

@@ -18,8 +18,10 @@ class VRM4U_API UVrmPoseableMeshComponent : public UPoseableMeshComponent
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
-	bool bUseDefaultMaterial = false;
+	bool bUseParentAsLeader = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
+	bool bUseDefaultMaterial = false;
 
 	void OnRegister() override;
 
@@ -32,4 +34,15 @@ public:
 	void VRMCopyPoseAndMorphFromSkeletalComponent(USkeletalMeshComponent* InComponentToCopy);
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+
+	virtual void UpdateLeader();
+
+	virtual void InitializeComponent() override;
+	virtual void OnAttachmentChanged() override;
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
+
 };

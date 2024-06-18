@@ -235,7 +235,8 @@ namespace VRMSpringBone {
 								float r = (hitRadius + c.radius) * 100.f;
 								//FVector v = collisionBoneTrans.TransformPosition(c.offset*100);
 								auto offs = c.offset;
-								offs.Set(offs.X, -offs.Z, offs.Y);
+								//offs.Set(offs.X, -offs.Z, offs.Y);	// 本来はこれが正しいが、VRM0の座標が間違っている
+								offs.Set(-offs.X, offs.Z, offs.Y);		// VRM0の仕様としては これ
 								offs *= 100;
 								FVector v = collisionBoneTrans.TransformPosition(offs);
 

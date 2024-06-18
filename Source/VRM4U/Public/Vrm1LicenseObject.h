@@ -47,7 +47,7 @@ struct FLicenseBoolDataPair {
 	FString key;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
-	bool value;
+	bool value = false;
 };
 
 UCLASS(Blueprintable, BlueprintType, meta = (AutoExpandCategories = "License"))
@@ -58,7 +58,7 @@ class VRM4U_API UVrm1LicenseObject : public UObject
 public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Information)
-	UTexture2D* thumbnail;
+	UTexture2D* thumbnail = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "License")
 	TArray<FLicenseStringDataPair> LicenseString;

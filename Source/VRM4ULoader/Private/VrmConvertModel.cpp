@@ -176,6 +176,10 @@ static int GetChildBoneLocal(const USkeleton *skeleton, const int32 ParentBoneIn
 
 static void FindMeshInfo(const aiScene* scene, aiNode* node, FReturnedData& result, UVrmAssetListObject *vrmAssetList)
 {
+	if (VRMConverter::Options::Get().IsDebugNoMesh()) {
+		return;
+	}
+
 	for (uint32 MeshNo = 0; MeshNo < node->mNumMeshes; MeshNo++)
 	{
 		FString Fs = UTF8_TO_TCHAR(node->mName.C_Str());
@@ -610,7 +614,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		UE_LOG(LogVRM4ULoader, Warning, TEXT("test null.\n"));
 	}
 
-	if (aiData->HasMeshes())
+	if (aiData->HasMeshes() && VRMConverter::Options::Get().IsDebugNoMesh() == false)
 	{
 
 		// !! before remove unused vertex !!
@@ -659,7 +663,6 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 		}
-
 		result.meshInfo.SetNum(aiData->mNumMeshes, false);
 
 
@@ -686,7 +689,6 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							continue;
 						}
 					}
-
 
 					result.meshInfo[meshNo].Triangles.Push(aiData->mMeshes[meshNo]->mFaces[faceNo].mIndices[indexNo]);
 
@@ -982,7 +984,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false) {
 			if (vrmAssetList->Pose_bind.Num() == 0 || vrmAssetList->Pose_tpose.Num() == 0) {
 				UE_LOG(LogVRM4ULoader, Warning, TEXT("BindPose -> TPose :: no bindpose array!"));
-			}else{
+			}
+			else {
 				auto& info = vrmAssetList->MeshReturnedData->meshInfo;
 				struct WeightData {
 					FString boneName;
@@ -1081,7 +1084,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(4,23,0)
 			new(p->LODRenderData) FSkeletalMeshLODRenderData();
 #else
-			auto *tmp = new FSkeletalMeshLODRenderData();
+			auto* tmp = new FSkeletalMeshLODRenderData();
 			p->LODRenderData.Add(tmp);
 #endif
 		}
@@ -1108,9 +1111,9 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 				TArray<FSkinWeightInfo> InWeights;
 #endif
-				
+
 				InWeights.SetNum(allVertex);
-				for (auto &a : InWeights) {
+				for (auto& a : InWeights) {
 					memset(a.InfluenceBones, 0, sizeof(a.InfluenceBones));
 					memset(a.InfluenceWeights, 0, sizeof(a.InfluenceWeights));
 				}
@@ -1121,7 +1124,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 		sk->InitResources();
 
-		VRMGetMaterials(sk).SetNum(vrmAssetList->Materials.Num());
+
+		if (VRMConverter::Options::Get().IsDebugNoMaterial()) {
+			//VRMGetMaterials(sk).SetNum(vrmAssetList->Materials.Num());
+		}else{
+			VRMGetMaterials(sk).SetNum(vrmAssetList->Materials.Num());
+		}
 		for (int i = 0; i < VRMGetMaterials(sk).Num(); ++i) {
 			VRMGetMaterials(sk)[i].MaterialInterface = vrmAssetList->Materials[i];
 			VRMGetMaterials(sk)[i].MaterialSlotName = UTF8_TO_TCHAR(aiData->mMaterials[i]->GetName().C_Str());
@@ -1306,6 +1314,9 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							continue;
 						}
 						for (int jj = 0; jj < MAX_TOTAL_INFLUENCES; ++jj) {
+							if (Weight.IsValidIndex(aiW.mVertexId + currentVertex) == false) {
+								continue;
+							}
 							auto& s = Weight[aiW.mVertexId + currentVertex];
 							if (s.InfluenceWeights[jj] > 0) {
 								continue;
@@ -1339,6 +1350,9 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							continue;
 						}
 						for (int jj = 0; jj < MAX_TOTAL_INFLUENCES; ++jj) {
+							if (Weight.IsValidIndex(aiW.mVertexId + currentVertex) == false) {
+								continue;
+							}
 							auto &s = Weight[aiW.mVertexId + currentVertex];
 							if (s.InfluenceWeights[jj] > 0) {
 								continue;
@@ -2281,8 +2295,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 								pos *= Scale * VRMConverter::Options::Get().GetAnimationTranslateScale();
 							}
 							if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
-									//pos.X *= -1.f;
-								//pos.Y *= -1.f;
+								pos.X *= -1.f;
+								pos.Y *= -1.f;
 							}
 							//if (VRMConverter::Options::Get().IsVRMAModel() ) {
 							//	if (isRootBone) {
@@ -2329,8 +2343,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #else
 								q = FQuat4f(-v.x, v.y, v.z, -v.w);
 
-								if (VRMConverter::Options::Get().IsVRM10Model()) {
+								if (VRMConverter::Options::Get().IsBVHModel()) {
+									auto d = FQuat4f(FVector3f(1, 0, 0), -PI / 2.f);
+									q = d * q * d.Inverse();
+								}
 
+								if (VRMConverter::Options::Get().IsVRM10Model()) {
 									q = FQuat4f(v.x, -v.z, v.y, v.w);
 								}
 #endif

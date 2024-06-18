@@ -45,6 +45,28 @@ static void renameToHumanoidBone(USkeletalMesh *targetSK, const UVrmMetaObject *
 
 	TMap<FName, FName> changeTable;
 
+	{
+		bool bHasRoot = false;
+		for (auto& a : allbone) {
+			if (a.Name == TEXT("Root")) {
+				a.Name = TEXT("root");
+#if WITH_EDITORONLY_DATA
+				a.ExportName = TEXT("root");
+#endif
+				bHasRoot = true;
+				break;
+			}
+		}
+		if (bHasRoot == false) {
+			if (allbone[0].Name != TEXT("hip")) {
+				allbone[0].Name = TEXT("root");
+#if WITH_EDITORONLY_DATA
+				allbone[0].ExportName = TEXT("root");
+#endif
+			}
+		}
+	}
+
 	for (auto &a : allbone) {
 		auto p = meta->humanoidBoneTable.FindKey(a.Name.ToString());
 		if (p == nullptr) {

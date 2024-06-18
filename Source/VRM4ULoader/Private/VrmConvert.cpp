@@ -271,7 +271,7 @@ bool VRMConverter::Options::IsSkipMorphTarget() const {
 #if WITH_EDITOR
 	if (ImportOption == nullptr) return false;
 
-	return ImportOption->bSkipMorphTarget;
+	return ImportOption->bSkipMorphTarget || IsDebugNoMesh();
 #else
 	return false;
 #endif
@@ -367,6 +367,28 @@ bool VRMConverter::Options::IsDebugOneBone() const {
 	if (ImportOption == nullptr) return ret;
 
 	return ImportOption->bDebugOneBone;
+#else
+	return ret;
+#endif
+}
+
+bool VRMConverter::Options::IsDebugNoMesh() const {
+	bool ret = false;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bDebugNoMesh;
+#else
+	return ret;
+#endif
+}
+
+bool VRMConverter::Options::IsDebugNoMaterial() const {
+	bool ret = false;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bDebugNoMaterial;
 #else
 	return ret;
 #endif

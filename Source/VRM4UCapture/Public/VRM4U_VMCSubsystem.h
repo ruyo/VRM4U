@@ -20,11 +20,6 @@
 
 #endif
 
-class UVrmVMCObject;
-class UOSCServer; 
-struct FOSCAddress;
-struct FOSCMessage;
-
 
 UCLASS()
 class VRM4UCAPTURE_API UVRM4U_VMCSubsystem : public UEngineSubsystem
@@ -46,6 +41,9 @@ public:
 	TArray< TStrongObjectPtr<UVrmVMCObject> > VMCObjectList;
 
 	bool CopyVMCData(FVMCData& DstData, FString ServerAddress, int port);
+
+	UFUNCTION(BlueprintCallable, Category = VRM4U)
+	bool GetVMCData(TMap<FString, FTransform> &BoneData, TMap<FString, float> &CurveData, FString ServerAddress, int port);
 
 private:
 };

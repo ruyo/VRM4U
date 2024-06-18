@@ -272,7 +272,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 
 			float r = (c.radius) * 100.f;
 			auto offs = c.offset;
-			offs.Set(offs.X, offs.Y, -offs.Z);
+			offs.Set(offs.X, -offs.Z, offs.Y);
 			offs *= 100;
 			offs = t.TransformVector(offs);
 
@@ -286,7 +286,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 			else {
 
 				auto tail = c.tail;
-				tail.Set(tail.X, tail.Y, -tail.Z);
+				tail.Set(tail.X, -tail.Z, tail.Y);
 				tail *= 100;
 				tail = t.TransformVector(tail);
 
@@ -355,13 +355,15 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		}
 	}
 
+	// vrm0
 	for (const auto &colMeta : MetaObjectLocal->VRMColliderMeta) {
 		const FTransform t = PreviewSkelMeshComp->GetSocketTransform(*colMeta.boneName);
 
 		for (const auto &col : colMeta.collider) {
 			float r = (col.radius) * 100.f;
 			auto offs = col.offset;
-			offs.Set(-offs.X, offs.Z, offs.Y);
+			//offs.Set(offs.X, -offs.Z, offs.Y);	// 本来はこれが正しいが、VRM0の座標が間違っている
+			offs.Set(-offs.X, offs.Z, offs.Y);		// VRM0の仕様としては これ
 			offs *= 100;
 			FVector v = t.TransformPosition(offs);
 
@@ -414,10 +416,28 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				}
 			}
 		}
-		for (int i = 0; i < dataList.Num(); ++i) {
-			const auto &name = PreviewSkelMeshComp->GetBoneName(dataList[i].bone);
+		const auto &RefBonePose = VRMGetRefSkeleton(VRMGetSkinnedAsset(PreviewSkelMeshComp)).GetRefBonePose();
 
-			FTransform t = PreviewSkelMeshComp->GetSocketTransform(name);
+		for (int i = 0; i < dataList.Num(); ++i) {
+			FTransform t;
+
+			{
+				TArray<int32> c;
+				VRMUtil::GetDirectChildBones(VRMGetRefSkeleton(VRMGetSkinnedAsset(PreviewSkelMeshComp)), dataList[i].bone, c);
+				if (c.IsValidIndex(0)) {
+					const auto& name = PreviewSkelMeshComp->GetBoneName(c[0]);
+					t = PreviewSkelMeshComp->GetSocketTransform(name);
+				}
+				else {
+					const auto& name = PreviewSkelMeshComp->GetBoneName(dataList[i].bone);
+					t = PreviewSkelMeshComp->GetSocketTransform(name);
+					//t.SetLocation(t.GetLocation() * 1.7);
+					t.SetLocation(t.GetLocation() + RefBonePose[dataList[i].bone].GetLocation() * 0.7);
+				}
+			}
+
+
+
 			float r = dataList[i].radius * 100.f;
 			FVector v = t.GetLocation();
 

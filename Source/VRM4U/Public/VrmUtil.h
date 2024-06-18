@@ -330,6 +330,13 @@ public:
 	static const bool VRM4U_UseBC7 = true;
 #endif
 
+#if UE_VERSION_OLDER_THAN(5,2,0)
+	static const bool VRM4U_UseUE5Mat = false;
+#else
+	static const bool VRM4U_UseUE5Mat = true;
+#endif
+
+
 	void init();
 
 	bool bUEFN = false;
@@ -400,7 +407,7 @@ public:
 	bool bMipmapGenerateMode = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
-	bool bUseUE5Material = false;
+	bool bUseUE5Material = VRM4U_UseUE5Mat;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bGenerateOutlineMaterial = true;
@@ -409,7 +416,7 @@ public:
 	bool bMergeMaterial = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
-	bool bMergePrimitive = true;
+	bool bMergePrimitive = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bOptimizeVertex = true;
@@ -424,6 +431,8 @@ public:
 	bool bSkipNoMeshBone = false;
 
 	bool bDebugOneBone = false;
+	bool bDebugNoMesh = false;
+	bool bDebugNoMaterial = false;
 
 	UPROPERTY()
 	class USkeleton* Skeleton = nullptr;
