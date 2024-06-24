@@ -1039,6 +1039,43 @@ bool UVrmBPFunctionLibrary::VRMRenderingThreadEnable(bool bEnable) {
 	return true;
 }
 
+int UVrmBPFunctionLibrary::VRMGetMeshSectionNum(const USkeletalMesh* mesh) {
+	if (mesh == nullptr) return 0;
+	return mesh->GetResourceForRendering()->LODRenderData[0].RenderSections.Num();
+
+/*
+	FSkeletalMeshRenderData* SkelMeshRenderData = GetResourceForRendering();
+	for (int32 LODIndex = MinLODIndex; LODIndex < SkelMeshRenderData->LODRenderData.Num(); LODIndex++)
+	{
+		FSkeletalMeshLODRenderData& LODRenderData = SkelMeshRenderData->LODRenderData[LODIndex];
+		const FSkeletalMeshLODInfo& Info = *(GetLODInfo(LODIndex));
+
+		// Check all render sections for the used material indices
+		for (int32 SectionIndex = 0; SectionIndex < LODRenderData.RenderSections.Num(); SectionIndex++)
+		{
+			FSkelMeshRenderSection& RenderSection = LODRenderData.RenderSections[SectionIndex];
+
+			// By default use the material index of the render section
+
+
+*/
+}
+
+bool UVrmBPFunctionLibrary::VRMRemoveMeshSection(USkeletalMesh* mesh, int LODIndex, int SectionIndex) {
+#if WITH_EDITOR
+	if (mesh == nullptr) return false;
+
+	if (mesh->GetResourceForRendering()->LODRenderData.IsValidIndex(LODIndex)) {
+
+		mesh->RemoveMeshSection(LODIndex, SectionIndex);
+		mesh->MarkPackageDirty();
+		return true;
+	}
+#endif
+	return false;
+}
+
+
 bool UVrmBPFunctionLibrary::VRMGetShadowEnable(const USkeletalMesh *mesh, int MaterialIndex) {
 
 	if (mesh == nullptr) {

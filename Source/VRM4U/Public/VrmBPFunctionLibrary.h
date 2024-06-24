@@ -7,6 +7,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "Engine/Scene.h"
 #include "LiveLinkTypes.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "VrmUtil.h"
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)
@@ -139,6 +140,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
 	static bool VRMRenderingThreadEnable(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
+	static int VRMGetMeshSectionNum(const USkeletalMesh* mesh);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
+	static bool VRMRemoveMeshSection(USkeletalMesh* mesh, int LODIndex, int SectionIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
 	static bool VRMGetShadowEnable(const USkeletalMesh *mesh, int MaterialIndex);
