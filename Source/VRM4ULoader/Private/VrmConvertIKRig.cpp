@@ -538,6 +538,10 @@ public:
 
 	void SetSkeletalMesh(USkeletalMesh* sk) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
+#if VRM4U_USE_EDITOR_RIG
+		auto * r = LocalGetController(RigDefinition);
+		r->SetSkeletalMesh(sk);
+#endif
 #else
 
 #if VRM4U_USE_EDITOR_RIG
