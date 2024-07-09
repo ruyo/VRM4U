@@ -302,6 +302,7 @@ namespace {
 		};
 		auto SetLocalParamsForScaler = [](auto* dm) {
 			LocalScalarParameterSet(dm, TEXT("mtoon_BumpScale"), 1.f);
+			LocalScalarParameterSet(dm, TEXT("mtoon_NormalScale"), 1.f);
 			LocalScalarParameterSet(dm, TEXT("mtoon_ReceiveShadowRate"), 1.f);
 
 			LocalScalarParameterSet(dm, TEXT("mtoon_OutlineLightingMix"), 1.f);
@@ -365,6 +366,7 @@ namespace {
 			TT tableParam[] = {
 				{TEXT("_Cutoff"),		vrmMat.floatProperties._Cutoff},
 				{TEXT("_BumpScale"),	vrmMat.floatProperties._BumpScale},
+				{TEXT("_NormalScale"),	vrmMat.floatProperties._BumpScale},	// VRM4U Custom
 				{TEXT("_ReceiveShadowRate"),	vrmMat.floatProperties._ReceiveShadowRate},
 				{TEXT("_ShadeShift"),			vrmMat.floatProperties._ShadeShift},
 				{TEXT("_ShadeToony"),			vrmMat.floatProperties._ShadeToony},
