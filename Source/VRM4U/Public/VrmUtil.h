@@ -380,6 +380,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bSkipPhysics = true;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bSkipMorphTarget = false;
 
 	bool bEnableMorphTargetNormal = false;
@@ -430,8 +431,11 @@ public:
 
 	bool bSkipNoMeshBone = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugOneBone = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugNoMesh = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugNoMaterial = false;
 
 	UPROPERTY()

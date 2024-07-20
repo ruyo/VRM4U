@@ -1028,6 +1028,9 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				{
 					int vertexOffset = 0;
 					for (uint32_t meshNo = 0; meshNo < scene->mNumMeshes; ++meshNo) {
+						if (info.IsValidIndex(meshNo) == false) {
+							break;
+						}
 						auto* mesh = scene->mMeshes[meshNo];
 
 						for (int vertexNo = 0; vertexNo < info[meshNo].Vertices.Num(); ++vertexNo) {
