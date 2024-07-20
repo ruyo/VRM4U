@@ -1802,7 +1802,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				p->ActiveBoneIndices = rd.ActiveBoneIndices;
 				p->RequiredBones = rd.RequiredBones;
 			}
-#else
+#else // game
 
 #if	UE_VERSION_OLDER_THAN(4,25,0)
 #else
@@ -1838,14 +1838,18 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 				pRd->InitResources(false, 0, VRMGetMorphTargets(sk), sk);
 #else
-#if WITH_EDITOR
-				pRd->InitResources(false, 0, VRMGetMorphTargets(sk), sk);
-#endif
-#endif
+				{
+					TArray<UMorphTarget*> dummy;
+					for (auto& a : VRMGetMorphTargets(sk)) {
+						dummy.Add(a);
+					}
+					pRd->InitResources(false, 0, dummy, sk);
+				}
+#endif // 5.4
 			}
-#endif
+#endif // 4.25
 
-#endif
+#endif // editor
 
 			//rd.StaticVertexBuffers.StaticMeshVertexBuffer.TexcoordDataPtr;
 
