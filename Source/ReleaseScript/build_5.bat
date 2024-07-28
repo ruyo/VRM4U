@@ -19,17 +19,6 @@ if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
 )
-call build_ver.bat 5.4 Win64 Development MyProjectBuildScript VRM4U_5_4_%V_DATE%_gam.zip
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
-call build_ver.bat 5.4 Win64 Shipping MyProjectBuildScript VRM4U_5_4_%V_DATE%_gam_shipping.zip
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
-
 
 
 ::5_3
