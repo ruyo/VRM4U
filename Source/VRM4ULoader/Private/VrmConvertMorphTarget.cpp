@@ -446,9 +446,13 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 			sk->GetResourceForRendering()->LODRenderData[0].InitResources(false, 0, VRMGetMorphTargets(sk), sk);
 #else
-#if WITH_EDITOR
-			sk->GetResourceForRendering()->LODRenderData[0].InitResources(false, 0, VRMGetMorphTargets(sk), sk);
-#endif
+			{
+				TArray<UMorphTarget*> morphtargets;
+				for (auto morphtarget : VRMGetMorphTargets(sk)) {
+					morphtargets.Add(morphtarget);
+				}
+				sk->GetResourceForRendering()->LODRenderData[0].InitResources(false, 0, morphtargets, sk);
+			}
 #endif
 		}
 	}
