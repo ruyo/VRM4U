@@ -1222,14 +1222,15 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 						// Mooa VRM
 						TArray<TArray<FString>> materialParamNames;
 						materialParamNames.SetNum(AI_TEXTURE_TYPE_MAX);
-						materialParamNames[aiTextureType::aiTextureType_DIFFUSE] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map"), TEXT("Opacity Map") };
+						materialParamNames[aiTextureType::aiTextureType_DIFFUSE] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map") };
 						materialParamNames[aiTextureType::aiTextureType_NORMALS] = { TEXT("gltf_tex_normal"), TEXT("Normal Map") };
+						materialParamNames[aiTextureType::aiTextureType_AMBIENT_OCCLUSION] = { TEXT("AO Map") };
 						materialParamNames[aiTextureType::aiTextureType_EMISSIVE] = { TEXT("gltf_tex_Emission"), TEXT("Emissive Map") };
 
-						materialParamNames[aiTextureType::aiTextureType_BASE_COLOR] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map"), TEXT("Opacity Map") };
+						materialParamNames[aiTextureType::aiTextureType_BASE_COLOR] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map") };
 						materialParamNames[aiTextureType::aiTextureType_EMISSION_COLOR] = { TEXT("gltf_tex_Emission"), TEXT("Emissive Map") };
-						materialParamNames[aiTextureType::aiTextureType_METALNESS] = { TEXT("gltf_tex_metalness"), TEXT("Specular Mask Map") };
-						materialParamNames[aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS] = { TEXT("gltf_tex_roughness"), TEXT("Specular Mask Map") };
+						materialParamNames[aiTextureType::aiTextureType_METALNESS] = { TEXT("gltf_tex_metalness") };
+						materialParamNames[aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS] = { TEXT("gltf_tex_roughness") };
 
 						for (uint32_t t = 0; t < AI_TEXTURE_TYPE_MAX; ++t) {
 							int index = TextureTypeToIndex[t];
@@ -1239,6 +1240,11 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 
 							for (auto MaterialParamName : materialParamNames[t])
 							{
+								if (false) {}
+								else if (t == aiTextureType::aiTextureType_EMISSIVE || t == aiTextureType::aiTextureType_EMISSION_COLOR)
+								{
+									LocalScalarParameterSet(dm, TEXT("Emissive Intensity"), 1.f);
+								}
 								LocalTextureSet(dm, *(MaterialParamName), vrmAssetList->Textures[index]);
 							}
 						}

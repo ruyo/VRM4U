@@ -293,7 +293,7 @@ FORCEINLINE  USkeletalMesh *VRMGetSkinnedAsset(const USkinnedMeshComponent* t) {
 UENUM(BlueprintType)
 enum class EVRMImportMaterialType : uint8
 {
-	VRMIMT_Auto				UMETA(DisplayName = "Mooa Toon"), // Mooa VRM
+	VRMIMT_Auto				UMETA(DisplayName = "MooaToon"), // Mooa VRM
 	VRMIMT_MToon			UMETA(DisplayName = "MToon Lit"),
 	VRMIMT_MToonUnlit		UMETA(DisplayName = "MToon Unlit"),
 	VRMIMT_SSS				UMETA(DisplayName = "Subsurface"),
