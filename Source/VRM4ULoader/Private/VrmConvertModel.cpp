@@ -26,6 +26,13 @@
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Internationalization/Internationalization.h"
 
+
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+#include "PhysicsEngine/SkeletalBodySetup.h"
+#endif
+
+
 #include "Animation/AnimSequence.h"
 #include "Animation/AnimBlueprint.h"
 #include "Async/ParallelFor.h"

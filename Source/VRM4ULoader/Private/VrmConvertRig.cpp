@@ -27,6 +27,12 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+#include "PhysicsEngine/SkeletalBodySetup.h"
+#endif
+
+
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 
 #elif UE_VERSION_OLDER_THAN(5,2,0)

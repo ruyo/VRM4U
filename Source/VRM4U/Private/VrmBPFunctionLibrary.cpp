@@ -52,6 +52,11 @@
 
 #endif
 
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+#include "Kismet/KismetRenderingLibrary.h"
+#endif
+
 #include "Animation/AnimInstance.h"
 #include "VrmAnimInstanceCopy.h"
 #include "VrmUtil.h"
@@ -470,7 +475,7 @@ void UVrmBPFunctionLibrary::VRMDrawMaterialToRenderTarget(UObject* WorldContextO
 		}
 		);
 	}
-#else
+#elif UE_VERSION_OLDER_THAN(5,5,0)
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 
 	if (!World)
@@ -545,6 +550,9 @@ void UVrmBPFunctionLibrary::VRMDrawMaterialToRenderTarget(UObject* WorldContextO
 		}
 		);
 	}
+#else
+	// 5.5.0
+	UKismetRenderingLibrary::DrawMaterialToRenderTarget(WorldContextObject, TextureRenderTarget, Material);
 #endif
 }
 
@@ -1447,10 +1455,17 @@ void UVrmBPFunctionLibrary::VRMExecuteConsoleCommand(UObject* WorldContextObject
 		return;
 	}
 
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+
 	FOutputDevice& EffectiveOutputDevice = (FOutputDevice&)(*GLog);
 	FConsoleManager& ConsoleManager = (FConsoleManager&)IConsoleManager::Get();
+#else
 
+	FOutputDevice& EffectiveOutputDevice = (FOutputDevice&)(*GLog);
+	auto& ConsoleManager = IConsoleManager::Get();
+#endif
 	ConsoleManager.ProcessUserConsoleInput(&(cmd.GetCharArray()[0]), EffectiveOutputDevice, World);
+
 }
 
 
