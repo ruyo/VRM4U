@@ -12,7 +12,6 @@ Move-Item -Path ./_out -Destination ./Plugins/VRM4U
 Compress-Archive -Force -Path ./Plugins -DestinationPath $Args[0]
 
 
-Move-Item -Path ./Plugins -Destination ./_out
-
+Remove-Item -Recurse ./Plugins
 Remove-Item -Recurse ./_out
 
