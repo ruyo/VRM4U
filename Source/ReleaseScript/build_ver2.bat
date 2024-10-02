@@ -6,7 +6,7 @@ set ZIPNAME=../../../../_zip/%4
 
 set UE5BASE=D:\Program Files\Epic Games
 set UPLUGIN="%~dp0../../VRM4U.uplugin"
-set OUTPATH="%~dp0../../../../../_out"
+set OUTPATH="%~dp0_out"
 
 git reset --hard HEAD
 
