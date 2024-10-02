@@ -1,7 +1,7 @@
 
-Remove-Item -Recurse $Args[1] + "/Intermediate"
-Remove-Item -Recurse $Args[1] + "/Binaries/Win64/*.pdb"
-Remove-Item -Recurse $Args[1] + "/Source/ReleaseScript"
+Remove-Item -Recurse ($Args[1] + "/Intermediate")
+Remove-Item -Recurse ($Args[1] + "/Binaries/Win64/*.pdb")
+Remove-Item -Recurse ($Args[1] + "/Source/ReleaseScript")
 
 Copy-Item -Path ../../ThirdParty -Destination $Args[1] -Recurse -Container
 
