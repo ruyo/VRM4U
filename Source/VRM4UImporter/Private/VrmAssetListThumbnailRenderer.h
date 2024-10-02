@@ -68,6 +68,11 @@ class UVrmAssetListThumbnailRenderer : public UTextureThumbnailRenderer
 #endif
 	// End of UThumbnailRenderer interface
 
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+	virtual bool CanVisualizeAsset(UObject* Object) override;
+#endif
+
 protected:
 	//void DrawFrame(class UPaperSprite* Sprite, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget*, FCanvas* Canvas, FBoxSphereBounds* OverrideRenderBounds);
 
