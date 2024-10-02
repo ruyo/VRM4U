@@ -985,10 +985,13 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			};
 
 			for (int ikr_no=0; ikr_no<2; ikr_no++){
-				UIKRetargeter* ikr = nullptr;
+
+				FSoftObjectPath r(table_asset[ikr_no]);
+				UObject* u = r.TryLoad();
+				if (u == nullptr) continue;
 
 				FString name = table_name[ikr_no];
-				ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+				UIKRetargeter* ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
 #if WITH_EDITOR
 				ikr->TargetMeshOffset.Set(100, 0, 0);
@@ -1007,10 +1010,6 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_no]);
 
-				FSoftObjectPath r(table_asset[ikr_no]);
-
-				///Script/IKRig.IKRigDefinition'/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin'
-				UObject* u = r.TryLoad();
 				if (u) {
 					auto r2 = Cast<UIKRigDefinition>(u);
 					if (r2) {
