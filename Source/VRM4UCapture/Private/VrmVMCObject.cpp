@@ -24,7 +24,7 @@ void UVrmVMCObject::CreateServer(FString inName, uint16 inPort) {
 	port = inPort;
 #if	UE_VERSION_OLDER_THAN(4,25,0)
 #else
-	OSCServer.Reset(UOSCManager::CreateOSCServer(ServerName, port, false, true, FString(), this));
+	OSCServer.Reset(UOSCManager::CreateOSCServer(ServerName, port, true, true, FString(), this));
 
 	OSCServer->OnOscMessageReceivedNative.RemoveAll(nullptr);
 	OSCServer->OnOscMessageReceivedNative.AddUObject(this, &UVrmVMCObject::OSCReceivedMessageEvent);

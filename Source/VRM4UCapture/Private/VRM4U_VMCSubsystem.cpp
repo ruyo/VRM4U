@@ -62,10 +62,21 @@ void UVRM4U_VMCSubsystem::DestroyVMCServer(const FString ServerAddress, int port
 		if (a == nullptr) continue;
 
 		if (a->ServerName == ServerAddress && a->port == port) {
+			a->DestroyServer();
 			VMCObjectList[i].Reset(nullptr);
 			VMCObjectList.RemoveAt(i);
 			return;
 		}
+	}
+}
+void UVRM4U_VMCSubsystem::DestroyVMCServerAll() {
+	while (VMCObjectList.Num()) {
+		auto a = VMCObjectList[0].Get();
+		if (a) {
+			a->DestroyServer();
+		}
+		VMCObjectList[0].Reset(nullptr);
+		VMCObjectList.RemoveAt(0);
 	}
 }
 
@@ -85,3 +96,17 @@ void UVRM4U_VMCSubsystem::ClearData(const FString ServerAddress, int port) {
 		}
 	}
 }
+
+void UVRM4U_VMCSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
+	Super::Initialize(Collection);
+
+#if WITH_EDITOR
+	FEditorDelegates::BeginStandaloneLocalPlay.AddLambda([&](const uint32 processID) {
+		this->DestroyVMCServerAll();
+	});
+#endif
+
+}
+
+
+
