@@ -625,6 +625,21 @@ bool ULoaderBPFunctionLibrary::LoadVRMFile(const UVrmAssetListObject *InVrmAsset
 	return LoadVRMFileLocal(InVrmAsset, OutVrmAsset, filepath);
 }
 
+void ULoaderBPFunctionLibrary::LoadVRMFromMemoryAsync(const UObject* WorldContextObject, const class UVrmAssetListObject* InVrmAsset, class UVrmAssetListObject*& OutVrmAsset, const TArray<uint8>& Data, const FImportOptionData& OptionForRuntimeLoad, struct FLatentActionInfo LatentInfo) {
+	VRMConverter::Options::Get().SetVrmOption(&OptionForRuntimeLoad);
+
+	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+	{
+		FLatentActionManager& LatentActionManager = World->GetLatentActionManager();
+		if (LatentActionManager.FindExistingAction<FVrmAsyncLoadAction>(LatentInfo.CallbackTarget, LatentInfo.UUID) == NULL)
+		{
+			FVrmAsyncLoadActionParam p = { InVrmAsset, OutVrmAsset, OptionForRuntimeLoad, FString("a.vrm"), Data.GetData(), (size_t)Data.Num()};
+			LatentActionManager.AddNewAction(LatentInfo.CallbackTarget, LatentInfo.UUID, new FVrmAsyncLoadAction(LatentInfo, p));
+		}
+	}
+	return;
+}
+
 void ULoaderBPFunctionLibrary::LoadVRMFileAsync(const UObject* WorldContextObject, const class UVrmAssetListObject* InVrmAsset, class UVrmAssetListObject*& OutVrmAsset, const FString filepath, const FImportOptionData& OptionForRuntimeLoad, struct FLatentActionInfo LatentInfo) {
 	VRMConverter::Options::Get().SetVrmOption(&OptionForRuntimeLoad);
 
