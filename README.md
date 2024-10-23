@@ -100,6 +100,14 @@ VRM4Uの開発を支援したい という奇特な方は[こちら](https://ruy
 ありがとうございます。
 
 ### リリース履歴
+- 2024/10/07
+    - Androidのcookエラーを修正
+    - VMC受信アドレスの初期値をANYに変更
+    - PKG起動時、PostProcessAnimBPのPoseのSearchが効かないのを修正
+    - DropActorに同期読みオプションを追加
+- 2024/10/02
+    - UE5.5preview を追加
+    - UE5マテリアルでSSSとLitが未設定なのを修正
 - 2024/08/23
     - PKGからのランタイムロードでMorphが動かないのを修正
     - SSSProfile時、SSSのOpacityを変更できなかったのを修正

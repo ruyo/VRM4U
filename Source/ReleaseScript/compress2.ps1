@@ -1,18 +1,17 @@
 
-Remove-Item -Recurse ./_out/Intermediate
-Remove-Item -Recurse ./_out/Binaries/Win64/*.pdb
-Remove-Item -Recurse ./_out/Source/ReleaseScript
+Remove-Item -Recurse ($Args[1] + "/Intermediate")
+Remove-Item -Recurse ($Args[1] + "/Binaries/Win64/*.pdb")
+Remove-Item -Recurse ($Args[1] + "/Source/ReleaseScript")
 
-Copy-Item -Path ../../ThirdParty -Destination ./_out -Recurse -Container
+Copy-Item -Path ../../ThirdParty -Destination $Args[1] -Recurse -Container
 
 New-Item -ItemType Directory -Path "Plugins"
 
-Move-Item -Path ./_out -Destination ./Plugins/VRM4U
+Move-Item -Path $Args[1] -Destination ./Plugins/VRM4U
 
 Compress-Archive -Force -Path ./Plugins -DestinationPath $Args[0]
 
 
-Move-Item -Path ./Plugins -Destination ./_out
-
-Remove-Item -Recurse ./_out
+Remove-Item -Recurse ./Plugins
+Remove-Item -Recurse $Args[1]
 

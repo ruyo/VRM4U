@@ -22,18 +22,13 @@ FAnimNode_VrmPoseBlendNode::FAnimNode_VrmPoseBlendNode() {
 void FAnimNode_VrmPoseBlendNode::Initialize_AnyThread(const FAnimationInitializeContext& Context) {
 	bCallInitialized = true;
 
-#if WITH_EDITORONLY_DATA
 	if (EnableAutoSearchMetaData) {
 		auto v = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
 		if (v) {
-#if	UE_VERSION_OLDER_THAN(5,0,0)
 			PoseAsset = v->PoseFace;
-#else
-			SetPoseAsset(v->PoseFace);
-#endif
+			//SetPoseAsset(v->PoseFace);
 		}
 	}
-#endif
 
 	Super::Initialize_AnyThread(Context);
 }

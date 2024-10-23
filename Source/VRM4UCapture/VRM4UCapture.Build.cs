@@ -21,6 +21,12 @@ public class VRM4UCapture : ModuleRules
 				"VRM4U",
             });
 
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
+
+
 		PrivateIncludePathModuleNames.AddRange(
 			new string[] {
             });

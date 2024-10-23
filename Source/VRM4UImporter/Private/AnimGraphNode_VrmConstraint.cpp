@@ -52,7 +52,11 @@ void UAnimGraphNode_VrmConstraint::ValidateAnimNodeDuringCompilation(USkeleton* 
 
 FText UAnimGraphNode_VrmConstraint::GetControllerDescription() const
 {
-	return LOCTEXT("VrmConstraint", "VrmConstraint");
+	if (Node.EnableAutoSearchMetaData) {
+		return LOCTEXT("VrmConstraint", "VrmConstraint(auto)");
+	} else {
+		return LOCTEXT("VrmConstraint", "VrmConstraint");
+	}
 }
 
 FText UAnimGraphNode_VrmConstraint::GetTooltipText() const

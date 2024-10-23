@@ -15,7 +15,7 @@
 
 FMocopiReceiverProxy::FMocopiReceiverProxy(UVrmMocopiReceiver * InReceiver):
 	Receiver(InReceiver){
-	FIPv4Address::Parse("127.0.0.1", ReceiveIPAddress);
+	FIPv4Address::Parse("0.0.0.0", ReceiveIPAddress);
 }
 
 FMocopiReceiverProxy::~FMocopiReceiverProxy() {

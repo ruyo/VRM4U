@@ -183,8 +183,8 @@ namespace VRMSpringBone {
 							EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
 							TArray<FHitResult> OutHits;
 							bool bIgnoreSelf = true;
-							FLinearColor TraceColor;
-							FLinearColor TraceHitColor;
+							FLinearColor TraceColor(EForceInit::ForceInit);
+							FLinearColor TraceHitColor(EForceInit::ForceInit);
 							float DrawTime = 0.f;
 
 							bool b = UKismetSystemLibrary::SphereTraceMulti(WorldContext, Start, End, hitRadius * 100.f,

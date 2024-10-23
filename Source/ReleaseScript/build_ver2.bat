@@ -6,7 +6,7 @@ set ZIPNAME=../../../../_zip/%4
 
 set UE5BASE=D:\Program Files\Epic Games
 set UPLUGIN="%~dp0../../VRM4U.uplugin"
-set OUTPATH="%~dp0_out"
+set OUTPATH=d:/tmp/_out
 
 git reset --hard HEAD
 
@@ -54,7 +54,7 @@ if not %errorlevel% == 0 (
 )
 
 
-powershell -ExecutionPolicy RemoteSigned .\compress2.ps1 %ZIPNAME%
+powershell -ExecutionPolicy RemoteSigned .\compress2.ps1 %ZIPNAME% %OUTPATH%
 
 
 

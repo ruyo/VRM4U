@@ -97,7 +97,7 @@ TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetD
 			.Text(txt)
 			.HighlightText(txt)
 			.HighlightColor(FColor(64,64,64))
-			.ShadowOffset(FVector2D(1.0f, 1.0f))
+			//.ShadowOffset(FVector2D(1.0f, 1.0f))
 		];
 
 	//return FAssetTypeActions_Base::GetThumbnailOverlay(AssetData);
@@ -157,6 +157,9 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 					tex = a->Vrm1LicenseObject->thumbnail;
 				}
 			}
+			if (a->SkeletalMesh) {
+				sk = a->SkeletalMesh;
+			}
 		}
 	}
 	if (tex == nullptr) {
@@ -164,10 +167,10 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 		{
 			UVrmMetaObject* a = Cast<UVrmMetaObject>(Object);
 			if (a) {
-				UPackage *pk = a->GetOutermost();
-				GetObjectsWithOuter(pk, ret);
 				sk = a->SkeletalMesh;
-				//no tex
+				if (a->VrmAssetListObject) {
+					tex = a->VrmAssetListObject->SmallThumbnailTexture;
+				}
 			}
 		}
 		{
@@ -231,4 +234,25 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 #endif
 
 }
+
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+bool UVrmAssetListThumbnailRenderer::CanVisualizeAsset(UObject* Object)
+{
+
+	if (UVrmLicenseObject* a = Cast<UVrmLicenseObject>(Object)) {
+		if (a->thumbnail == nullptr) {
+			return false;
+		}
+	}
+	if (UVrm1LicenseObject* a = Cast<UVrm1LicenseObject>(Object)) {
+		if (a->thumbnail == nullptr) {
+			return false;
+		}
+	}
+
+	return true;
+	//return UTextureThumbnailRenderer::CanVisualizeAsset(Object);
+}
+#endif
 
