@@ -917,7 +917,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				bool bTranslucent = false;
 				bool bOpaque = false;
 
-				if (ShaderName.Find(TEXT("MToon")) >= 0) {
+				{
 					aiString alphaMode;
 					aiReturn result = aiMat.Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode);
 					FString alpha = alphaMode.C_Str();
@@ -936,7 +936,14 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 							}
 						}
 					}
+					bool b = false;
+					aiReturn ret = aiMat.Get(AI_MATKEY_TWOSIDED, b);
+					if (ret == AI_SUCCESS) {
+						if (b) bTwoSided = true;
+					}
+				}
 
+				if (ShaderName.Find(TEXT("MToon")) >= 0) {
 					const VRM::VRMMetadata *meta = static_cast<const VRM::VRMMetadata*>(aiData->mVRMMeta);
 					if (meta) {
 						if ((int)iMat < meta->materialNum) {
