@@ -893,12 +893,14 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					{TEXT("RightToe"),	TEXT("rightToes"),		TEXT("rightToes"),		0x02},
 					{TEXT("LeftToe"),	TEXT("leftToes"),		TEXT("leftToes"),		0x02},
 
+					{TEXT("LeftThumb"),		TEXT("leftThumbMetacarpal"),	TEXT("leftThumbDistal"),},	// vrm1 thumb
 					{TEXT("LeftThumb"),		TEXT("leftThumbProximal"),		TEXT("leftThumbDistal"),},
 					{TEXT("LeftIndex"),		TEXT("leftIndexProximal"),		TEXT("leftIndexDistal"),},
 					{TEXT("LeftMiddle"),	TEXT("leftMiddleProximal"),	TEXT("leftMiddleDistal"),},
 					{TEXT("LeftRing"),		TEXT("leftRingProximal"),		TEXT("leftRingDistal"),},
 					{TEXT("LeftPinky"),		TEXT("leftLittleProximal"),	TEXT("leftLittleDistal"),},
 
+					{TEXT("RightThumb"),	TEXT("rightThumbMetacarpal"),	TEXT("rightThumbDistal"),},	// vrm1 thumb
 					{TEXT("RightThumb"),	TEXT("rightThumbProximal"),	TEXT("rightThumbDistal"),},
 					{TEXT("RightIndex"),	TEXT("rightIndexProximal"),	TEXT("rightIndexDistal"),},
 					{TEXT("RightMiddle"),	TEXT("rightMiddleProximal"),	TEXT("rightMiddleDistal"),},
@@ -919,6 +921,18 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					if ((t.mask & (1 << ik_no)) == 0) {
 						continue;
 					}
+					if (t.chain == TEXT("LeftThumb") || (t.chain == TEXT("RightThumb"))) {
+						bool b0 = (t.s1 == TEXT("leftThumbProximal"))  || (t.s1 == TEXT("rightThumbProximal"));
+						bool b1 = (t.s1 == TEXT("leftThumbMetacarpal")) || (t.s1 == TEXT("rightThumbMetacarpal"));
+
+						if (Options::Get().IsVRM10Model() && b0) {
+							continue;
+						}
+						if (Options::Get().IsVRM0Model() && b1) {
+							continue;
+						}
+					}
+
 					TT conv;
 					for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 						if (modelName.Key == "" || modelName.Value == "") {
