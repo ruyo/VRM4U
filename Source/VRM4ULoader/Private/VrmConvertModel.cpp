@@ -11,6 +11,7 @@
 #include "VrmSkeleton.h"
 #include "LoaderBPFunctionLibrary.h"
 #include "VRM4ULoaderLog.h"
+#include "VrmAssetuserData.h"
 
 #include "Engine/SkeletalMesh.h"
 #include "RenderingThread.h"
@@ -25,7 +26,6 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Internationalization/Internationalization.h"
-
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
@@ -739,6 +739,11 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		if (bExistAsset == false) {
 			sk = VRM4U_NewObject<USkeletalMesh>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		}
+	}
+	if (sk) {
+		UVrmAssetUserData*d  = NewObject<UVrmAssetUserData>(sk, NAME_None, RF_Public | RF_Transactional);
+		d->VrmAssetListObject = vrmAssetList;
+		sk->AddAssetUserData(d);
 	}
 
 	{
