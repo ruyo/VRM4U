@@ -15,7 +15,7 @@
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
 #include "VrmAssetUserData.h"
-#else
+#endif
 
 #include "Engine/SkeletalMesh.h"
 #include "RenderingThread.h"
