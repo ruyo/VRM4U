@@ -51,10 +51,14 @@ if %UEMajorVersion% == 4 (
 )
 
 if %isUE4% == FALSE (
-del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAssetUserData.h"
-del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAssetUserData.cpp"
 del "..\..\..\VRM4U\Content\Util\Actor\latest\WBP_MorphTarget.uasset"
 )
+
+if %isUE4% == TRUE (
+del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAssetUserData.h"
+del "..\..\..\VRM4U\Source\VRM4U\Private\VrmAssetUserData.cpp"
+)
+
 
 set isRetargeterEnable=TRUE
 if %UEMajorVersion% == 4 (
