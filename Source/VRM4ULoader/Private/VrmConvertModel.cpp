@@ -11,7 +11,11 @@
 #include "VrmSkeleton.h"
 #include "LoaderBPFunctionLibrary.h"
 #include "VRM4ULoaderLog.h"
-#include "VrmAssetuserData.h"
+
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
+#include "VrmAssetUserData.h"
+#else
 
 #include "Engine/SkeletalMesh.h"
 #include "RenderingThread.h"
@@ -740,11 +744,14 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 			sk = VRM4U_NewObject<USkeletalMesh>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		}
 	}
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
 	if (sk) {
 		UVrmAssetUserData*d  = NewObject<UVrmAssetUserData>(sk, NAME_None, RF_Public | RF_Transactional);
 		d->VrmAssetListObject = vrmAssetList;
 		sk->AddAssetUserData(d);
 	}
+#endif
 
 	{
 #if WITH_EDITOR
