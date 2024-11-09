@@ -57,7 +57,7 @@
 #include "Kismet/KismetRenderingLibrary.h"
 #endif
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
 #if WITH_EDITOR
 #define VRM4U_USE_MRQ 1
