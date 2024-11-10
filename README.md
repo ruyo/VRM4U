@@ -100,6 +100,12 @@ VRM4Uの開発を支援したい という奇特な方は[こちら](https://ruy
 ありがとうございます。
 
 ### リリース履歴
+- 2024/11/10
+    - VrmAssetListがCook対象になるよう、Skeletalmeshからの参照を追加
+    - Skeleton指定でインポートした際にクラッシュするのを修正
+    - ランタイムロード時に複数のモデルのアセットが混ざってしまうことがるのを修正
+    - VRM1: 反映されないマテリアルパラメータがあるのを修正（TwoSided, Matcap, Translucent）
+    - VRM1: Retargeterに親指が一部欠けているのを修正
 - 2024/10/07
     - Androidのcookエラーを修正
     - VMC受信アドレスの初期値をANYに変更
