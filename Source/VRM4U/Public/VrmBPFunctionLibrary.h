@@ -12,7 +12,7 @@
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #else
-#include "AssetRegistry/Assetdata.h"
+#include "AssetRegistry/AssetData.h"
 #endif
 
 #if	UE_VERSION_OLDER_THAN(4,20,0)
