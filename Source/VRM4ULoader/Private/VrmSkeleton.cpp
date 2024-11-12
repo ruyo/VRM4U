@@ -96,7 +96,8 @@ static FMatrix convertAiMatToFMatrix(aiMatrix4x4 t, bool bOffsetMode = false) {
 		{
 			FTransform f;
 			if (bOffsetMode) {
-				f.SetRotation(FRotator(0, 0, 180).Quaternion());
+				//f.SetRotation(FRotator(0, 0, 180).Quaternion());
+				f.SetRotation(FRotator(0, 0, 90).Quaternion());
 			} else {
 				f.SetRotation(FRotator(0, 0, 90).Quaternion());
 			}
