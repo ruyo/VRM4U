@@ -12,6 +12,11 @@
 #include "LoaderBPFunctionLibrary.h"
 #include "VRM4ULoaderLog.h"
 
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
+#include "VrmAssetUserData.h"
+#endif
+
 #include "Engine/SkeletalMesh.h"
 #include "RenderingThread.h"
 #include "Rendering/SkeletalMeshModel.h"
@@ -25,7 +30,6 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 #include "Internationalization/Internationalization.h"
-
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
@@ -740,6 +744,14 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 			sk = VRM4U_NewObject<USkeletalMesh>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		}
 	}
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
+	if (sk) {
+		UVrmAssetUserData*d  = NewObject<UVrmAssetUserData>(sk, NAME_None, RF_Public | RF_Transactional);
+		d->VrmAssetListObject = vrmAssetList;
+		sk->AddAssetUserData(d);
+	}
+#endif
 
 	{
 #if WITH_EDITOR
@@ -988,7 +1000,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		}
 
 
-		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false) {
+		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false
+			&& VRMConverter::Options::Get().IsDebugOneBone() == false) {
 			if (vrmAssetList->Pose_bind.Num() == 0 || vrmAssetList->Pose_tpose.Num() == 0) {
 				UE_LOG(LogVRM4ULoader, Warning, TEXT("BindPose -> TPose :: no bindpose array!"));
 			}

@@ -621,12 +621,14 @@ bool ULoaderBPFunctionLibrary::VRMSetLoadMaterialType(EVRMImportMaterialType typ
 
 bool ULoaderBPFunctionLibrary::LoadVRMFile(const UVrmAssetListObject *InVrmAsset, UVrmAssetListObject *&OutVrmAsset, const FString filepath, const FImportOptionData &OptionForRuntimeLoad) {
 	VRMConverter::Options::Get().SetVrmOption(&OptionForRuntimeLoad);
+	OutVrmAsset = nullptr;
 
 	return LoadVRMFileLocal(InVrmAsset, OutVrmAsset, filepath);
 }
 
 void ULoaderBPFunctionLibrary::LoadVRMFileAsync(const UObject* WorldContextObject, const class UVrmAssetListObject* InVrmAsset, class UVrmAssetListObject*& OutVrmAsset, const FString filepath, const FImportOptionData& OptionForRuntimeLoad, struct FLatentActionInfo LatentInfo) {
 	VRMConverter::Options::Get().SetVrmOption(&OptionForRuntimeLoad);
+	OutVrmAsset = nullptr;
 
 	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{
@@ -642,7 +644,6 @@ void ULoaderBPFunctionLibrary::LoadVRMFileAsync(const UObject* WorldContextObjec
 
 
 bool ULoaderBPFunctionLibrary::LoadVRMFileLocal(const UVrmAssetListObject* InVrmAsset, UVrmAssetListObject*& OutVrmAsset, const FString filepath) {
-
 	TArray<uint8> Res;
 	if (FFileHelper::LoadFileToArray(Res, *filepath)) {
 	}
@@ -679,6 +680,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemoryDefaultOption(UVrmAssetListO
 bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *InVrmAsset, UVrmAssetListObject *&OutVrmAsset, const FString filepath, const uint8 *pFileDataData, size_t dataSize) {
 	TRACE_CPUPROFILER_EVENT_SCOPE(TEXT("LoadVRMFileFromMemory"))
 
+	OutVrmAsset = nullptr;
 	RenderControl _dummy_control;
 
 	if (InVrmAsset == nullptr) {

@@ -788,6 +788,17 @@ bool VRMConverter::GetMatParam(VRM::VRMMaterial &m, int matNo) const {
 
 	m.name = mat["name"].GetString();
 
+	// texture
+	{
+		if (mat["extensions"]["VRMC_materials_mtoon"]["matcapTexture"]["index"].IsInt()) {
+			m.textureProperties._SphereAdd = mat["extensions"]["VRMC_materials_mtoon"]["matcapTexture"]["index"].GetInt();
+		}
+		if (mat["extensions"]["VRMC_materials_mtoon"]["rimMultiplyTexture"]["index"].IsInt()) {
+			m.textureProperties._RimTexture = mat["extensions"]["VRMC_materials_mtoon"]["rimMultiplyTexture"]["index"].GetInt();
+		}
+
+	}
+
 	// float
 	{
 		//m.floatProperties._Cutoff;

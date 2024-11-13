@@ -21,6 +21,7 @@ if ($a.EngineAssociation -eq '4.27' -or $a.EngineAssociation -eq '4.26' -or $a.E
     $b
 
     $PluginArrayList = [System.Collections.ArrayList]$b.Plugins
+    $PluginArrayList.RemoveAt(3)
     $PluginArrayList.RemoveAt(2)
     $PluginArrayList.RemoveAt(1)
     $b.Plugins = $PluginArrayList

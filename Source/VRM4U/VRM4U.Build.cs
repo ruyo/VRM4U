@@ -72,6 +72,15 @@ public class VRM4U : ModuleRules
 			PublicDependencyModuleNames.Add("LevelSequence");
 			PublicDependencyModuleNames.Add("LevelSequenceEditor");
 			PublicDependencyModuleNames.Add("Sequencer");
+
+			BuildVersion Version2;
+			if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version2))
+			{
+				if (Version2.MajorVersion == 5)
+				{
+					PublicDependencyModuleNames.Add("MovieRenderPipelineEditor");
+				}
+			}
 		}
 
 		DynamicallyLoadedModuleNames.AddRange(
