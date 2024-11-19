@@ -613,7 +613,7 @@ namespace VRM1Spring {
 		{
 			for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 				for (auto& j : s.joints) {
-					springBoneNoList.Add(j.boneNo);
+					springBoneNoList.AddUnique(j.boneNo);
 				}
 			}
 		}
@@ -664,7 +664,10 @@ namespace VRM1Spring {
 
 					// 親
 					//parentTransform = currentTransform;
-					parentTransform = *calcTransform.Find(parentBoneIndex);
+					auto* p = calcTransform.Find(parentBoneIndex);
+					if (p) {
+						parentTransform = *p;
+					}
 
 					auto c = RefSkeletonTransform[j1.boneNo];
 					auto t = c * parentTransform;
@@ -822,7 +825,7 @@ namespace VRM1Spring {
 		{
 			for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 				for (auto& j : s.joints) {
-					springBoneNoList.Add(j.boneNo);
+					springBoneNoList.AddUnique(j.boneNo);
 				}
 			}
 		}
@@ -861,7 +864,10 @@ namespace VRM1Spring {
 				else {
 					// 親は揺れ骨。計算結果から参照する
 
-					NewBoneTM = *calcTransform.Find(parentBoneIndex);
+					auto* p = calcTransform.Find(parentBoneIndex);
+					if (p) {
+						NewBoneTM = *p;
+					}
 
 					auto c = RefSkeletonTransform[j.boneNo];
 					NewBoneTM = c * NewBoneTM;
