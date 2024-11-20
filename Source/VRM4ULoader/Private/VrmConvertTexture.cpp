@@ -728,6 +728,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->SRGB = 0;
 #if WITH_EDITOR
+					NewTexture2D->CompressionNoAlpha = true;
 					NewTexture2D->bFlipGreenChannel = true;
 #endif
 				}
