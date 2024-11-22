@@ -60,6 +60,10 @@ public class VRM4U : ModuleRules
 				"AssetRegistry",
 				"CinematicCamera",
 				"InputCore",
+				"ControlRig",
+				"ControlRigDeveloper",
+				"RigVM",
+				"AnimationCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
