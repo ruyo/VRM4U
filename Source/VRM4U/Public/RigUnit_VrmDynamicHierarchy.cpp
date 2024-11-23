@@ -25,10 +25,6 @@ FRigUnit_VRMAddCurveFromMesh_Execute()
 	URigHierarchyController* Controller = ExecuteContext.Hierarchy->GetController(true);
 	if (Controller == nullptr) return;
 
-
-	FRigControlSettings ControlSettings_root;
-	ControlSettings_root.ControlType = ERigControlType::Float
-
 	FRigControlSettings ControlSettings;
 
 	ControlSettings.ControlType = ERigControlType::Float;
