@@ -61,7 +61,6 @@ public class VRM4U : ModuleRules
 				"CinematicCamera",
 				"InputCore",
 				"ControlRig",
-				"ControlRigDeveloper",
 				"RigVM",
 				"AnimationCore",
 				// ... add private dependencies that you statically link with here ...	
@@ -76,6 +75,7 @@ public class VRM4U : ModuleRules
 			PublicDependencyModuleNames.Add("LevelSequence");
 			PublicDependencyModuleNames.Add("LevelSequenceEditor");
 			PublicDependencyModuleNames.Add("Sequencer");
+			PublicDependencyModuleNames.Add("ControlRigDeveloper");
 
 			BuildVersion Version2;
 			if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version2))
