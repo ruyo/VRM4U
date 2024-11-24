@@ -74,7 +74,6 @@ public class VRM4U : ModuleRules
 			PublicDependencyModuleNames.Add("LevelSequence");
 			PublicDependencyModuleNames.Add("LevelSequenceEditor");
 			PublicDependencyModuleNames.Add("Sequencer");
-			PublicDependencyModuleNames.Add("ControlRigDeveloper");
 
 			BuildVersion Version2;
 			if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version2))
@@ -82,6 +81,7 @@ public class VRM4U : ModuleRules
 				if (Version2.MajorVersion == 5)
 				{
 					PublicDependencyModuleNames.Add("MovieRenderPipelineEditor");
+					PublicDependencyModuleNames.Add("ControlRigDeveloper");
 				}
 			}
 		}

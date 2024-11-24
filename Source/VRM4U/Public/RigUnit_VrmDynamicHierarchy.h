@@ -18,7 +18,6 @@ struct FRigUnit_VRMAddCurveFromMesh : public FRigUnitMutable
 
 	FRigUnit_VRMAddCurveFromMesh()
 	{
-		//Prefix = TEXT("c_");
 	}
 
 	RIGVM_METHOD()
@@ -42,4 +41,47 @@ struct FRigUnit_VRMAddCurveFromMesh : public FRigUnitMutable
 	UPROPERTY(meta = (Output))
 	TArray<FRigElementKey> Items_Curve;
 };
+
+
+/**
+ * generate contorl to bone table
+ */
+USTRUCT(meta = (DisplayName = "VRM4U GenerateTable", Keywords = "Table", Varying))
+struct FRigUnit_VRMGenerateBoneToControlTable: public FRigUnitMutable
+{
+	GENERATED_BODY()
+
+	FRigUnit_VRMGenerateBoneToControlTable()
+	{
+	}
+
+	RIGVM_METHOD()
+	virtual void Execute() override;
+
+	//UPROPERTY(meta = (Output))
+	//TArray<FRigElementKey> Items_MannequinBone;
+
+	UPROPERTY(meta = (Output))
+	TArray<FRigElementKey> Items_MannequinControl;
+
+	UPROPERTY(meta = (Output))
+	TArray<FRigElementKey> Items_VRMBone;
+};
+
+/**
+ * init controller transform
+ */
+USTRUCT(meta = (DisplayName = "VRM4U InitController Transform", Keywords = "Table", Varying))
+struct FRigUnit_VRMInitControllerTransform: public FRigUnitMutable
+{
+	GENERATED_BODY()
+
+	FRigUnit_VRMInitControllerTransform()
+	{
+	}
+
+	RIGVM_METHOD()
+	virtual void Execute() override;
+};
+
 

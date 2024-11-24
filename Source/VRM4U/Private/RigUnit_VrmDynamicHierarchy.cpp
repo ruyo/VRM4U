@@ -7,9 +7,161 @@
 #include "Units/RigUnitContext.h"
 #include "ControlRig.h"
 #include "Components/SkeletalMeshComponent.h"
+
+#include "VrmUtil.h"
+#include "VrmAssetListObject.h"
+#include "VrmMetaObject.h"
+
 //#include "Units/Execution/RigUnit_PrepareForExecution.h"
 
 //#include UE_INLINE_GENERATED_CPP_BY_NAME(RigUnit_DynamicHierarchy)
+
+FRigUnit_VRMInitControllerTransform_Execute() {
+
+	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
+	if (skc == nullptr) return;
+
+	auto* sk = skc->GetSkinnedAsset();
+	if (sk == nullptr) return;
+
+	auto* k = sk->GetSkeleton();
+	if (k == nullptr) return;
+
+
+	URigHierarchyController* Controller = ExecuteContext.Hierarchy->GetController(true);
+	if (Controller == nullptr) return;
+
+	UVrmAssetListObject* assetList = VRMUtil::GetAssetListObject(sk);
+
+	if (assetList == nullptr) return;
+	//Controller->
+
+	TArray<FRigControlElement*> controlList = ExecuteContext.Hierarchy->GetControls();
+	TArray<FRigNullElement*> nullList = ExecuteContext.Hierarchy->GetNulls();
+	//contollerList[0]->GetNameString();
+
+	//ExecuteContext.Hierarchy->SetInitialGlobalTransform
+	//Controller
+
+
+	TMap<FRigElementKey, FTransform> elemInitTransformList;
+	for (auto& table : VRMUtil::table_ue4_vrm) {
+
+		auto* elem = nullList.FindByPredicate(
+			[&table](FRigNullElement* e) {
+				if (e->GetNameString().Compare(table.BoneUE4 + "_s") == 0) {
+					return true;
+				}
+				return false;
+			});
+
+		if (elem == nullptr) continue;
+
+		FRigElementKey bone;
+		{
+			const auto& assetBoneTable = assetList->VrmMetaObject->humanoidBoneTable;
+
+			auto* str = assetBoneTable.Find(table.BoneVRM);
+			if (str == nullptr) continue;
+
+			bone.Type = ERigElementType::Bone;
+			bone.Name = *(*str);
+		}
+
+
+		FRigElementKey a;
+		a.Name = *(table.BoneUE4 + "_s");
+		a.Type = ERigElementType::Null;
+
+
+		auto index = k->GetReferenceSkeleton().FindBoneIndex(bone.Name);
+		auto refPose = k->GetReferenceSkeleton().GetRefBonePose();
+
+		elemInitTransformList.Add(a, refPose[index]);
+	}
+
+	for (auto& c : controlList) {
+		//ExecuteContext.Hierarchy->SetInitialLocalTransform(c->GetKey(), FTransform::Identity);
+		//ExecuteContext.Hierarchy->SetLocalTransform(c->GetKey(), FTransform::Identity);
+	}
+	for (auto& c : nullList) {
+		auto *f = elemInitTransformList.Find(c->GetKey());
+		if (f) {
+			ExecuteContext.Hierarchy->SetInitialGlobalTransform(c->GetKey(), *f);
+			ExecuteContext.Hierarchy->SetLocalTransform(c->GetKey(), *f);
+		} else {
+			ExecuteContext.Hierarchy->SetInitialLocalTransform(c->GetKey(), FTransform::Identity);
+			ExecuteContext.Hierarchy->SetLocalTransform(c->GetKey(), FTransform::Identity);
+		}
+	}
+
+}
+
+
+FRigUnit_VRMGenerateBoneToControlTable_Execute()
+{
+	//Items_MannequinBone.Empty();
+	Items_MannequinControl.Empty();
+	Items_VRMBone.Empty();
+
+	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
+	if (skc == nullptr) return;
+
+	auto* sk = skc->GetSkinnedAsset();
+	if (sk == nullptr) return;
+
+	auto* k = sk->GetSkeleton();
+	if (k == nullptr) return;
+
+
+	URigHierarchyController* Controller = ExecuteContext.Hierarchy->GetController(true);
+	if (Controller == nullptr) return;
+
+	UVrmAssetListObject *assetList = VRMUtil::GetAssetListObject(sk);
+
+	if (assetList == nullptr) return;
+	//Controller->
+
+	TArray<FRigControlElement*> controllerList = ExecuteContext.Hierarchy->GetControls();
+	//contollerList[0]->GetNameString();
+
+	//ExecuteContext.Hierarchy->SetInitialGlobalTransform
+	//Controller
+
+
+	for (auto& table : VRMUtil::table_ue4_vrm) {
+
+		auto *elem = controllerList.FindByPredicate(
+			[&table](FRigControlElement *e) {
+				if (e->GetNameString().Compare(table.BoneUE4 + "_c") == 0) {
+					return true;
+				}
+				return false;
+			});
+
+		if (elem == nullptr) continue;
+
+		FRigElementKey bone;
+		{
+			const auto& assetBoneTable = assetList->VrmMetaObject->humanoidBoneTable;
+
+			auto* str = assetBoneTable.Find(table.BoneVRM);
+			if (str == nullptr) continue;
+
+			bone.Type = ERigElementType::Bone;
+			bone.Name = *(*str);
+		}
+
+
+		FRigElementKey a;
+		a.Name = *(table.BoneUE4 + "_c");
+		a.Type = ERigElementType::Control;
+
+
+		Items_MannequinControl.Add(a);
+		Items_VRMBone.Add(bone);
+	}
+}
 
 
 FRigUnit_VRMAddCurveFromMesh_Execute()
