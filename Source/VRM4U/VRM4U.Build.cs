@@ -61,7 +61,6 @@ public class VRM4U : ModuleRules
 				"CinematicCamera",
 				"InputCore",
 				"ControlRig",
-				"RigVM",
 				"AnimationCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
@@ -99,6 +98,7 @@ public class VRM4U : ModuleRules
 			//if (Version.MajorVersion == X && Version.MinorVersion == Y)
 			if (Version.MajorVersion == 5)
 			{
+				PrivateDependencyModuleNames.Add("RigVM");
 				PrivateDependencyModuleNames.Add("IKRig");
 				if (Target.bBuildEditor)
 				{
