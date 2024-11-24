@@ -39,6 +39,9 @@ del "..\..\..\VRM4U\Source\VRM4URender\Private\VRM4U_RenderSubsystem.cpp"
 del "..\..\..\VRM4U\Source\VRM4URender\Public\VRM4U_RenderSubsystem.h"
 )
 
+:: del for version <= 5.1
+del "..\..\..\VRM4U\Source\VRM4U\Private\RigUnit_VrmDynamicHierarchy.cpp"
+del "..\..\..\VRM4U\Source\VRM4U\Public\RigUnit_VrmDynamicHierarchy.h"
 
 set /a UEVersion=%UE4VER%
 for /f %%i in ('wsl echo "%UEVersion% * 100"') do set UEVersion100=%%i
