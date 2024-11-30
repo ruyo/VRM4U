@@ -441,6 +441,19 @@ public:
 		return c->GetRetargetPoses(SourceOrTarget);
 #endif
 	};
+	void SetRotationOffsetForRetargetPoseBone(
+		const FName& BoneName,
+		const FQuat& RotationOffset,
+		const ERetargetSourceOrTarget SourceOrTarget) const {
+#if	!WITH_EDITOR || UE_VERSION_OLDER_THAN(5,4,0)
+		return;
+#else
+		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
+		return c->SetRotationOffsetForRetargetPoseBone(BoneName, RotationOffset, SourceOrTarget);
+#endif
+
+	}
+
 
 	void SetChainSetting() {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
@@ -1142,8 +1155,14 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
+					// 自動で姿勢を作る。
+					// ただし足首はそのまま。自動設定がうまく動作しないため。
 					c.AutoAlignAllBones(SourceOrTargetMannequin);
-					c.AutoAlignAllBones(SourceOrTargetVRM);
+					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
+					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
+
+					// VRM側は変更しない
+					//c.AutoAlignAllBones(SourceOrTargetVRM);
 #endif
 				}
 				c.SetChainSetting();

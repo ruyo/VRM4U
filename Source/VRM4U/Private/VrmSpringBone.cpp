@@ -542,17 +542,20 @@ namespace VRM1Spring {
 
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
-			for (int jointNo = 0; jointNo < s.joints.Num()-1; jointNo++) {
+			for (int jointNo = 0; jointNo < s.joints.Num(); jointNo++) {
 
 				auto &j1 = s.joints[jointNo];
-				auto& j2 = s.joints[jointNo + 1];
+
+				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
+				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
+				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
+					continue;
+				}
+				FTransform parentTransform = Output.Pose.GetComponentSpaceTransform(uu);
 
 				auto& state = JointStateMap.FindOrAdd(j1.boneNo);
 
 				if (RefSkeletonTransform.IsValidIndex(j1.boneNo) == false) {
-					continue;
-				}
-				if (RefSkeletonTransform.IsValidIndex(j2.boneNo) == false) {
 					continue;
 				}
 
@@ -560,23 +563,19 @@ namespace VRM1Spring {
 				state.initialLocalRotation = RefSkeletonTransform[j1.boneNo].GetRotation();
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
-				state.boneLength = RefSkeletonTransform[j2.boneNo].GetLocation().Size();
+				state.boneLength = RefSkeletonTransform[parentBoneIndex].GetLocation().Size();
 #else
-				state.boneLength = RefSkeletonTransform[j2.boneNo].GetLocation().Length();
+				state.boneLength = RefSkeletonTransform[j1.boneNo].GetLocation().Length();
 #endif
-				state.boneAxis = RefSkeletonTransform[j2.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
+				state.boneAxis = RefSkeletonTransform[j1.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
 
 				{
-					FCompactPoseBoneIndex u(j2.boneNo);
+					FCompactPoseBoneIndex u = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j1.boneNo);
 					auto t = Output.Pose.GetComponentSpaceTransform(u);
 
 					state.prevTail = 
 						state.currentTail =
 						state.initialTail = ComponentToLocal.InverseTransformPosition(t.GetLocation());
-				}
-				{
-					FCompactPoseBoneIndex u(j1.boneNo);
-					auto t = Output.Pose.GetComponentSpaceTransform(u);
 
 					state.resultQuat = t.GetRotation();
 				}
@@ -604,17 +603,28 @@ namespace VRM1Spring {
 		//c = Output.AnimInstanceProxy->GetComponentTransform();
 		//c = Output.AnimInstanceProxy->GetActorTransform();
 
-		FTransform ComponentToLocal = ComponentTransform.Inverse();
+		const FTransform ComponentToLocal = ComponentTransform.Inverse();
 
+		// 計算した揺れ骨、または揺れ骨の親
+		TMap<int, FTransform> calcTransform;
+
+		// 揺れ骨一覧
+		TArray<int> springBoneNoList;
+		{
+			for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
+				for (auto& j : s.joints) {
+					springBoneNoList.AddUnique(j.boneNo);
+				}
+			}
+		}
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 			
-			FTransform parentTransform = FTransform::Identity;
-			FTransform currentTransform = FTransform::Identity;
-			for (int jointNo = 0; jointNo < s.joints.Num()-1; ++jointNo) {
-				//if (jointNo == 1) break;
+			for (int jointNo = 0; jointNo < s.joints.Num(); ++jointNo) {
+				FTransform parentTransform = FTransform::Identity;
+				FTransform currentTransform = FTransform::Identity;
+
 				auto& j1 = s.joints[jointNo];
-				auto& j2 = s.joints[jointNo+1];
 
 				auto* state = JointStateMap.Find(j1.boneNo);
 				if (state == nullptr) {
@@ -622,21 +632,16 @@ namespace VRM1Spring {
 					continue;
 				}
 
-				//int myParentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
-
 				if (RefSkeletonTransform.IsValidIndex(j1.boneNo) == false) {
 					continue;
 				}
-				if (RefSkeletonTransform.IsValidIndex(j2.boneNo) == false) {
-					continue;
-				}
 
-				if (jointNo == 0) {
-					// 揺れ骨の根本
+				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
+				if (springBoneNoList.Find(parentBoneIndex) < 0) {
+					// 親が揺れ骨ではない。通常骨から参照
 
+					// 親
 					{
-						// 親
-						int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
 						FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
 						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 							continue;
@@ -654,17 +659,23 @@ namespace VRM1Spring {
 						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
 						currentTransform = NewBoneTM;
 					}
-				}
-				else {
+				} else {
+					// 親が揺れ骨。揺れ骨計算結果から参照
+
 					// 親
-					parentTransform = currentTransform;
+					//parentTransform = currentTransform;
+					auto* p = calcTransform.Find(parentBoneIndex);
+					if (p) {
+						parentTransform = *p;
+					}
 
 					auto c = RefSkeletonTransform[j1.boneNo];
-					auto t = c * currentTransform;
+					auto t = c * parentTransform;
 
 					// 自分
 					currentTransform = t;
 				}
+
 				FQuat m_localRotation = state->initialLocalMatrix.GetRotation();
 
 				const FVector currentTail = ComponentToLocal.TransformPosition(state->currentTail);
@@ -795,6 +806,8 @@ namespace VRM1Spring {
 
 				currentTransform.SetRotation(state->resultQuat);
 
+				// 揺れ骨計算結果を保持。これの子の揺れ骨のため。
+				calcTransform.Add(j1.boneNo, currentTransform);
 			}
 		}
 	}
@@ -803,6 +816,19 @@ namespace VRM1Spring {
 
 		const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
 		const auto& RefSkeletonTransform = Output.Pose.GetPose().GetBoneContainer().GetRefPoseArray();
+
+		// 計算した揺れ骨、または揺れ骨の親
+		TMap<int, FTransform> calcTransform;
+
+		// 揺れ骨一覧
+		TArray<int> springBoneNoList;
+		{
+			for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
+				for (auto& j : s.joints) {
+					springBoneNoList.AddUnique(j.boneNo);
+				}
+			}
+		}
 
 		for (auto& s : vrmMetaObject->VRM1SpringBoneMeta.Springs) {
 
@@ -814,7 +840,8 @@ namespace VRM1Spring {
 				auto* state = JointStateMap.Find(j.boneNo);
 				if (state == nullptr) continue;
 
-				FCompactPoseBoneIndex uu(j.boneNo);
+				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
+				//FCompactPoseBoneIndex uu(j.boneNo);
 
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 					continue;
@@ -822,7 +849,10 @@ namespace VRM1Spring {
 
 				FTransform NewBoneTM;
 
-				if (jointNo == 0) {
+				int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
+				if (springBoneNoList.Find(parentBoneIndex) < 0) {
+					// 親は揺れ骨でない。
+
 					// 現在値
 					NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
 
@@ -832,16 +862,16 @@ namespace VRM1Spring {
 					CurrentTransForm = NewBoneTM;
 				}
 				else {
+					// 親は揺れ骨。計算結果から参照する
 
-					NewBoneTM = CurrentTransForm;
+					auto* p = calcTransform.Find(parentBoneIndex);
+					if (p) {
+						NewBoneTM = *p;
+					}
 
 					auto c = RefSkeletonTransform[j.boneNo];
 					NewBoneTM = c * NewBoneTM;
 					NewBoneTM.SetRotation(state->resultQuat);
-
-
-					//const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-					//NewBoneTM.SetLocation(ComponentTransform.TransformPosition(sData.m_currentTail));
 
 					CurrentTransForm = NewBoneTM;
 				}
@@ -861,6 +891,7 @@ namespace VRM1Spring {
 				}
 
 
+				calcTransform.Add(j.boneNo, CurrentTransForm);
 				// update rotation
 				//FVector to = (state->currentTail * (node.parent.worldMatrix * state->initialLocalMatrix).inverse).normalized;
 				//node.rotation = initialLocalRotation * Quaternion.fromToQuaternion(boneAxis, to);
