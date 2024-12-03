@@ -6,6 +6,7 @@
 #include "Animation/AnimInstanceProxy.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "SceneManagement.h"
 
 #include "VrmMetaObject.h"
 #include "VrmAssetListObject.h"
