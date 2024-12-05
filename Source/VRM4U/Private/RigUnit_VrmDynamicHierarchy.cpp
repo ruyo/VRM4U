@@ -49,9 +49,15 @@ FRigUnit_VRMInitControllerTransform_Execute() {
 
 		auto* elem = nullList.FindByPredicate(
 			[&table](FRigNullElement* e) {
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 				if (e->GetNameString().Compare(table.BoneUE4 + "_s") == 0) {
 					return true;
 				}
+#else
+				if (e->GetName().Compare(table.BoneUE4 + "_s") == 0) {
+					return true;
+				}
+#endif
 				return false;
 			});
 
@@ -133,9 +139,15 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 
 		auto *elem = controllerList.FindByPredicate(
 			[&table](FRigControlElement *e) {
+#if	UE_VERSION_OLDER_THAN(5,4,0)
 				if (e->GetNameString().Compare(table.BoneUE4 + "_c") == 0) {
 					return true;
 				}
+#else
+				if (e->GetName().Compare(table.BoneUE4 + "_c") == 0) {
+					return true;
+				}
+#endif
 				return false;
 			});
 
