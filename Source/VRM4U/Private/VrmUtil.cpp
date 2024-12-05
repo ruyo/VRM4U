@@ -8,7 +8,10 @@
 
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
 #include "VrmAssetUserData.h"
+#endif
 
 
 void FImportOptionData::init() {
