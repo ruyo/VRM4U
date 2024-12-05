@@ -908,6 +908,8 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 		}
 
 		{
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
 			auto *dataArray = sk->GetAssetUserDataArray();
 			if (dataArray){
 				for (auto data : *dataArray) {
@@ -917,6 +919,7 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 					}
 				}
 			}
+#endif
 		}
 	}
 
