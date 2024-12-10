@@ -8,7 +8,10 @@
 
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
 #include "VrmAssetUserData.h"
+#endif
 
 
 void FImportOptionData::init() {
@@ -905,6 +908,8 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 		}
 
 		{
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
 			auto *dataArray = sk->GetAssetUserDataArray();
 			if (dataArray){
 				for (auto data : *dataArray) {
@@ -914,6 +919,7 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
 					}
 				}
 			}
+#endif
 		}
 	}
 

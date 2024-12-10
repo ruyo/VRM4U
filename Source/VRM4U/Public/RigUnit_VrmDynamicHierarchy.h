@@ -8,6 +8,30 @@
 
 #include "RigUnit_VrmDynamicHierarchy.generated.h"
 
+
+/**
+ * get curve list
+ */
+USTRUCT(meta = (DisplayName = "VRM4U GetCurveNameFromMesh", Keywords = "VRM4U", Varying))
+struct FRigUnit_VRMGetCurveNameFromMesh : public FRigUnitMutable
+{
+	GENERATED_BODY()
+
+	FRigUnit_VRMGetCurveNameFromMesh()
+	{
+	}
+
+	RIGVM_METHOD()
+		virtual void Execute() override;
+
+	UPROPERTY(meta = (Output))
+	TArray<FName> Items_Morph;
+
+	UPROPERTY(meta = (Output))
+	TArray<FName> Items_Curve;
+};
+
+
 /**
  * add morph and curve
  */

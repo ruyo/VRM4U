@@ -49,11 +49,15 @@ FRigUnit_VRMInitControllerTransform_Execute() {
 
 		auto* elem = nullList.FindByPredicate(
 			[&table](FRigNullElement* e) {
-				// Mooa VRM
-				if (e->GetName().Compare(table.BoneUE4 + "_s") == 0) {
-				// Mooa End
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+				if (e->GetNameString().Compare(table.BoneUE4 + "_s") == 0) {
 					return true;
 				}
+#else
+				if (e->GetName().Compare(table.BoneUE4 + "_s") == 0) {
+					return true;
+				}
+#endif
 				return false;
 			});
 
@@ -135,11 +139,15 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 
 		auto *elem = controllerList.FindByPredicate(
 			[&table](FRigControlElement *e) {
-				// Mooa VRM
-				if (e->GetName().Compare(table.BoneUE4 + "_c") == 0) {
-				// Mooa End
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+				if (e->GetNameString().Compare(table.BoneUE4 + "_c") == 0) {
 					return true;
 				}
+#else
+				if (e->GetName().Compare(table.BoneUE4 + "_c") == 0) {
+					return true;
+				}
+#endif
 				return false;
 			});
 
@@ -167,6 +175,43 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 	}
 }
 
+FRigUnit_VRMGetCurveNameFromMesh_Execute() {
+	FString ErrorMessage;
+
+	Items_Curve.Reset();
+	Items_Morph.Reset();
+
+	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
+	if (skc == nullptr) return;
+
+	{
+		auto* sk = skc->GetSkinnedAsset();
+		auto* k = sk->GetSkeleton();
+		auto morph = sk->GetMorphTargets();
+
+		const FRigControlValue Value = FRigControlValue::Make<float>(0);
+		const FTransform ShapeTransform;
+		const FTransform OffsetTransform;
+
+		for (auto& a : morph) {
+			Items_Morph.Add(a.GetFName());
+		}
+
+		const FSmartNameMapping* CurveMapping = k->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
+		if (CurveMapping) {
+			TArray<FName> CurveNames;
+			CurveMapping->FillNameArray(CurveNames);
+			for (const FName& CurveName : CurveNames) {
+				auto* meta = CurveMapping->GetCurveMetaData(CurveName);
+				if (meta->Type.bMorphtarget == true) {
+					continue;
+				}
+				Items_Curve.Add(CurveName);
+			}
+		}
+	}
+
+}
 
 FRigUnit_VRMAddCurveFromMesh_Execute()
 {
@@ -186,12 +231,11 @@ FRigUnit_VRMAddCurveFromMesh_Execute()
 	ControlSettings.ControlType = ERigControlType::Float;
 	ControlSettings.PrimaryAxis = ERigControlAxis::X;
 
-	ControlSettings.SetupLimitArrayForType(false, false, false);
-	//ControlSettings.LimitEnabled[0] = Limit;
 	ControlSettings.MinimumValue = FRigControlValue::Make<float>(0);
 	ControlSettings.MaximumValue = FRigControlValue::Make<float>(1);
-	//ControlSettings.bDrawLimits = bDrawLimits;
 
+	ControlSettings.SetupLimitArrayForType(true, true, true);
+	ControlSettings.SetVisible(false);
 
 	FRigHierarchyControllerInstructionBracket InstructionBracket(Controller, ExecuteContext.GetInstructionIndex());
 
