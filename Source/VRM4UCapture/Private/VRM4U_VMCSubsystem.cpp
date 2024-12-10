@@ -4,7 +4,6 @@
 #include "VRM4U_VMCSubsystem.h"
 #include "VrmVMCObject.h"
 
-#include "Editor.h"
 #include "Engine/Engine.h"
 #include "UObject/StrongObjectPtr.h"
 #include "Misc/ScopeLock.h"
