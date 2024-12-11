@@ -423,7 +423,7 @@ bool DecompressTGA(
 }
 
 
-UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bGenerateMips, bool bRuntimeMode) {
+UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bNormalGreenFlip, bool bGenerateMips, bool bRuntimeMode) {
 
 	const char* Buffer = (const char*)vBuffer;
 	VRMUtil::FImportImage img;

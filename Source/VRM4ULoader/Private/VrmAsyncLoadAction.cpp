@@ -97,13 +97,14 @@ static bool ConvTex(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr,
 				if (baseName.Len() == 0) {
 					baseName = TEXT("texture") + FString::FromInt(i);
 				}
-				if (localAsset.NormalBoolTable[i]) {
+				bool bNormalGreenFlip = localAsset.NormalBoolTable[i];
+				if (bNormalGreenFlip) {
 					baseName += TEXT("_N");
 				}
 
 				FString name = FString(TEXT("T_")) + baseName;
 				auto* pkg = GetTransientPackage();
-				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, false, true);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, false, bNormalGreenFlip, true);
 				vrmAssetList->Textures[i] = NewTexture2D;
 			}
 
