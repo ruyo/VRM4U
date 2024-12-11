@@ -197,6 +197,7 @@ FRigUnit_VRMGetCurveNameFromMesh_Execute() {
 			Items_Morph.Add(a.GetFName());
 		}
 
+#if	UE_VERSION_OLDER_THAN(5,3,0)
 		const FSmartNameMapping* CurveMapping = k->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
 		if (CurveMapping) {
 			TArray<FName> CurveNames;
@@ -209,6 +210,15 @@ FRigUnit_VRMGetCurveNameFromMesh_Execute() {
 				Items_Curve.Add(CurveName);
 			}
 		}
+#else
+		k->ForEachCurveMetaData([&](const FName& InCurveName, const FCurveMetaData& InMetaData)
+			{
+				if (InMetaData.Type.bMorphtarget == true) {
+					return;
+				}
+				Items_Curve.Add(InCurveName);
+			});
+#endif
 	}
 
 }
@@ -258,6 +268,8 @@ FRigUnit_VRMAddCurveFromMesh_Execute()
 
 		if (bIncludeCurves) {
 			auto root = Controller->AddNull(TEXT("VRM4U_Root_Curve"), FRigElementKey(), OffsetTransform);
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
 			const FSmartNameMapping* CurveMapping = k->GetSmartNameContainer(USkeleton::AnimCurveMappingName);
 			if (CurveMapping) {
 				TArray<FName> CurveNames;
@@ -271,6 +283,17 @@ FRigUnit_VRMAddCurveFromMesh_Execute()
 					Items_Curve.Add(Controller->AddControl(n, root, ControlSettings, Value, OffsetTransform, ShapeTransform, false, false));
 				}
 			}
+#else
+			k->ForEachCurveMetaData([&](const FName& InCurveName, const FCurveMetaData& InMetaData)
+				{
+					if (InMetaData.Type.bMorphtarget == true) {
+						return;
+					}
+					FName n = *(Prefix + InCurveName.ToString() + Suffix);
+					Items_Curve.Add(Controller->AddControl(n, root, ControlSettings, Value, OffsetTransform, ShapeTransform, false, false));
+				});
+#endif
+
 		}
 	}
 }
