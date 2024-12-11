@@ -709,7 +709,8 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (baseName.Len() == 0) {
 					baseName = TEXT("texture") + FString::FromInt(i);
 				}
-				if (NormalBoolTable[i]) {
+				bool bNormalGreenFlip = NormalBoolTable[i];
+				if (bNormalGreenFlip) {
 					baseName += TEXT("_N");
 				}
 
@@ -718,38 +719,34 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 					pkg = VRM4U_CreatePackage(vrmAssetList->Package, *name);
 				}
-				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips, bNormalGreenFlip);
 #if WITH_EDITOR
 				NewTexture2D->DeferCompression = false;
 #endif
 
+				bool bIsBC7 = false;
 				// Set options
 				if (NormalBoolTable[i]) {
-					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->SRGB = 0;
 #if WITH_EDITOR
 					NewTexture2D->CompressionNoAlpha = true;
 					NewTexture2D->bFlipGreenChannel = true;
 #endif
+				} else {
+					if (VRMConverter::Options::Get().IsBC7Mode()) {
+						NewTexture2D->CompressionSettings = TC_BC7;
+						bIsBC7 = true;
+					}
 				}
 				if (MaskBoolTable[i]) {
 					// comment for material warning...
 					//NewTexture2D->SRGB = 0;
 				}
 
-				{
-					bool bIsBC7 = false;
-					if (NewTexture2D->SRGB) {
-						if (VRMConverter::Options::Get().IsBC7Mode()) {
-							NewTexture2D->CompressionSettings = TC_BC7;
-							bIsBC7 = true;
-						}
-					}
-					if (bIsBC7) {
-						textureCompressTypeArray.Add(EVRMImportTextureCompressType::VRMITC_BC7);
-					} else {
-						textureCompressTypeArray.Add(EVRMImportTextureCompressType::VRMITC_DXT1);
-					}
+				if (bIsBC7) {
+					textureCompressTypeArray.Add(EVRMImportTextureCompressType::VRMITC_BC7);
+				} else {
+					textureCompressTypeArray.Add(EVRMImportTextureCompressType::VRMITC_DXT1);
 				}
 
 
@@ -757,6 +754,11 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 #if WITH_EDITOR
 				NewTexture2D->PostEditChange();
 #endif
+
+				if (NormalBoolTable[i]) {
+					// UE5.5でクラッシュするので update後に更新
+					NewTexture2D->CompressionSettings = TC_Normalmap;
+				}
 
 				texArray.Push(NewTexture2D);
 			}
