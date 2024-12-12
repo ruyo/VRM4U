@@ -9,6 +9,7 @@
 #include "UObject/UObjectIterator.h"
 #include "UObject/Package.h"
 
+#include "Async/ParallelFor.h"
 #include "Engine/Texture2D.h"
 #include "TextureResource.h"
 #include "Modules/ModuleManager.h"
