@@ -104,7 +104,7 @@ static bool ConvTex(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr,
 
 				FString name = FString(TEXT("T_")) + baseName;
 				auto* pkg = GetTransientPackage();
-				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, false, bNormalGreenFlip, true);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, false, bNormalGreenFlip&&(VRMConverter::IsImportMode() == false));
 				vrmAssetList->Textures[i] = NewTexture2D;
 			}
 
@@ -120,7 +120,9 @@ static bool ConvTex(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr,
 					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->SRGB = 0;
 #if WITH_EDITOR
-					NewTexture2D->bFlipGreenChannel = true;
+					if (VRMConverter::IsImportMode()) {
+						NewTexture2D->bFlipGreenChannel = true;
+					}
 #endif
 				}
 				if (localAsset.MaskBoolTable[i]) {
