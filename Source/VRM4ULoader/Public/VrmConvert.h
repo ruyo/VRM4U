@@ -185,7 +185,7 @@ public:
 class VRM4ULOADER_API VRMLoaderUtil {
 public:
 	static UTexture2D* CreateTexture(int32 InSizeX, int32 InSizeY, FString name, UPackage* package);
-	static UTexture2D* CreateTextureFromImage(FString name, UPackage* package, const void* Buffer, const size_t Length, bool GenerateMip = false, bool bNormalGreenFlip=false, bool bRuntimeMode = false);
+	static UTexture2D* CreateTextureFromImage(FString name, UPackage* package, const void* Buffer, const size_t Length, bool GenerateMip = false, bool bNormalGreenFlip=false);
 
 	static bool LoadImageFromMemory(const void* Buffer, const size_t Length, VRMUtil::FImportImage& OutImage);
 };

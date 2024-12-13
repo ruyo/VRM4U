@@ -723,7 +723,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 					pkg = VRM4U_CreatePackage(vrmAssetList->Package, *name);
 				}
-				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips, bNormalGreenFlip);
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips, bNormalGreenFlip&&(VRMConverter::IsImportMode()==false));
 #if WITH_EDITOR
 				NewTexture2D->DeferCompression = false;
 #endif
@@ -734,7 +734,9 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 					NewTexture2D->SRGB = 0;
 #if WITH_EDITOR
 					NewTexture2D->CompressionNoAlpha = true;
-					NewTexture2D->bFlipGreenChannel = true;
+					if (VRMConverter::IsImportMode()) {
+						NewTexture2D->bFlipGreenChannel = true;
+					}
 #endif
 				} else {
 					if (VRMConverter::Options::Get().IsBC7Mode()) {
@@ -760,7 +762,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 #endif
 
 				if (NormalBoolTable[i]) {
-					// UE5.5でクラッシュするので update後に更新
+					// UE5.5でクラッシュするので update後に再度更新
 					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->UpdateResource();
 #if WITH_EDITOR
