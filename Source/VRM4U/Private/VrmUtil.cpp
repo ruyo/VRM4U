@@ -877,7 +877,7 @@ UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
 		if (p) return p;
 	}
 	if (Cast<USkeletalMeshComponent>(obj)) {
-		auto* p = GetAssetListObject(Cast<USkeletalMeshComponent>(obj)->GetSkeletalMeshAsset());
+		auto* p = GetAssetListObject(VRMGetSkeletalMeshAsset(Cast<USkeletalMeshComponent>(obj)));
 		if (p) return p;
 	}
 

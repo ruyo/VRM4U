@@ -73,11 +73,11 @@ void FAnimNode_VrmRetargetFromMannequin::UpdateCache(FComponentSpacePoseContext&
 		return;
 	}
 
-	if (srcSkeletalMesh == VRMGetSkinnedAsset(srcMannequinMesh)) {
+	if (srcSkeletalMesh == VRMGetSkeletalMeshAsset(srcMannequinMesh)) {
 		return;
 	}
 
-	srcSkeletalMesh = VRMGetSkinnedAsset(srcMannequinMesh);
+	srcSkeletalMesh = VRMGetSkeletalMeshAsset(srcMannequinMesh);
 
 	if (srcSkeletalMesh == nullptr) return;
 	if (dstSkeletalMesh == nullptr) return;
@@ -182,8 +182,8 @@ void FAnimNode_VrmRetargetFromMannequin::EvaluateSkeletalControl_AnyThread(FComp
 		return;
 	}
 
-	auto &srcRefSkeleton = VRMGetRefSkeleton( VRMGetSkinnedAsset(srcAsSkinnedMeshComp) );
-	auto &dstRefSkeleton = VRMGetRefSkeleton( VRMGetSkinnedAsset(Output.AnimInstanceProxy->GetSkelMeshComponent()) );
+	auto &srcRefSkeleton = VRMGetRefSkeleton(VRMGetSkeletalMeshAsset(srcAsSkinnedMeshComp) );
+	auto &dstRefSkeleton = VRMGetRefSkeleton(VRMGetSkeletalMeshAsset(Output.AnimInstanceProxy->GetSkelMeshComponent()) );
 
 	// ref pose
 	const auto& dstRefSkeletonTransform = dstRefSkeleton.GetRefBonePose();
