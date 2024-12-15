@@ -71,6 +71,8 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 
 	Super::Initialize_AnyThread(Context);
 
+	if (Context.AnimInstanceProxy == nullptr) return;
+
 	VrmMetaObject_Internal = VrmMetaObject;
 	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
 		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
@@ -81,8 +83,7 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 
 	if (SpringManager.Get()) {
 		SpringManager.Get()->reset();
-	}
-	else {
+	} else {
 		if (VrmMetaObject_Internal) {
 			if (VrmMetaObject_Internal->GetVRMVersion() >= 1) {
 				SpringManager = MakeShareable(new VRM1Spring::VRM1SpringManager());

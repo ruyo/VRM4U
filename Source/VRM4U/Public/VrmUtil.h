@@ -524,7 +524,9 @@ public:
 
 	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
 
-	static class UVrmAssetListObject* GetAssetListObject(const UObject*);
+	static class UVrmAssetListObject* GetAssetListObjectAny(const UObject* obj);
+	static class UVrmAssetListObject* GetAssetListObject(const USkeletalMesh *);
+
 };
 
 class VRM4U_API VRMRetargetData {

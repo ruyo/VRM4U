@@ -871,58 +871,107 @@ int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneInd
 }
 
 
-UVrmAssetListObject* VRMUtil::GetAssetListObject(const UObject *obj) {
-	
-	const USkeletalMesh *sk = Cast<const USkeletalMesh>(obj);
-	if (sk) {
-		const FString full = obj->GetPathName();
-		const FString baseName = obj->GetName();
-		const FString path = FPaths::GetPath(full);
+UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
+	if (Cast<USkeletalMesh>(obj)) {
+		auto* p = GetAssetListObject(Cast<USkeletalMesh>(obj));
+		if (p) return p;
+	}
+	if (Cast<USkeletalMeshComponent>(obj)) {
+		auto* p = GetAssetListObject(Cast<USkeletalMeshComponent>(obj)->GetSkeletalMeshAsset());
+		if (p) return p;
+	}
 
-		FString core = baseName;
-		core.RemoveFromStart(TEXT("SK_"));
+	const FString full = obj->GetPathName();
+	const FString baseName = obj->GetName();
+	const FString path = FPaths::GetPath(full);
 
-		{
-			FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
-			FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
-			if (IsInGameThread()) {
-				FSoftObjectPath r = target;
-				UObject* u = r.ResolveObject();
-				if (u == nullptr) u = r.TryLoad();
-				if (u) {
-					return Cast<UVrmAssetListObject>(u);
-				}
-			}
-		}
-		{
-			FString targetBase = FString(TEXT("")) + core + FString(TEXT("_vrmassetlist"));
-			FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
-			if (IsInGameThread()) {
-				FSoftObjectPath r = target;
-				UObject* u = r.ResolveObject();
-				if (u == nullptr) u = r.TryLoad();
-				if (u) {
-					return Cast<UVrmAssetListObject>(u);
-				}
-			}
-		}
-
-		{
-#if	UE_VERSION_OLDER_THAN(5,1,0)
-#else
-			auto *dataArray = sk->GetAssetUserDataArray();
-			if (dataArray){
-				for (auto data : *dataArray) {
-					auto *d = Cast<UVrmAssetUserData>(data);
-					if (d->VrmAssetListObject) {
-						return d->VrmAssetListObject;
-					}
-				}
-			}
-#endif
+	FString core = baseName;
+	{
+		int index = 0;
+		if (core.FindChar('_', index)) {
+			core.RemoveAt(0, index, true);
 		}
 	}
 
+	{
+		FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
+		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+		if (IsInGameThread()) {
+			FSoftObjectPath r = target;
+			UObject* u = r.ResolveObject();
+			if (u == nullptr) u = r.TryLoad();
+			if (u) {
+				return Cast<UVrmAssetListObject>(u);
+			}
+		}
+	}
+	{
+		FString targetBase = FString(TEXT("")) + core + FString(TEXT("_vrmassetlist"));
+		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+		if (IsInGameThread()) {
+			FSoftObjectPath r = target;
+			UObject* u = r.ResolveObject();
+			if (u == nullptr) u = r.TryLoad();
+			if (u) {
+				return Cast<UVrmAssetListObject>(u);
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+UVrmAssetListObject* VRMUtil::GetAssetListObject(const USkeletalMesh *sk) {
+
+	if (sk == nullptr) return nullptr;
+
+	{
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+#else
+		auto* dataArray = sk->GetAssetUserDataArray();
+		if (dataArray) {
+			for (auto data : *dataArray) {
+				auto* d = Cast<UVrmAssetUserData>(data);
+				if (d == nullptr) continue;
+				if (d->VrmAssetListObject) {
+					return d->VrmAssetListObject;
+				}
+			}
+		}
+#endif
+	}
+
+	const FString full = sk->GetPathName();
+	const FString baseName = sk->GetName();
+	const FString path = FPaths::GetPath(full);
+
+	FString core = baseName;
+	core.RemoveFromStart(TEXT("SK_"));
+
+	{
+		FString targetBase = FString(TEXT("VA_")) + core + FString(TEXT("_vrmassetlist"));
+		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+		if (IsInGameThread()) {
+			FSoftObjectPath r = target;
+			UObject* u = r.ResolveObject();
+			if (u == nullptr) u = r.TryLoad();
+			if (u) {
+				return Cast<UVrmAssetListObject>(u);
+			}
+		}
+	}
+	{
+		FString targetBase = FString(TEXT("")) + core + FString(TEXT("_vrmassetlist"));
+		FString target = path + FString(TEXT("/")) + targetBase + FString(TEXT(".")) + targetBase;
+		if (IsInGameThread()) {
+			FSoftObjectPath r = target;
+			UObject* u = r.ResolveObject();
+			if (u == nullptr) u = r.TryLoad();
+			if (u) {
+				return Cast<UVrmAssetListObject>(u);
+			}
+		}
+	}
 
 	return nullptr;
 }
