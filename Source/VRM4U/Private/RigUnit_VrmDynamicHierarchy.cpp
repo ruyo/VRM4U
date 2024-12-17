@@ -21,7 +21,7 @@ FRigUnit_VRMInitControllerTransform_Execute() {
 	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
 	if (skc == nullptr) return;
 
-	auto* sk = skc->GetSkinnedAsset();
+	auto* sk = VRMGetSkeletalMeshAsset(skc);
 	if (sk == nullptr) return;
 
 	auto* k = sk->GetSkeleton();
@@ -113,7 +113,7 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
 	if (skc == nullptr) return;
 
-	auto* sk = skc->GetSkinnedAsset();
+	auto* sk = VRMGetSkeletalMeshAsset(skc);
 	if (sk == nullptr) return;
 
 	auto* k = sk->GetSkeleton();

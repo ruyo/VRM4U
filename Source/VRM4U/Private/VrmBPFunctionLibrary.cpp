@@ -1894,7 +1894,7 @@ void UVrmBPFunctionLibrary::VRMGetTopLevelAssetName(const FAssetData& target, FN
 
 
 UVrmAssetListObject* UVrmBPFunctionLibrary::VRMGetVrmAssetListObjectFromAsset(const UObject* Asset) {
-	return VRMUtil::GetAssetListObject(Asset);
+	return VRMUtil::GetAssetListObjectAny(Asset);
 }
 
 

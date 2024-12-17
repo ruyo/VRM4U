@@ -253,14 +253,28 @@ VRM4U_API void VRMAddRetargetChain(class UIKRigController* con, FName name, FNam
 
 
 //template<typename T>
-FORCEINLINE  USkeletalMesh *VRMGetSkinnedAsset(USkeletalMeshComponent* t) {
+FORCEINLINE  USkeletalMesh *VRMGetSkeletalMeshAsset(USkeletalMeshComponent* t) {
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 	return t->SkeletalMesh;
 #else
 	return (t->GetSkeletalMeshAsset());
 #endif
 }
-FORCEINLINE  USkeletalMesh *VRMGetSkinnedAsset(TWeakObjectPtr<USkeletalMeshComponent> t) {
+FORCEINLINE  const USkeletalMesh* VRMGetSkeletalMeshAsset(const USkeletalMeshComponent* t) {
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+	return t->SkeletalMesh;
+#else
+	return (t->GetSkeletalMeshAsset());
+#endif
+}
+FORCEINLINE  USkeletalMesh *VRMGetSkeletalMeshAsset(TWeakObjectPtr<USkeletalMeshComponent> t) {
+#if	UE_VERSION_OLDER_THAN(5,1,0)
+	return t->SkeletalMesh;
+#else
+	return (t->GetSkeletalMeshAsset());
+#endif
+}
+FORCEINLINE  const USkeletalMesh* VRMGetSkeletalMeshAsset(TWeakObjectPtr<const USkeletalMeshComponent> t) {
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 	return t->SkeletalMesh;
 #else
@@ -524,7 +538,9 @@ public:
 
 	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
 
-	static class UVrmAssetListObject* GetAssetListObject(const UObject*);
+	static class UVrmAssetListObject* GetAssetListObjectAny(const UObject* obj);
+	static class UVrmAssetListObject* GetAssetListObject(const USkeletalMesh *);
+
 };
 
 class VRM4U_API VRMRetargetData {
