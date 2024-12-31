@@ -36,7 +36,7 @@ bool UVRM4U_VMCSubsystem::GetVMCData(TMap<FString, FTransform>& BoneData, TMap<F
 }
 
 
-bool UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
+UVrmVMCObject* UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port) {
 
 	bool bFound = false;
 	for (int i = 0; i < VMCObjectList.Num(); ++i) {
@@ -45,15 +45,16 @@ bool UVRM4U_VMCSubsystem::FindOrAddServer(const FString ServerAddress, int port)
 
 		if (a->ServerName == ServerAddress && a->port == port) {
 			bFound = true;
-			break;
+			return a;
 		}
 	}
 	if (bFound == false) {
 		int ind = VMCObjectList.AddDefaulted();
 		VMCObjectList[ind].Reset(NewObject<UVrmVMCObject>());
 		VMCObjectList[ind]->CreateServer(ServerAddress, port);
+		return VMCObjectList[ind].Get();
 	}
-	return true;
+	return nullptr;
 }
 
 void UVRM4U_VMCSubsystem::DestroyVMCServer(const FString ServerAddress, int port) {
@@ -82,7 +83,7 @@ void UVRM4U_VMCSubsystem::DestroyVMCServerAll() {
 
 
 bool UVRM4U_VMCSubsystem::CreateVMCServer(const FString ServerAddress, int port) {
-	return FindOrAddServer(ServerAddress, port);
+	return (FindOrAddServer(ServerAddress, port) != nullptr);
 }
 
 void UVRM4U_VMCSubsystem::ClearData(const FString ServerAddress, int port) {
