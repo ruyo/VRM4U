@@ -481,8 +481,9 @@ UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* packag
 	if (bNormal) {
 		tex->CompressionSettings = TC_Normalmap;
 		tex->SRGB = 0;
+#if WITH_EDITORONLY_DATA
 		tex->CompressionNoAlpha = true;
-
+#endif
 	}
 	tex->AddressX = TA_Wrap;
 	tex->AddressY = TA_Wrap;
