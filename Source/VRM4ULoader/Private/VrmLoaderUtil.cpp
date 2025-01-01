@@ -424,7 +424,7 @@ bool DecompressTGA(
 }
 
 
-UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bGenerateMips, bool bGreenFlip) {
+UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* package, const void* vBuffer, const size_t Length, bool bGenerateMips, bool bNormal, bool bGreenFlip) {
 
 	const char* Buffer = (const char*)vBuffer;
 	VRMUtil::FImportImage img;
@@ -478,10 +478,12 @@ UTexture2D* VRMLoaderUtil::CreateTextureFromImage(FString name, UPackage* packag
 	// Set options
 	tex->SRGB = true;// bUseSRGB;
 	tex->CompressionSettings = TC_Default;
-	//if (NormalBoolTable[i]) {
-	//	tex->CompressionSettings = TC_Normalmap;
-	//	tex->SRGB = 0;
-	//}
+	if (bNormal) {
+		tex->CompressionSettings = TC_Normalmap;
+		tex->SRGB = 0;
+		tex->CompressionNoAlpha = true;
+
+	}
 	tex->AddressX = TA_Wrap;
 	tex->AddressY = TA_Wrap;
 
