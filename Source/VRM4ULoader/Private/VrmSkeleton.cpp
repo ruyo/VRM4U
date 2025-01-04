@@ -66,11 +66,9 @@ static TMap<const aiNode*, const aiBone* > makeAiBoneTable(const aiScene* scene,
 
 		for (uint32 b = 0; b < aiM.mNumBones; ++b) {
 			const auto& aiB = aiM.mBones[b];
-			for (auto a : nodeArray) {
-				if (a->mName == aiB->mName) {
-					table.Add(a, aiB);
-					break;
-				}
+			if (nodeArray.Find(aiB->mNode)){
+				table.Add(aiB->mNode, aiB);
+				//break;
 			}
 		}
 	}
