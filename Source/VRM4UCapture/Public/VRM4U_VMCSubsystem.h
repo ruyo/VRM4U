@@ -39,7 +39,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = VRM4U)
 	void DestroyVMCServerAll();
 
-	bool FindOrAddServer(const FString ServerAddress, int port);
+	UVrmVMCObject* FindOrAddServer(const FString ServerAddress, int port);
 
 	TArray< TStrongObjectPtr<UVrmVMCObject> > VMCObjectList;
 

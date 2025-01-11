@@ -546,6 +546,10 @@ namespace VRM1Spring {
 
 				auto &j1 = s.joints[jointNo];
 
+				if (j1.boneNo == INDEX_NONE) {
+					continue;
+				}
+
 				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
 				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {

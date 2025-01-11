@@ -42,11 +42,15 @@ class VRM4UCAPTURE_API UVrmVMCObject : public UObject
 
 	FVMCData VMCData;
 	FVMCData VMCData_Cache;
+
+	bool bDataUpdated = false;
 public:
 
 
 	FString ServerName;
 	uint16 port;
+
+	bool bForceUpdate = false;
 
 	void CreateServer(FString name, uint16 port);
 	void DestroyServer();
