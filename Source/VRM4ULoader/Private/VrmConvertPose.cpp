@@ -27,7 +27,10 @@
 #include "PersonaModule.h"
 #include "Modules/ModuleManager.h"
 #include "Animation/DebugSkelMeshComponent.h"
+#if UE_VERSION_OLDER_THAN(5,0,0)
+#else
 #include "Rigs/RigHierarchy.h"
+#endif
 #endif
 
 #include <assimp/Importer.hpp>
