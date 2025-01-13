@@ -531,10 +531,17 @@ namespace {
 
 						{
 							// DisplayName check
+#if UE_VERSION_OLDER_THAN(5,3,0)
 							FName n = VRMUtil::GetSanitizedName(curveName.DisplayName.ToString());
 							if (n == NAME_None) {
 								continue;
 							}
+#else
+							FName n = VRMUtil::GetSanitizedName(curveName.ToString());
+							if (n == NAME_None) {
+								continue;
+							}
+#endif
 						}
 						
 
