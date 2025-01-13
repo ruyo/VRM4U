@@ -533,8 +533,8 @@ public:
 
 	static bool IsNoSafeName(const FString& str);
 	static FString GetSafeNewName(const FString& str);
-
 	static FString MakeName(const FString& str, bool IsJoint = false);
+	static FName GetSanitizedName(const FString& str);
 
 	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
 

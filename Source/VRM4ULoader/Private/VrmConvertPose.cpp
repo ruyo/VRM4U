@@ -27,6 +27,7 @@
 #include "PersonaModule.h"
 #include "Modules/ModuleManager.h"
 #include "Animation/DebugSkelMeshComponent.h"
+#include "Rigs/RigHierarchy.h"
 #endif
 
 #include <assimp/Importer.hpp>
@@ -527,6 +528,15 @@ namespace {
 								targetNo = GetCurves().Num();
 							}
 						}
+
+						{
+							// DisplayName check
+							FName n = VRMUtil::GetSanitizedName(curveName.DisplayName.ToString());
+							if (n == NAME_None) {
+								continue;
+							}
+						}
+						
 
 #if UE_VERSION_OLDER_THAN(5,2,0)
 						ase->RawCurveData.AddCurveData(curveName);
