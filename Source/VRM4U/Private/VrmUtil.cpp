@@ -872,6 +872,7 @@ int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneInd
 
 
 UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
+	if (obj == nullptr) return nullptr;
 	if (Cast<USkeletalMesh>(obj)) {
 		auto* p = GetAssetListObject(Cast<USkeletalMesh>(obj));
 		if (p) return p;
