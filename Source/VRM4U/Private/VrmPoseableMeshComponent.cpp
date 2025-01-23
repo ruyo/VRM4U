@@ -78,7 +78,7 @@ void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick T
 }
 
 void UVrmPoseableMeshComponent::VRMCopyPoseAndMorphFromSkeletalComponent(USkeletalMeshComponent* InComponentToCopy) {
-	if (InComponentToCopy) {
+	if (InComponentToCopy && InComponentToCopy->GetSkinnedAsset()) {
 		Super::CopyPoseFromSkeletalComponent(InComponentToCopy);
 
 		MorphTargetWeights = InComponentToCopy->MorphTargetWeights;

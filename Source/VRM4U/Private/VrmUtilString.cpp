@@ -136,3 +136,8 @@ FString VRMUtil::MakeName(const FString& str, bool IsJoint) {
 #endif
 }
 
+
+FName VRMUtil::GetSanitizedName(const FString& str) {
+	return *LocalGetSanitizedName(str);
+}
+
