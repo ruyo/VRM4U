@@ -359,42 +359,66 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 
 		TArray<FTransform> poseGlobal_bindpose;	// bone
 		TArray<FTransform> poseGlobal_tpose;	// node
+		TArray<FTransform> poseGlobal_tpose_rootIdentity;	// node rootIdentity
 
-		TArray<FTransform> poseLocal_bindpose;	// bone
-		TArray<FTransform> poseLocal_tpose;		// node
+		TArray<FTransform> poseLocal_bindpose;				// bone
+		TArray<FTransform> poseLocal_tpose;					// node
+		TArray<FTransform> poseLocal_tpose_rootIdentity;	// node rootIdentity
+
+		FTransform tpose_root;
 
 		poseGlobal_bindpose.SetNum(nodeArray.Num());
 		poseGlobal_tpose.SetNum(nodeArray.Num());
+		poseGlobal_tpose_rootIdentity.SetNum(nodeArray.Num());
 
 		poseLocal_bindpose.SetNum(nodeArray.Num());
 		poseLocal_tpose.SetNum(nodeArray.Num());
+		poseLocal_tpose_rootIdentity.SetNum(nodeArray.Num());
 
 		// generate transform
-		for (int nodeNo = 0; nodeNo < nodeArray.Num(); ++nodeNo) {
-			auto node = nodeArray[nodeNo];
-			FString nodeName = UTF8_TO_TCHAR(node->mName.C_Str());
+		{
+			// t-pose
+			for (int nodeNo = 0; nodeNo < nodeArray.Num(); ++nodeNo) {
+				auto node = nodeArray[nodeNo];
+				FString nodeName = UTF8_TO_TCHAR(node->mName.C_Str());
 
-			int32 ParentIndex = INDEX_NONE;
-			if (nodeArray.Find(node->mParent, ParentIndex) == false) {
-				ParentIndex = INDEX_NONE;
-			}
-
-			// t-pose (node pose)
-			{
-				FMatrix m = convertAiMatToFMatrix(node->mTransformation);
-
-				FTransform localpose;
-				localpose.SetFromMatrix(m);
-
-				if (ParentIndex >= 0) {
-					poseGlobal_tpose[nodeNo] = localpose * poseGlobal_tpose[ParentIndex];
+				int32 ParentIndex = INDEX_NONE;
+				if (nodeArray.Find(node->mParent, ParentIndex) == false) {
+					ParentIndex = INDEX_NONE;
 				}
-				else {
-					poseGlobal_tpose[nodeNo] = localpose;
+
+				// t-pose (node pose)
+				{
+					FMatrix m = convertAiMatToFMatrix(node->mTransformation);
+
+					FTransform localpose;
+					localpose.SetFromMatrix(m);
+
+					FTransform localpose_Identity = localpose;
+
+					if (VRMConverter::Options::Get().IsRemoveRootBoneRotation()) {
+						// localpose correct
+						if (ParentIndex >= 0) {
+							localpose_Identity = tpose_root.Inverse() * localpose * tpose_root;
+						} else {
+							tpose_root = localpose;
+							localpose_Identity.SetIdentity();
+						}
+					}// identity set
+
+					// pose
+					if (ParentIndex >= 0) {
+						poseGlobal_tpose[nodeNo]				= localpose * poseGlobal_tpose[ParentIndex];
+						poseGlobal_tpose_rootIdentity[nodeNo]	= localpose_Identity * poseGlobal_tpose_rootIdentity[ParentIndex];
+					} else {
+						poseGlobal_tpose[nodeNo] = localpose;
+						poseGlobal_tpose_rootIdentity[nodeNo] = localpose_Identity;
+					}
+					poseLocal_tpose[nodeNo] = localpose;
+					poseLocal_tpose_rootIdentity[nodeNo] = localpose_Identity;
 				}
-				poseLocal_tpose[nodeNo] = localpose;
-			}
-		}// tpose
+			}// tpose
+		}
 
 		for (int nodeNo = 0; nodeNo < nodeArray.Num(); ++nodeNo) {
 			auto node = nodeArray[nodeNo];
@@ -463,7 +487,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 			if (VRMConverter::Options::Get().IsVRM10Bindpose()) {
 				pose = poseLocal_bindpose[nodeNo];
 			}else{
-				pose = poseLocal_tpose[nodeNo];
+				pose = poseLocal_tpose_rootIdentity[nodeNo];
 			}
 			// remove local axis
 			if (VRMConverter::Options::Get().IsVRM10Model()) {
@@ -517,6 +541,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 			if (vrmAssetList) {
 				vrmAssetList->Pose_bind.Add(UTF8_TO_TCHAR(node->mName.C_Str()), poseGlobal_bindpose[nodeNo]);
 				vrmAssetList->Pose_tpose.Add(UTF8_TO_TCHAR(node->mName.C_Str()), poseGlobal_tpose[nodeNo]);
+				vrmAssetList->model_root_transform = tpose_root;
 			}
 
 			if (totalBoneCount == 1) {

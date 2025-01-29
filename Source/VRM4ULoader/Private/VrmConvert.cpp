@@ -526,6 +526,17 @@ bool VRMConverter::Options::IsVRM0Model() const {
 bool VRMConverter::Options::IsVRM10Model() const {
 	return bbVRM10;
 }
+bool VRMConverter::Options::IsRemoveRootBoneRotation() const {
+	bool ret = true;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bRemoveRootBoneRotation;
+#else
+	return ret;
+#endif
+}
+
 bool VRMConverter::Options::IsVRM10RemoveLocalRotation() const {
 	bool ret = true;
 #if WITH_EDITOR
