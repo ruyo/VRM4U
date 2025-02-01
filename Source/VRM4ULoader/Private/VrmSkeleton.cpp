@@ -248,131 +248,42 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 		bSimpleRootBone = VRMConverter::Options::Get().IsSimpleRootBone();
 		rr(scene->mRootNode, nodeArray, dummy, bSimpleRootBone, scene);
 	}
+	{
+		// rename bone
+		TMap<FString, int> count;
+		for (int i = 0; i < nodeArray.Num(); ++i) {
+			auto& node = nodeArray[i];
+
+			FString str = UTF8_TO_TCHAR(node->mName.C_Str());
+			if (count.Contains(str)) {
+				count[str]++;
+			} else {
+				count.Add(str, 1);
+			}
+		}
+		for (int i = nodeArray.Num() - 1; i >= 0; --i) {
+			aiNode* node = const_cast<aiNode*>(nodeArray[i]);
+
+			FString str = UTF8_TO_TCHAR(node->mName.C_Str());
+			if (count.Contains(str) == false) continue;
+
+			auto c = count[str];
+			if (c >= 2) {
+				char tmp[512];
+				snprintf(tmp, 512, "%s_%02d", node->mName.C_Str(), c);
+
+				node->mName = tmp;
+				count[str]--;
+			}
+		}
+	}
+
 
 	TMap<const aiNode*, const aiBone*> aiBoneTable = makeAiBoneTable(scene, nodeArray);
 	//TMap<const aiNode*, const aiSkeletonBone*> aiBoneTable = makeAiSkeletonBoneTable(scene, nodeArray);
 
 
 	{
-		{
-
-			TArray<FString> rec_low;
-			TArray<FString> rec_orig;
-			for (int targetBondeID = 0; targetBondeID < nodeArray.Num(); ++targetBondeID) {
-				auto& a = nodeArray[targetBondeID];
-
-				FString str = UTF8_TO_TCHAR(a->mName.C_Str());
-				auto f = rec_low.Find(str.ToLower());
-				if (f >= 0) {
-					// same name check
-					//aiString origName = a->mName;
-					//str += TEXT("_renamed_vrm4u_") + FString::Printf(TEXT("%02d"), targetBondeID);
-					//a->mName.Set(TCHAR_TO_ANSI(*str));
-
-					if (rec_orig[f] == UTF8_TO_TCHAR(a->mName.C_Str())) {
-						// same name node!
-						aiNode* n[] = {
-							scene->mRootNode->FindNode(a->mName),
-							scene->mRootNode->FindNode(TCHAR_TO_ANSI(*rec_orig[f])),
-						};
-						int t[] = {
-							countParent(n[0], nodeArray, 0),
-							countParent(n[1], nodeArray, 0),
-						};
-
-						char tmp[512];
-						snprintf(tmp, 512, "%s_DUP", (n[0]->mName.C_Str()));
-						if ((t[0] < t[1]) || n[1]==nullptr) {
-							n[0]->mName = tmp;
-						} else {
-							n[1]->mName = tmp;
-						}
-
-						//countParent(
-
-						//continue;
-					}
-
-					continue;
-					/*
-					TMap<FString, FString> renameTable;
-					{
-						FString s;
-						s = rec_orig[f];
-						s += TEXT("_renamed_vrm4u_") + FString::Printf(TEXT("%02d"), f);
-						renameTable.FindOrAdd(rec_orig[f]) = s;
-
-						s = UTF8_TO_TCHAR(a->mName.C_Str());
-						s += TEXT("_renamed_vrm4u_") + FString::Printf(TEXT("%02d"), targetBondeID);
-						renameTable.FindOrAdd(UTF8_TO_TCHAR(a->mName.C_Str())) = s;
-						str = s;
-					}
-
-
-					//add
-					for (uint32_t meshID = 0; meshID < scene->mNumMeshes; ++meshID) {
-						auto& aiM = *(scene->mMeshes[meshID]);
-
-						for (uint32_t allBoneID = 0; allBoneID < aiM.mNumBones; ++allBoneID) {
-							auto& aiB = *(aiM.mBones[allBoneID]);
-							auto res = renameTable.Find(UTF8_TO_TCHAR(aiB.mName.C_Str()));
-							if (res) {
-								//if (strcmp(aiB.mName.C_Str(), origName.C_Str()) == 0) {
-
-								char tmp[512];
-								//if (bone.Num() == aiM.mNumBones) {
-								//	snprintf(tmp, 512, "%s_renamed_vrm4u_%02d", origName.C_Str(), allBoneID);
-								//} else {
-								//snprintf(tmp, 512, "%s", a->mName.C_Str());
-								snprintf(tmp, 512, "%s", TCHAR_TO_ANSI(**res));
-								//}
-								//FString tmp = origName.C_Str();
-								//tmp += TEXT("_renamed_vrm4u") + FString::Printf(TEXT("%02d"), allBoneID);
-
-								aiB.mName = tmp;
-							}
-						}
-					}
-					*/
-				}
-				/*
-				if (0) {
-					// ascii code
-					aiString origName = a->mName;
-					str = TEXT("_renamed_vrm4u_") + FString::Printf(TEXT("%02d"), targetBondeID);
-					a->mName.Set(TCHAR_TO_ANSI(*str));
-
-					//add
-					for (uint32_t meshID = 0; meshID < scene->mNumMeshes; ++meshID) {
-						auto &aiM = *(scene->mMeshes[meshID]);
-
-						for (uint32_t allBoneID = 0; allBoneID < aiM.mNumBones; ++allBoneID) {
-							auto &aiB = *(aiM.mBones[allBoneID]);
-							if (strcmp(aiB.mName.C_Str(), origName.C_Str()) == 0) {
-
-								char tmp[512];
-								if (bone.Num() == aiM.mNumBones) {
-									snprintf(tmp, 512, "_renamed_vrm4u_%02d", allBoneID);
-								}else {
-									snprintf(tmp, 512, "_renamed_vrm4u_%02d", allBoneID + bone.Num()*targetBondeID);
-								}
-								//FString tmp = origName.C_Str();
-								//tmp += TEXT("_renamed_vrm4u") + FString::Printf(TEXT("%02d"), allBoneID);
-
-								aiB.mName = tmp;
-							}
-						}
-					}
-
-				}
-				*/
-
-				rec_low.Add(str.ToLower());
-				rec_orig.Add(str);
-			}
-		}
-
-
 		int totalBoneCount = 0;
 
 		TArray<FTransform> poseGlobal_bindpose;	// bone
