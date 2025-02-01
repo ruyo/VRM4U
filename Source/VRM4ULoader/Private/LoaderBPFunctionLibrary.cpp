@@ -535,6 +535,7 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:std::stringFileName=%hs"), file.c_str());
 
 	Assimp::Importer mImporter;
+	mImporter.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
 	const aiScene *mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
 
 	VRMConverter vc;
@@ -688,6 +689,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 	}
 
 	Assimp::Importer mImporter;
+	mImporter.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
 	const aiScene* mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
 
 	if (filepath.IsEmpty())

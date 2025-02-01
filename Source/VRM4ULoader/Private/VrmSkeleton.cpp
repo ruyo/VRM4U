@@ -76,6 +76,23 @@ static TMap<const aiNode*, const aiBone* > makeAiBoneTable(const aiScene* scene,
 	return table;
 }
 
+static TMap<const aiNode*, const aiSkeletonBone* > makeAiSkeletonBoneTable(const aiScene* scene, TArray<const aiNode*>& nodeArray) {
+	TMap<const aiNode*, const aiSkeletonBone*> table;
+
+	for (uint32 m = 0; m < scene->mNumSkeletons; ++m) {
+		const auto& aiS = *scene->mSkeletons[m];
+
+		for (uint32 b = 0; b < aiS.mNumBones; ++b) {
+			const auto& aiB = aiS.mBones[b];
+			if (nodeArray.Find(aiB->mNode)) {
+				table.Add(aiB->mNode, aiB);
+				//break;
+			}
+		}
+	}
+	return table;
+}
+
 static FMatrix convertAiMatToFMatrix(aiMatrix4x4 t, bool bOffsetMode = false) {
 	FMatrix m;
 
@@ -233,6 +250,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 	}
 
 	TMap<const aiNode*, const aiBone*> aiBoneTable = makeAiBoneTable(scene, nodeArray);
+	//TMap<const aiNode*, const aiSkeletonBone*> aiBoneTable = makeAiSkeletonBoneTable(scene, nodeArray);
 
 
 	{
@@ -436,10 +454,10 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 				if (pBone == nullptr) {
 					// generate from tpose matrix
 					if (ParentIndex == INDEX_NONE) {
-						poseLocal_bindpose[nodeNo] = poseLocal_tpose[nodeNo];
+						poseLocal_bindpose[nodeNo] = poseLocal_tpose_rootIdentity[nodeNo];
 						poseGlobal_bindpose[nodeNo] = poseLocal_bindpose[nodeNo];
 					} else {
-						poseLocal_bindpose[nodeNo] = poseLocal_tpose[nodeNo];
+						poseLocal_bindpose[nodeNo] = poseLocal_tpose_rootIdentity[nodeNo];
 						poseGlobal_bindpose[nodeNo] = poseLocal_bindpose[nodeNo] * poseGlobal_bindpose[ParentIndex];
 					}
 				}else{
