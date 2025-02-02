@@ -548,6 +548,16 @@ bool VRMConverter::Options::IsVRM10RemoveLocalRotation() const {
 #endif
 }
 
+bool VRMConverter::Options::IsVRM10BindToRestPose() const {
+	bool ret = true;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+	return ImportOption->bVrm10UseBindToRestPose;
+#else
+	return ret;
+#endif
+}
+
 bool VRMConverter::Options::IsVRM10Bindpose() const {
 	bool ret = true;
 #if WITH_EDITOR

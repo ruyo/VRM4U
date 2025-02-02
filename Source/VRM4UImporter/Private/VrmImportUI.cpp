@@ -35,6 +35,8 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bVrm10RemoveLocalRotation);
 
+	c(bVrm10UseBindToRestPose);
+
 	c(bVrm10Bindpose);
 
 	c(bForceOriginalBoneName);

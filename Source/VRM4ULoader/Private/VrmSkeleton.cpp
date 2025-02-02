@@ -282,6 +282,17 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 	TMap<const aiNode*, const aiBone*> aiBoneTable = makeAiBoneTable(scene, nodeArray);
 	//TMap<const aiNode*, const aiSkeletonBone*> aiBoneTable = makeAiSkeletonBoneTable(scene, nodeArray);
 
+	{
+		TArray<const aiBone*> v;
+		aiBoneTable.GenerateValueArray(v);
+
+		for (int i = 2; i < v.Num(); ++i) {
+			if (v[i - 1]->mArmature != v[i]->mArmature) {
+				// use armature
+				break;
+			}
+		}
+	}
 
 	{
 		int totalBoneCount = 0;
@@ -381,8 +392,8 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 
 
 					FTransform globalpose;
-
 					globalpose.SetFromMatrix(m.Inverse());
+
 					poseGlobal_bindpose[nodeNo] = globalpose;
 
 					if (ParentIndex == INDEX_NONE) {

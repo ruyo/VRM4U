@@ -1001,7 +1001,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 
 		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false
-			&& VRMConverter::Options::Get().IsDebugOneBone() == false) {
+			&& VRMConverter::Options::Get().IsDebugOneBone() == false
+			&& VRMConverter::Options::Get().IsVRM10BindToRestPose() == true) {
 			if (vrmAssetList->Pose_bind.Num() == 0 || vrmAssetList->Pose_tpose.Num() == 0) {
 				UE_LOG(LogVRM4ULoader, Warning, TEXT("BindPose -> TPose :: no bindpose array!"));
 			}

@@ -381,6 +381,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bVrm10RemoveLocalRotation = true;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bVrm10UseBindToRestPose = true;
+
 	bool bVrm10Bindpose = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
