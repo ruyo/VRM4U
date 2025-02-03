@@ -19,7 +19,7 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 
 			for (int i = 0; i < 4; ++i) {
 				if (str[i] != pData[c_start + i]) {
-					continue;
+					break;
 				}
 				bFound = true;
 			}
@@ -74,7 +74,7 @@ bool VRMIsVRM10(const uint8_t* pData, size_t size) {
 
 			for (int i = 0; i < 4; ++i) {
 				if (str[i] != pData[c_start + i]) {
-					continue;
+					break;
 				}
 				bFound = true;
 			}
