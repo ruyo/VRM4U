@@ -418,6 +418,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		{
 			if (ReimportBase) {
 				vrmAssetList = ReimportBase;
+				VRMUtil::CloseEditorWindowByFolderPath(vrmAssetList.Get());
 			}
 			if (vrmAssetList) {
 				vrmAssetList->MarkPackageDirty();

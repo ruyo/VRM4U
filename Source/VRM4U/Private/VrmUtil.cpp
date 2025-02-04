@@ -13,6 +13,15 @@
 #include "VrmAssetUserData.h"
 #endif
 
+#if	UE_VERSION_OLDER_THAN(4,26,0)
+#include "AssetRegistryModule.h"
+#include "ARFilter.h"
+#else
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/ARFilter.h"
+#include "AssetRegistry/AssetData.h"
+#endif
+
 
 void FImportOptionData::init() {
 }
@@ -977,3 +986,35 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const USkeletalMesh *sk) {
 	return nullptr;
 }
 
+
+void VRMUtil::CloseEditorWindowByFolderPath(const UObject* Asset){
+#if WITH_EDITOR
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
+
+	if (IsValid(Asset) == false) {
+		return;
+	}
+
+	FString AssetPath = Asset->GetPathName();
+	FString FolderPath = FPackageName::GetLongPackagePath(AssetPath);
+
+	auto* AssetEditorSS = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (AssetEditorSS == nullptr) return;
+
+	TArray<UObject*> EditedAssets = AssetEditorSS->GetAllEditedAssets();
+	for (UObject* EditedAsset : EditedAssets) {
+
+		FString EditedAssetPath = EditedAsset->GetPathName();
+		FString EditedFolderPath = FPackageName::GetLongPackagePath(AssetPath);
+
+		if (EditedFolderPath == FolderPath) {
+
+			if (IAssetEditorInstance* Editor = AssetEditorSS->FindEditorForAsset(EditedAsset, false)) {
+				Editor->CloseWindow();
+			}
+		}
+	}
+#endif
+#endif
+}

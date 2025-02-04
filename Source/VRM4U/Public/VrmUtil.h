@@ -547,6 +547,8 @@ public:
 	static class UVrmAssetListObject* GetAssetListObjectAny(const UObject* obj);
 	static class UVrmAssetListObject* GetAssetListObject(const USkeletalMesh *);
 
+	static void CloseEditorWindowByFolderPath(const UObject* obj);
+
 };
 
 class VRM4U_API VRMRetargetData {
