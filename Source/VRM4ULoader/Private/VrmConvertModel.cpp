@@ -674,7 +674,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 		}
-		result.meshInfo.SetNum(aiData->mNumMeshes, false);
+		result.meshInfo.SetNum(aiData->mNumMeshes);
 
 
 		// find and remove unused vertex
