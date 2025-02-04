@@ -440,7 +440,11 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 							//if (v.Find(info.Name.ToString()) != INDEX_NONE) {
 								pose.SetRotation(FQuat::Identity);
 								if (ParentIndex >= 0) {
-									pose.SetTranslation(poseGlobal_tpose[nodeNo].GetLocation() - poseGlobal_tpose[ParentIndex].GetLocation());
+									if (VRMConverter::Options::Get().IsVRM10Bindpose()) {
+										pose.SetTranslation(poseGlobal_bindpose[nodeNo].GetLocation() - poseGlobal_bindpose[ParentIndex].GetLocation());
+									} else {
+										pose.SetTranslation(poseGlobal_tpose[nodeNo].GetLocation() - poseGlobal_tpose[ParentIndex].GetLocation());
+									}
 								}
 							//}
 						}
