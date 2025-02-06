@@ -59,6 +59,8 @@ namespace {
 		} else {
 			material->Parent = parent;
 		}
+		FMaterialUpdateContext UpdateContext(FMaterialUpdateContext::EOptions::Default, GMaxRHIShaderPlatform);
+		UpdateContext.AddMaterialInstance(material);
 #else
 		material->Parent = parent;
 #endif
