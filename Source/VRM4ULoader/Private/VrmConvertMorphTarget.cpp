@@ -198,6 +198,12 @@ static bool readMorph2(TArray<FMorphTargetDelta> &MorphDeltas, aiString targetNa
 							aiV[1] * 100.f
 						);
 					}
+
+					// apply original root bone rotation
+					FVector tmp;
+					tmp.Set(v.PositionDelta.X, v.PositionDelta.Y, v.PositionDelta.Z);
+					tmp = assetList->model_root_transform.TransformVector(tmp);
+					v.PositionDelta.Set(tmp.X, tmp.Y, tmp.Z);
 				}
 
 				v.PositionDelta *= VRMConverter::Options::Get().GetModelScale();

@@ -66,6 +66,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Animation Play Rate Scale"))
 	float PlayRateScale = 1.0f;
 
+	/** Remove RootBone Rotation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Remove RootBone Rotation"))
+	bool bRemoveRootBoneRotation = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "VRM10 Convert to Restpose from Bindpose"))
+	bool bVrm10UseBindToRestPose = true;
+
 	/** Remove Local Rotation for VRM10 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "VRM10 Remove Local Rotation"))
 	bool bVrm10RemoveLocalRotation = false;

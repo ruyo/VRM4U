@@ -31,7 +31,11 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(PlayRateScale);
 
+	c(bRemoveRootBoneRotation);
+
 	c(bVrm10RemoveLocalRotation);
+
+	c(bVrm10UseBindToRestPose);
 
 	c(bVrm10Bindpose);
 

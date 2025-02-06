@@ -208,6 +208,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 
 		// to default
 		{
+			ImportUI->bRemoveRootBoneRotation = true;
 			ImportUI->bVrm10RemoveLocalRotation = false;
 
 			ImportUI->ModelScale = 1.0f;
@@ -417,6 +418,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		{
 			if (ReimportBase) {
 				vrmAssetList = ReimportBase;
+				VRMUtil::CloseEditorWindowByFolderPath(vrmAssetList.Get());
 			}
 			if (vrmAssetList) {
 				vrmAssetList->MarkPackageDirty();
