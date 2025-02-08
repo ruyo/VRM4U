@@ -25,6 +25,11 @@
 #include "LevelSequenceEditorBlueprintLibrary.h"
 #endif
 
+#if UE_VERSION_OLDER_THAN(5,5,0)
+#else
+#include "MovieSceneSequencePlayer.h"
+#endif
+
 
 #include "LevelSequence.h"
 #include "ISequencer.h"
@@ -114,8 +119,14 @@ void UVrmEditorEventComponent::SetSelectCheck(bool bCheckOn) {
 void UVrmEditorEventComponent::OnGlobalTimeChangeFunc() {
 #if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,5,0)
+
 	int32  t = ULevelSequenceEditorBlueprintLibrary::GetCurrentTime();
+	OnGlobalTimeChange.Broadcast((float)t);
+#else
+	//int32  t = ULevelSequenceEditorBlueprintLibrary::GetCurrentTime();
+	auto mm = ULevelSequenceEditorBlueprintLibrary::GetGlobalPosition();
+	int32 t = mm.Timecode.Frames;
 	OnGlobalTimeChange.Broadcast((float)t);
 #endif
 #endif
