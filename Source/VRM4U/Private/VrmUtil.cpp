@@ -899,7 +899,7 @@ UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
 	{
 		int index = 0;
 		if (core.FindChar('_', index)) {
-			core.RemoveAt(0, index, true);
+			core.RemoveAt(0, index);
 		}
 	}
 
@@ -1011,7 +1011,11 @@ void VRMUtil::CloseEditorWindowByFolderPath(const UObject* Asset){
 		if (EditedFolderPath == FolderPath) {
 
 			if (IAssetEditorInstance* Editor = AssetEditorSS->FindEditorForAsset(EditedAsset, false)) {
+#if	UE_VERSION_OLDER_THAN(5,3,0)
 				Editor->CloseWindow();
+#else
+				Editor->CloseWindow(EAssetEditorCloseReason::AssetUnloadingOrInvalid);
+#endif
 			}
 		}
 	}
