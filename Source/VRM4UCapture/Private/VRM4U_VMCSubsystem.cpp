@@ -10,6 +10,10 @@
 #include "OSCManager.h"
 #include "OSCServer.h"
 
+#if WITH_EDITOR
+	#include "Editor.h"
+#endif
+
 bool UVRM4U_VMCSubsystem::CopyVMCData(FVMCData &data, FString ServerAddress, int port) {
 	for (int i = 0; i < VMCObjectList.Num(); ++i) {
 		auto a = VMCObjectList[i].Get();
