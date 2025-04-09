@@ -3,8 +3,13 @@
 #include "VrmSceneViewExtension.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
-#include "DataDrivenShaderPlatformInfo.h"
+
 #include "VRM4U_RenderSubsystem.h"
+
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
+#include "DataDrivenShaderPlatformInfo.h"
+#endif
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
 #include "PostProcess/PostProcessing.h"
