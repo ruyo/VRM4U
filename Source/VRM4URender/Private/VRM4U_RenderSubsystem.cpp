@@ -339,3 +339,12 @@ void UVRM4U_RenderSubsystem::RemoveAllCaptureTexture() {
 void UVRM4U_RenderSubsystem::ResetSceneTextureExtentHistory() {
 	::ResetSceneTextureExtentHistory();
 }
+
+void UVRM4U_RenderSubsystem::SetViewExtension(bool bEnable) {
+
+	if (SceneViewExtension == nullptr) {
+		return;
+	}
+
+//	SceneViewExtension->
+}

@@ -32,7 +32,7 @@ public:
 
 
 	virtual int32 GetPriority() const override { return 100; }
-	//virtual bool IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const override;
+	virtual bool IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const override;
 
 	FScreenPassTexture AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessMaterialInputs& InOutInputs);
 
