@@ -343,6 +343,10 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 						} else {
 							tpose_root = localpose;
 							localpose_Identity.SetIdentity();
+
+							if (VRMConverter::Options::Get().IsRemoveRootBonePosition() == false) {
+								localpose_Identity.SetTranslation(localpose.GetTranslation());
+							}
 						}
 					}// identity set
 
