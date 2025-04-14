@@ -160,6 +160,30 @@ namespace {
 				};
 				a = tmp;
 			}
+
+
+			if (VRMConverter::Options::Get().IsBVHModel()) {
+				{
+					TArray < FString > tmp = {
+						TEXT("l_hand"),
+						TEXT("r_hand"),
+						TEXT("l_foot"),
+						TEXT("r_foot"),
+					};
+					a = tmp;
+				}
+				
+				if (table_no == 1) {
+					TArray < FString > tmp = {
+						TEXT("l_hand"),
+						TEXT("r_hand"),
+						TEXT("l_toes"),
+						TEXT("r_toes"),
+					};
+					a = tmp;
+				}
+			}
+
 			for (int i = 0; i < a.Num(); ++i) {
 				for (auto& t : assetList->VrmMetaObject->humanoidBoneTable) {
 					if (t.Key.ToLower() == a[i].ToLower()) {
@@ -209,6 +233,43 @@ namespace {
 					}
 				}
 			}
+			// BVH
+			if (VRMConverter::Options::Get().IsBVHModel()) {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
+				for (int i = 0; i < a.Num(); ++i) {
+
+
+					USkeletalMesh* sk = assetList->SkeletalMesh;
+
+					//auto boneList = VRMGetRefSkeleton(sk).GetRefBonePose();
+					auto ind = VRMGetRefSkeleton(sk).FindBoneIndex(*a[i]);
+
+					if (ind < 0) continue;
+
+					auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *a[i]);
+					if (goal != NAME_None) {
+						rigcon->ConnectGoalToSolver(goal, sol_index);
+
+						// arm chain
+						if (i == 0 || i == 1) {
+							UIKRig_FBIKEffector* e = Cast<UIKRig_FBIKEffector>(sol->GetGoalSettings(goal));
+							if (e) {
+								e->PullChainAlpha = 0.f;
+							}
+						}
+
+						const auto& chain = rigcon->GetRetargetChains();
+						for (auto& c : chain) {
+							if (c.EndBone.BoneName == *a[i]) {
+								rigcon->SetRetargetChainGoal(c.ChainName, goal);
+							}
+						}
+					}
+					
+				}
+#endif
+			}// bvh
 		}
 		{
 			TArray<FString> a = {
@@ -885,6 +946,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					FString s2;
 					uint32_t mask = 0xFFFF;
 				};
+
+				TArray<FString> AddedChainList;
+
 				TArray<TT> table = {
 					{TEXT("Spine"),		TEXT("spine"),				TEXT("chest"),},
 	#if	UE_VERSION_OLDER_THAN(5,4,0)
@@ -930,8 +994,43 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					{TEXT("HandRootIK"),		TEXT("ik_hand_root"),	TEXT("ik_hand_root"),},
 				};
 
+				TArray<TT> table_BVH = {
+					{TEXT("Spine"),		TEXT("torso_1"),				TEXT("torso_7"),},
+	#if	UE_VERSION_OLDER_THAN(5,4,0)
+					{TEXT("Head"),		TEXT("neck_1"),				TEXT("head"),},
+	#else
+					{TEXT("Neck"),		TEXT("neck_1"),				TEXT("neck_2"),},
+					{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
+	#endif
+					{TEXT("RightArm"),	TEXT("r_up_arm"),		TEXT("r_hand"),},
+					{TEXT("LeftArm"),	TEXT("l_up_arm"),		TEXT("l_hand"),},
+
+					// 0
+					{TEXT("RightLeg"),	TEXT("r_up_leg"),		TEXT("r_toes"),	0x01},
+					{TEXT("LeftLeg"),	TEXT("l_up_leg"),		TEXT("l_toes"),	0x01},
+
+					// 1
+					{TEXT("RightLeg"),	TEXT("r_up_leg"),		TEXT("r_foot"),	0x02},
+					{TEXT("LeftLeg"),	TEXT("l_up_leg"),		TEXT("l_foot"),	0x02},
+					{TEXT("RightToe"),	TEXT("r_toes"),		TEXT("r_toes"),		0x02},
+					{TEXT("LeftToe"),	TEXT("l_toes"),		TEXT("l_toes"),		0x02},
+
+					{TEXT("LeftClavicle"),		TEXT("l_shoulder"),	TEXT("l_shoulder"),},
+					{TEXT("RightClavicle"),		TEXT("r_shoulder"),	TEXT("r_shoulder"),},
+				};
+
+				// mocopi bvh  bone name
+				if (Options::Get().IsBVHModel()) {
+					table.Append(table_BVH);
+
+					rigcon.SetRetargetRoot("root");
+				}
+
 				for (auto& t : table) {
 					if ((t.mask & (1 << ik_no)) == 0) {
+						continue;
+					}
+					if (AddedChainList.Contains(t.chain)) {
 						continue;
 					}
 					if (t.chain == TEXT("LeftThumb") || (t.chain == TEXT("RightThumb"))) {
@@ -983,6 +1082,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 							}
 						}
 						rigcon.VRMAddRetargetChain(*t.chain, *conv.s1, *s2);
+						AddedChainList.Add(t.chain);
 					}
 				}
 				rigcon.LocalSolverSetup(vrmAssetList, ik_no);
