@@ -23,7 +23,7 @@ namespace {
 	template<class BaseType, class PoseType>
 	static void ConvertToLocalPoses(const BaseType &basePose, PoseType& OutPose)
 	{
-		checkSlow(basePose.Pose.IsValid());
+		checkSlow(basePose.GetPose().IsValid());
 		OutPose = basePose.GetPose();
 
 		// now we need to convert back to local bases
