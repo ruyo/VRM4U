@@ -708,7 +708,12 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 				k->SetBoneTranslationRetargetingMode(ind, EBoneTranslationRetargetingMode::AnimationScaled, false);
 			}
 		}
-
+		if (VRMConverter::Options::Get().IsBVHModel()) {
+			// 0 == root by vrm4u dummy
+			// 1 == root by model
+			k->SetBoneTranslationRetargetingMode(0, EBoneTranslationRetargetingMode::Animation, false);
+			k->SetBoneTranslationRetargetingMode(1, EBoneTranslationRetargetingMode::Animation, false);
+		}
 		if (VRMConverter::Options::Get().IsVRMModel() == false) {
 			k->SetBoneTranslationRetargetingMode(0, EBoneTranslationRetargetingMode::Animation, false);
 		}

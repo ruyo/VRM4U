@@ -536,6 +536,16 @@ bool VRMConverter::Options::IsRemoveRootBoneRotation() const {
 	return ret;
 #endif
 }
+bool VRMConverter::Options::IsRemoveRootBonePosition() const {
+	bool ret = true;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bRemoveRootBonePosition;
+#else
+	return ret;
+#endif
+}
 
 bool VRMConverter::Options::IsVRM10RemoveLocalRotation() const {
 	bool ret = true;

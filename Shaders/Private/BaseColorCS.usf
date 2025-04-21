@@ -1,0 +1,16 @@
+#include "/Engine/Public/Platform.ush"
+
+RWTexture2D<float4> OutputTexture : register(u0); // Render Targetへの書き込み用
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
+{
+    // ピクセル座標を取得
+    uint2 pixelCoord = DispatchThreadID.xy;
+
+    // 簡単な例として、座標に基づく色を書き込み
+    float4 color = float4(float(pixelCoord.x) / 512.0, float(pixelCoord.y) / 512.0, 0.5, 1.0);
+    if (pixelCoord.x == pixelCoord.y) color = 0;
+    OutputTexture[pixelCoord] = color;
+   
+}
