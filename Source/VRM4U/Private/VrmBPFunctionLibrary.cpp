@@ -1899,15 +1899,14 @@ UVrmAssetListObject* UVrmBPFunctionLibrary::VRMGetVrmAssetListObjectFromAsset(co
 
 bool UVrmBPFunctionLibrary::VRMIsMovieRendering() {
 #if VRM4U_USE_MRQ
-	UMoviePipelineQueueSubsystem* s = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
-	if (s == nullptr) return false;
+	if (GEditor) {
+		UMoviePipelineQueueSubsystem* s = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+		if (s == nullptr) return false;
 
-	return s->IsRendering();
-#else
-	return false;
+		return s->IsRendering();
+	}
 #endif
-
+	return false;
 }
-
 
 

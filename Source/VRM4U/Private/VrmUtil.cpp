@@ -995,6 +995,7 @@ void VRMUtil::CloseEditorWindowByFolderPath(const UObject* Asset){
 	if (IsValid(Asset) == false) {
 		return;
 	}
+	if (GEditor == nullptr) return;
 
 	FString AssetPath = Asset->GetPathName();
 	FString FolderPath = FPackageName::GetLongPackagePath(AssetPath);
