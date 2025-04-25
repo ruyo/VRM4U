@@ -1102,16 +1102,18 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 		{
-			FString table_name[2] = {
+			FString table_name[3] = {
 				FString(TEXT("RTG_")) + vrmAssetList->BaseFileName,
+				FString(TEXT("RTG_UE4_")) + vrmAssetList->BaseFileName,
 				FString(TEXT("RTG_UEFN_")) + vrmAssetList->BaseFileName,
 			};
-			FString table_asset[2] = {
+			FString table_asset[3] = {
 				TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"),
+				TEXT("/Game/Characters/Mannequin_UE4/Rigs/IK_UE4_Mannequin.IK_UE4_Mannequin"),
 				TEXT("/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin"),
 			};
 
-			for (int ikr_no=0; ikr_no<2; ikr_no++){
+			for (int ikr_no=0; ikr_no<3; ikr_no++){
 
 				FSoftObjectPath r(table_asset[ikr_no]);
 				UObject* u = r.TryLoad();
