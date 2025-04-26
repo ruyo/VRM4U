@@ -54,52 +54,7 @@
 
 //#include "Windows/WindowsSystemIncludes.h"
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,2,0)
-
-#include "UObject/SavePackage.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Solvers/IKRig_PBIKSolver.h"
-#endif
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-#include "UObject/SavePackage.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Solvers/IKRig_FBIKSolver.h"
-#endif
-
-#else
-#include "UObject/SavePackage.h"
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#if WITH_EDITOR
-#include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Rig/Solvers/IKRig_FBIKSolver.h"
-#endif
-
-#endif
+#include "VrmRigHeader.h"
 
 #if UE_VERSION_OLDER_THAN(5,4,0)
 #else

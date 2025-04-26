@@ -18,10 +18,8 @@
 #include "AnimNode_VrmSpringBone.h"
 #include "AnimNode_VrmConstraint.h"
 #include "AnimNodes/AnimNode_RetargetPoseFromMesh.h"
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-#else
-#include "Rig/Solvers/IKRigSolver.h"
-#endif
+
+#include "VrmRigHeader.h"
 
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 #include "Animation/Rig.h"

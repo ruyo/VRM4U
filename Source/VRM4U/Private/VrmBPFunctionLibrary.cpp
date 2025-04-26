@@ -30,27 +30,7 @@
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "Rendering/SkeletalMeshModel.h"
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#endif
-
-#else
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#endif
-
-#endif
+#include "VrmRigHeader.h"
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
