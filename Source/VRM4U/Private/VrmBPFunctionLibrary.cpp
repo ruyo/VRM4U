@@ -1748,12 +1748,14 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
 		//ase->MarkRawDataAsModified();
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
+#else
+		// todo 5.6
 #endif
 
 

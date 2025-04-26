@@ -57,10 +57,18 @@
 #endif
 
 
+#if UE_VERSION_OLDER_THAN(5,6,0)
+
+#define VRM4U_USE_EDITOR_RIG WITH_EDITOR
+
+#else
+#define VRM4U_USE_EDITOR_RIG 0
+
+#endif
 
 namespace {
 
-#if WITH_EDITOR
+#if VRM4U_USE_EDITOR_RIG && WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 
@@ -78,9 +86,11 @@ namespace {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 			sol_index = rigcon->AddSolver(UIKRigPBIKSolver::StaticClass());
 			sol = rigcon->GetSolver(sol_index);
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 			sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
 			sol = rigcon->GetSolverAtIndex(sol_index);
+#else
+			// todo 5.6
 #endif
 		}
 		if (sol == nullptr) return;
@@ -333,8 +343,6 @@ namespace {
 #endif
 }
 
-#define VRM4U_USE_EDITOR_RIG WITH_EDITOR
-
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 
@@ -401,38 +409,11 @@ public:
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
 		c->SetIKRig(SourceOrTarget, IKRig);
 #else
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 		UIKRetargeterController::setSourceRig(Retargeter, IKRig);
-		/*
-		//FScopeLock Lock(&ControllerLock);
-
-		if (SourceOrTarget == ERetargetSourceOrTarget::Source)
-		{
-			UIKRetargeterController::setSourceRig(setSourceRig, IKRig);
-			//Retargeter->SourceIKRigAsset = IKRig;
-			//Retargeter->SourcePreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
-		}
-		else
-		{
-			//Retargeter->TargetIKRigAsset = IKRig;
-			//Retargeter->TargetPreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
-		}
-
-		// re-ask to fix root height for this mesh
-		if (IKRig)
-		{
-			SetAskedToFixRootHeightForMesh(GetPreviewMesh(SourceOrTarget), false);
-		}
-
-		CleanChainMapping();
-
-		constexpr bool bForceRemap = false;
-		AutoMapChains(EAutoMapChainType::Fuzzy, bForceRemap);
-
-		// update any editors attached to this asset
-		//BroadcastIKRigReplaced(SourceOrTarget);
-		//BroadcastPreviewMeshReplaced(SourceOrTarget);
-		//BroadcastNeedsReinitialized();
-		*/
+#else
+		// todo 5.6
+#endif
 #endif
 	}
 #endif
@@ -537,7 +518,7 @@ public:
 };
 #endif // 5.0
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(5,0,0) 
 #else
 
 class SimpleRigController {

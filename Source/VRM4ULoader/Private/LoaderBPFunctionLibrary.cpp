@@ -1297,13 +1297,19 @@ static void LocalEpicSkeletonSetup(UIKRigController *rigcon) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 		sol_index = rigcon->AddSolver(UIKRigPBIKSolver::StaticClass());
 		sol = rigcon->GetSolver(sol_index);
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 		sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
 		sol = rigcon->GetSolverAtIndex(sol_index);
+#else
+		// todo 5.6
 #endif
 	}
 	if (sol == nullptr) return;
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 	sol->SetRootBone(TEXT("root"));
+#else
+	// todo 5.6
+#endif
 
 	{
 		TArray<FString> a = {
