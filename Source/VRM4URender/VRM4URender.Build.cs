@@ -10,6 +10,7 @@ public class VRM4URender : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				System.IO.Path.Combine(GetModuleDirectory("Renderer"), "Private"), //required for FPostProcessMaterialInputs
+				System.IO.Path.Combine(GetModuleDirectory("Renderer"), "Internal"), //required for FPostProcessMaterialInputs
 			});
 
 

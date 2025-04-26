@@ -1128,6 +1128,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						FName PoseName = "POSE_A";
 						const FName NewPoseName = c.CreateRetargetPose(PoseName, SourceOrTargetVRM);
 						FIKRetargetPose* NewPose = c.GetRetargetPosesByName(SourceOrTargetVRM, NewPoseName);
+						if (NewPose == nullptr) continue;
 
 						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
