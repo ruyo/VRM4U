@@ -107,7 +107,12 @@ namespace {
 				continue;
 			}
 			if (modelName.Key == TEXT("hips")) {
+#if UE_VERSION_OLDER_THAN(5,6,0)
 				sol->SetRootBone(*modelName.Value);
+#else
+				sol->SetStartBone(*modelName.Value);
+#endif
+
 			}
 		}
 

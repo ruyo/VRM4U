@@ -1308,7 +1308,7 @@ static void LocalEpicSkeletonSetup(UIKRigController *rigcon) {
 #if	UE_VERSION_OLDER_THAN(5,6,0)
 	sol->SetRootBone(TEXT("root"));
 #else
-	// todo 5.6
+	sol->SetStartBone(TEXT("root"));
 #endif
 
 	{
