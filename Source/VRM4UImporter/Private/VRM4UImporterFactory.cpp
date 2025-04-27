@@ -269,7 +269,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 			{
 				const FString Extension = FPaths::GetExtension(fullFileName);
 				if (Extension.ToLower() == TEXT("pmx")) {
-					ImportUI->ModelScale = 0.1f;
+					ImportUI->ModelScale = 0.08f;
 					ImportUI->bMergeMaterial = false;
 					ImportUI->bMergePrimitive = false;
 					ImportUI->bForceTwoSided = true;
