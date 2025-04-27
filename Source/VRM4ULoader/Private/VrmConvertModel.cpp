@@ -1394,7 +1394,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 							}
 
 							if (tabledIndex > 255) {
-								UE_LOG(LogVRM4ULoader, Warning, TEXT("bonemap over!"));
+								UE_LOG(LogVRM4ULoader, Warning, TEXT("bonemap over! (Can be ignored if Support 16-bit Bone Index is turned on in Project Settings.)"));
 							}
 
 							if (Options::Get().IsDebugOneBone()) {
