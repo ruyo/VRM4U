@@ -199,7 +199,28 @@ namespace {
 							}
 						}
 #else
-						//todo 5.6
+						auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *t.Value);
+						if (goal != NAME_None) {
+							rigcon->ConnectGoalToSolver(goal, sol_index);
+
+							// arm chain
+							if (i == 0 || i == 1) {
+								auto *sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+
+								if (sc) {
+									auto settings = sc->GetGoalSettings(goal);
+									settings.PullChainAlpha = 0.f;
+									sc->SetGoalSettings(goal, settings);
+								}
+							}
+
+							const auto& chain = rigcon->GetRetargetChains();
+							for (auto& c : chain) {
+								if (c.EndBone.BoneName == *t.Value) {
+									rigcon->SetRetargetChainGoal(c.ChainName, goal);
+								}
+							}
+						}
 #endif
 					}
 				}
@@ -286,9 +307,12 @@ namespace {
 							s->RotationStiffness = 0.95f;
 #else
 							sol->AddSettingsToBone(*t.Value);
-							//sol->GetBoneSettingsType()
-							//FIKRigFullBodyIKSolver* s = reinterpret_cast<FIKRigFullBodyIKSolver*>(sol->GetBoneSettings(*t.Value));
-							//s->rot
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.RotationStiffness = 0.95f;
+								sc->SetBoneSettings(*t.Value, settings);
+							}
 #endif
 						}
 
@@ -308,6 +332,17 @@ namespace {
 							}
 #else
 							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.bUsePreferredAngles = true;
+								if (i == 2) {
+									settings.PreferredAngles.Set(0, 0, 90);
+								} else {
+									settings.PreferredAngles.Set(0, 0, -90);
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
 #endif
 						}
 
@@ -329,6 +364,20 @@ namespace {
 							}
 #else
 							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.bUsePreferredAngles = true;
+								if (i == 4 || i == 5) {
+									settings.PreferredAngles.Set(-180, 0, 0);
+								}
+								else {
+									settings.PreferredAngles.Set(180, 0, 0);
+									settings.Y = EPBIKLimitType::Locked;
+									settings.Z = EPBIKLimitType::Locked;
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
 #endif
 						}
 
@@ -342,6 +391,12 @@ namespace {
 							s->RotationStiffness = 0.85f;
 #else
 							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.RotationStiffness = 0.85f;
+								sc->SetBoneSettings(*t.Value, settings);
+							}
 #endif
 						}
 
@@ -360,6 +415,17 @@ namespace {
 							}
 #else
 							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								if (i == 10) {
+									settings.RotationStiffness = 1.f;
+								}
+								else {
+									settings.RotationStiffness = 0.9f;
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
 #endif
 						}
 
