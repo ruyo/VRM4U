@@ -1178,7 +1178,6 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				}
 
 				SimpleRetargeterController c = SimpleRetargeterController(ikr);
-
 				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_to_ik[ikr_no]]);
 
 				if (u) {
@@ -1297,6 +1296,15 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					}
 
 #if VRM4U_USE_AUTOALIGN
+
+#if UE_VERSION_OLDER_THAN(5,6,0)
+#else
+					{
+						UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
+						//UIKRetargeterController& c = *cp;
+						cp->AddDefaultOps();
+					}
+#endif
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
