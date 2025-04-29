@@ -1744,18 +1744,19 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 		ase->MarkRawDataAsModified();
 #elif UE_VERSION_OLDER_THAN(5,2,0)
 		ase->GetController().SetPlayLength(totalTime);
-		//ase->MarkRawDataAsModified();
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
 #elif UE_VERSION_OLDER_THAN(5,6,0)
 		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
-		//ase->MarkRawDataAsModified();
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
 #else
-		// todo 5.6
+		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
+		//ase->SetUseRawDataOnly(true);
+		ase->FlagDependentAnimationsAsRawDataOnly();
+		ase->UpdateDependentStreamingAnimations();
 #endif
 
 

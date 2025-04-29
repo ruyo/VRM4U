@@ -57,14 +57,7 @@
 #endif
 
 
-#if UE_VERSION_OLDER_THAN(5,6,0)
-
 #define VRM4U_USE_EDITOR_RIG WITH_EDITOR
-
-#else
-#define VRM4U_USE_EDITOR_RIG 0
-
-#endif
 
 namespace {
 
@@ -90,7 +83,8 @@ namespace {
 			sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
 			sol = rigcon->GetSolverAtIndex(sol_index);
 #else
-			// todo 5.6
+			sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
+			sol = rigcon->GetSolverAtIndex(sol_index);
 #endif
 		}
 		if (sol == nullptr) return;
@@ -184,7 +178,7 @@ namespace {
 								}
 							}
 						}
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 						auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *t.Value);
 						if (goal != NAME_None) {
 							rigcon->ConnectGoalToSolver(goal, sol_index);
@@ -204,6 +198,8 @@ namespace {
 								}
 							}
 						}
+#else
+						//todo 5.6
 #endif
 					}
 				}
@@ -211,7 +207,7 @@ namespace {
 			// BVH
 			if (VRMConverter::Options::Get().IsBVHModel()) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 				for (int i = 0; i < a.Num(); ++i) {
 
 
@@ -243,6 +239,8 @@ namespace {
 					}
 					
 				}
+#else
+				// todo 5.6
 #endif
 			}// bvh
 		}
@@ -280,15 +278,23 @@ namespace {
 
 						// shoulder
 						if (i == 0 || i == 1) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							s->RotationStiffness = 0.95f;
+#else
+							sol->AddSettingsToBone(*t.Value);
+							//sol->GetBoneSettingsType()
+							//FIKRigFullBodyIKSolver* s = reinterpret_cast<FIKRigFullBodyIKSolver*>(sol->GetBoneSettings(*t.Value));
+							//s->rot
+#endif
 						}
 
 						// arm
 						if (i == 2 || i == 3) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
@@ -296,13 +302,18 @@ namespace {
 							s->bUsePreferredAngles = true;
 							if (i == 2) {
 								s->PreferredAngles.Set(0, 0, 90);
-							} else {
+							}
+							else {
 								s->PreferredAngles.Set(0, 0, -90);
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+#endif
 						}
 
 						// only lower leg
 						if (i == 6 || i == 7) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
@@ -310,33 +321,46 @@ namespace {
 							s->bUsePreferredAngles = true;
 							if (i == 4 || i == 5) {
 								s->PreferredAngles.Set(-180, 0, 0);
-							} else {
+							}
+							else {
 								s->PreferredAngles.Set(180, 0, 0);
 								s->Y = EPBIKLimitType::Locked;
 								s->Z = EPBIKLimitType::Locked;
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+#endif
 						}
 
 						// foot
 						if (i == 8 || i == 9) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							s->RotationStiffness = 0.85f;
+#else
+							sol->AddSettingsToBone(*t.Value);
+#endif
 						}
 
 						// spine
 						if (i >= 10) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							if (i == 10) {
 								s->RotationStiffness = 1.f;
-							} else {
+							}
+							else {
 								s->RotationStiffness = 0.9f;
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+#endif
 						}
 
 					}
@@ -417,7 +441,7 @@ public:
 #if	UE_VERSION_OLDER_THAN(5,6,0)
 		UIKRetargeterController::setSourceRig(Retargeter, IKRig);
 #else
-		// todo 5.6
+		// no rig
 #endif
 #endif
 	}

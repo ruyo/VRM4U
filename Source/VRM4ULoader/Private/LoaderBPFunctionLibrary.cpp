@@ -1301,7 +1301,8 @@ static void LocalEpicSkeletonSetup(UIKRigController *rigcon) {
 		sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
 		sol = rigcon->GetSolverAtIndex(sol_index);
 #else
-		// todo 5.6
+		sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
+		sol = rigcon->GetSolverAtIndex(sol_index);
 #endif
 	}
 	if (sol == nullptr) return;
