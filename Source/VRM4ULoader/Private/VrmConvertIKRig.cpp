@@ -1151,6 +1151,12 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 			for (int ikr_no=0; ikr_no<3; ikr_no++){
 
+				int ikr_to_ik[3] = {
+					0, // mannequin
+					0, // mannequin
+					1  // uefn mannequin
+				};
+
 				FSoftObjectPath r(table_asset[ikr_no]);
 				UObject* u = r.TryLoad();
 				if (u == nullptr) continue;
@@ -1173,7 +1179,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 				SimpleRetargeterController c = SimpleRetargeterController(ikr);
 
-				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_no]);
+				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_to_ik[ikr_no]]);
 
 				if (u) {
 					auto r2 = Cast<UIKRigDefinition>(u);
@@ -1227,7 +1233,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
-						const FName RetargetRootBoneName = table_rig_ik[ikr_no]->GetRetargetRoot();
+						const FName RetargetRootBoneName = table_rig_ik[ikr_to_ik[ikr_no]]->GetRetargetRoot();
 						for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 						{
 							auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
