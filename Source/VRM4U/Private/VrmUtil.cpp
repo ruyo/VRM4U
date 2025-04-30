@@ -990,3 +990,28 @@ void VRMUtil::CloseEditorWindowByFolderPath(const UObject* Asset){
 #endif
 #endif
 }
+
+int VRMUtil::GetChildBone(const USkeleton* skeleton, const int32 ParentBoneIndex, bool recursive, TArray<int32>& Children) {
+
+	Children.Reset();
+	auto& r = skeleton->GetReferenceSkeleton();
+
+	const int32 NumBones = r.GetRawBoneNum();
+	for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
+	{
+		if (ParentBoneIndex == r.GetParentIndex(ChildIndex))
+		{
+			Children.Add(ChildIndex);
+		}
+	}
+	if (recursive) {
+		TArray<int32> c2;
+		for (auto i : Children) {
+			TArray<int32> c;
+			GetChildBone(skeleton, i, true, c);
+			c2.Append(c);
+		}
+		Children.Append(c2);
+	}
+	return Children.Num();
+}

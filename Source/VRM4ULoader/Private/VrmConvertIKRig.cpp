@@ -261,7 +261,44 @@ namespace {
 					
 				}
 #else
-				// todo 5.6
+				for (int i = 0; i < a.Num(); ++i) {
+
+					USkeletalMesh* sk = assetList->SkeletalMesh;
+
+					//auto boneList = VRMGetRefSkeleton(sk).GetRefBonePose();
+					auto ind = VRMGetRefSkeleton(sk).FindBoneIndex(*a[i]);
+
+					if (ind < 0) continue;
+
+					auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *a[i]);
+					if (goal != NAME_None) {
+						rigcon->ConnectGoalToSolver(goal, sol_index);
+
+						// arm chain
+						if (i == 0 || i == 1) {
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+
+							if (sc) {
+								auto settings = sc->GetGoalSettings(goal);
+								settings.PullChainAlpha = 0.f;
+								sc->SetGoalSettings(goal, settings);
+							}
+
+							//UIKRig_FBIKEffector* e = Cast<UIKRig_FBIKEffector>(sol->GetGoalSettings(goal));
+							//if (e) {
+							//	e->PullChainAlpha = 0.f;
+							//}
+						}
+
+						const auto& chain = rigcon->GetRetargetChains();
+						for (auto& c : chain) {
+							if (c.EndBone.BoneName == *a[i]) {
+								rigcon->SetRetargetChainGoal(c.ChainName, goal);
+							}
+						}
+					}
+
+				}
 #endif
 			}// bvh
 		}
@@ -1171,7 +1208,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				auto SourceOrTargetVRM = ERetargetSourceOrTarget::Target;
 				auto SourceOrTargetMannequin = ERetargetSourceOrTarget::Source;
 
-				if (Options::Get().IsVRMAModel()) {
+				if (Options::Get().IsVRMAModel() || Options::Get().IsBVHModel()) {
 					SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
 					SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
 
@@ -1313,6 +1350,35 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					c.AutoAlignAllBones(SourceOrTargetMannequin);
 					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
 					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
+
+					// 指がない場合
+					if (Options::Get().IsVRMAModel() || Options::Get().IsBVHModel()) {
+						auto* target_sk = ikr->GetIKRig(SourceOrTargetMannequin)->GetPreviewMesh()->GetSkeleton();
+						auto& refskeleton = ikr->GetIKRig(SourceOrTargetMannequin)->GetPreviewMesh()->RefSkeleton;
+						{
+							UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
+							TArray<int32> childbone;
+							
+							int ind = refskeleton.FindBoneIndex(TEXT("hand_l"));
+							if (ind >= 0) {
+								VRMUtil::GetChildBone(target_sk, ind, true, childbone);
+								for (auto bone : childbone) {
+									cp->SetRotationOffsetForRetargetPoseBone(refskeleton.GetBoneName(bone), FQuat::Identity, SourceOrTargetMannequin);
+								}
+							}
+						}
+						{
+							UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
+							TArray<int32> childbone;
+							int ind = refskeleton.FindBoneIndex(TEXT("hand_r"));
+							if (ind >= 0) {
+								VRMUtil::GetChildBone(target_sk, ind, true, childbone);
+								for (auto bone : childbone) {
+									cp->SetRotationOffsetForRetargetPoseBone(refskeleton.GetBoneName(bone), FQuat::Identity, SourceOrTargetMannequin);
+								}
+							}
+						}
+					}
 
 					// VRM側は変更しない
 					//c.AutoAlignAllBones(SourceOrTargetVRM);
