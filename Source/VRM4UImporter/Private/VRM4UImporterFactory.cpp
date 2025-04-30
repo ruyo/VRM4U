@@ -290,7 +290,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 			// for thumbnail update
-			{
+			if (GEditor){
 				auto* s = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
 				if (s && ImportUI->Thumbnail) {
 					s->OpenEditorForAsset((UObject*)ImportUI->Thumbnail);

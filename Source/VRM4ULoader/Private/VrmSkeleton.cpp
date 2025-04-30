@@ -431,7 +431,11 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 					RefSkelModifier.Add(inf, FTransform());
 				}
 			}
-			info.ParentIndex = ParentIndexByNode + 1;
+			if (VRMConverter::Options::Get().IsBVHModel()) {
+				info.ParentIndex = ParentIndexByNode + 1;
+			} else {
+				info.ParentIndex = ParentIndexByNode;
+			}
 
 			FMatrix m = convertAiMatToFMatrix(node->mTransformation);
 

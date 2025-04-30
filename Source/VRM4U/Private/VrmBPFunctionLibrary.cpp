@@ -30,27 +30,7 @@
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "Rendering/SkeletalMeshModel.h"
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#endif
-
-#else
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#endif
-
-#endif
+#include "VrmRigHeader.h"
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
@@ -1764,14 +1744,17 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 		ase->MarkRawDataAsModified();
 #elif UE_VERSION_OLDER_THAN(5,2,0)
 		ase->GetController().SetPlayLength(totalTime);
-		//ase->MarkRawDataAsModified();
+		ase->SetUseRawDataOnly(true);
+		ase->FlagDependentAnimationsAsRawDataOnly();
+		ase->UpdateDependentStreamingAnimations();
+#elif UE_VERSION_OLDER_THAN(5,6,0)
+		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
 		ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
 #else
 		ase->GetController().SetNumberOfFrames(ase->GetController().ConvertSecondsToFrameNumber(totalTime));
-		//ase->MarkRawDataAsModified();
-		ase->SetUseRawDataOnly(true);
+		//ase->SetUseRawDataOnly(true);
 		ase->FlagDependentAnimationsAsRawDataOnly();
 		ase->UpdateDependentStreamingAnimations();
 #endif
@@ -1899,15 +1882,14 @@ UVrmAssetListObject* UVrmBPFunctionLibrary::VRMGetVrmAssetListObjectFromAsset(co
 
 bool UVrmBPFunctionLibrary::VRMIsMovieRendering() {
 #if VRM4U_USE_MRQ
-	UMoviePipelineQueueSubsystem* s = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
-	if (s == nullptr) return false;
+	if (GEditor) {
+		UMoviePipelineQueueSubsystem* s = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+		if (s == nullptr) return false;
 
-	return s->IsRendering();
-#else
-	return false;
+		return s->IsRendering();
+	}
 #endif
-
+	return false;
 }
-
 
 

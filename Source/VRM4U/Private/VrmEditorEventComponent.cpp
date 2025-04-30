@@ -52,6 +52,7 @@ void UVrmEditorEventComponent::OnUnregister() {
 
 void UVrmEditorEventComponent::OnSelectionChangeFunc(UObject *obj) {
 #if WITH_EDITOR
+	if (GEditor == nullptr) return;
 	bool bFound = false;
 	USelection* Selection = Cast<USelection>(obj);
 	if (Selection == GEditor->GetSelectedComponents() || Selection == GEditor->GetSelectedActors()){
@@ -71,6 +72,7 @@ void UVrmEditorEventComponent::OnSelectionChangeFunc(UObject *obj) {
 }
 void UVrmEditorEventComponent::OnSelectionObjectFunc(UObject *obj) {
 #if WITH_EDITOR
+	if (GEditor == nullptr) return;
 	bool bFound = false;
 	USelection* Selection = Cast<USelection>(obj);
 	if (Selection == GEditor->GetSelectedComponents() || Selection == GEditor->GetSelectedActors()) {
@@ -138,6 +140,7 @@ void UVrmEditorEventComponent::SetGlobalTimeCheck(bool bCheckOn) {
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #else
 	{
+		if (GEditor == nullptr) return;
 		auto *LevelSeq = ULevelSequenceEditorBlueprintLibrary::GetCurrentLevelSequence();
 		if (LevelSeq == nullptr) return;
 
