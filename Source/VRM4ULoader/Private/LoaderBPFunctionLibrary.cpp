@@ -54,10 +54,11 @@
 
 //#include "Windows/WindowsSystemIncludes.h"
 
-#if	UE_VERSION_OLDER_THAN(5,2,0)
+#if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
 #include "EditorFramework/AssetImportData.h"
 #include "UObject/SavePackage.h"
+
 #if WITH_EDITOR
 #include "ContentBrowserModule.h"
 #include "IContentBrowserSingleton.h"
