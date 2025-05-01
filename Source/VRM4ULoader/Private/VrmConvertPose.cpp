@@ -292,12 +292,12 @@ namespace {
 			}
 #else
 			USkeletalMeshComponent* skc = nullptr;
-			if (GWorld) {
+			//if (GWorld) {
 				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 				AutoDestroy autoDestroy(ska);
 				skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 				skc->SetSkeletalMeshAsset(sk);
-			}
+			//}
 #endif
 			skc->SetComponentSpaceTransformsDoubleBuffering(false);
 		}
@@ -862,20 +862,20 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 
 #elif	UE_VERSION_OLDER_THAN(5,1,0)
 				USkeletalMeshComponent *skc = nullptr;
-				if (GWorld) {
+				//if (GWorld) {
 					ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 					AutoDestroy autoDestroy(ska);
 					skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 					skc->SetSkeletalMesh(sk);
-				}
+				//}
 #else
 				USkeletalMeshComponent* skc = nullptr;
-				if (GWorld) {
+				//if (GWorld) {
 					ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 					AutoDestroy autoDestroy(ska);
 					skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 					skc->SetSkeletalMeshAsset(sk);
-				}
+				//}
 #endif
 
 
