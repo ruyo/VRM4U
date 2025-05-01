@@ -287,7 +287,7 @@ namespace {
 			if (GWorld) {
 				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 				AutoDestroy autoDestroy(ska);
-				auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+				skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 				skc->SetSkeletalMesh(sk);
 			}
 #else
@@ -295,7 +295,7 @@ namespace {
 			if (GWorld) {
 				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 				AutoDestroy autoDestroy(ska);
-				auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+				skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 				skc->SetSkeletalMeshAsset(sk);
 			}
 #endif
@@ -873,7 +873,7 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 				if (GWorld) {
 					ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
 					AutoDestroy autoDestroy(ska);
-					auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+					skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
 					skc->SetSkeletalMeshAsset(sk);
 				}
 #endif
