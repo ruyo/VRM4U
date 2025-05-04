@@ -8,6 +8,11 @@ if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
 )
+call %BUILD_SCRIPT% 5.5 Win64 Debug VRM4U_5_5_%V_DATE%_debug.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
 call %BUILD_SCRIPT% 5.5 Android Development VRM4U_5_5_%V_DATE%_android.zip
 if not %errorlevel% == 0 (
     echo [ERROR] :P

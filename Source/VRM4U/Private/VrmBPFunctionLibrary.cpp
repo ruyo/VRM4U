@@ -1326,9 +1326,9 @@ void UVrmBPFunctionLibrary::VRMGetPlayMode(bool &bPlay, bool &bSIE, bool &bEdito
 	}
 
 	if (GWorld) {
-		//if (GWorld->IsClient()) {
-			//bPlay = true;
-		//}
+		if (GWorld->HasBegunPlay() && GWorld->IsGameWorld()) {
+			bPlay = true;
+		}
 	}
 
 #else
