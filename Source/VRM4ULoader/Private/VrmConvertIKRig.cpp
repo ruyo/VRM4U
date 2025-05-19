@@ -1346,42 +1346,16 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
 					// 自動で姿勢を作る。
-					// ただし足首はそのまま。自動設定がうまく動作しないため。
-					c.AutoAlignAllBones(SourceOrTargetMannequin);
-					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
-					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
 
-					// 指がない場合
-					if (Options::Get().IsVRMAModel() || Options::Get().IsBVHModel()) {
-						auto* target_sk = ikr->GetIKRig(SourceOrTargetMannequin)->GetPreviewMesh()->GetSkeleton();
-						auto& refskeleton = ikr->GetIKRig(SourceOrTargetMannequin)->GetPreviewMesh()->RefSkeleton;
-						{
-							UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
-							TArray<int32> childbone;
-							
-							int ind = refskeleton.FindBoneIndex(TEXT("hand_l"));
-							if (ind >= 0) {
-								VRMUtil::GetChildBone(target_sk, ind, true, childbone);
-								for (auto bone : childbone) {
-									cp->SetRotationOffsetForRetargetPoseBone(refskeleton.GetBoneName(bone), FQuat::Identity, SourceOrTargetMannequin);
-								}
-							}
-						}
-						{
-							UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
-							TArray<int32> childbone;
-							int ind = refskeleton.FindBoneIndex(TEXT("hand_r"));
-							if (ind >= 0) {
-								VRMUtil::GetChildBone(target_sk, ind, true, childbone);
-								for (auto bone : childbone) {
-									cp->SetRotationOffsetForRetargetPoseBone(refskeleton.GetBoneName(bone), FQuat::Identity, SourceOrTargetMannequin);
-								}
-							}
-						}
+					if (VRMConverter::Options::Get().IsBVHModel()) {
+						// bvhは bvh側をalignする
+						c.AutoAlignAllBones(SourceOrTargetVRM);
+					}else{
+						// 足首はそのまま。自動設定がうまく動作しないため。
+						c.AutoAlignAllBones(SourceOrTargetMannequin);
+						c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
+						c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
 					}
-
-					// VRM側は変更しない
-					//c.AutoAlignAllBones(SourceOrTargetVRM);
 #endif
 				}
 				c.SetChainSetting();

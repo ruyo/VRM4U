@@ -1,6 +1,7 @@
 ﻿#include "VrmSpringBone.h"
 
 #include "VrmAssetListObject.h"
+#include "Engine/World.h"
 
 VrmSpringBone::VrmSpringBone()
 {
