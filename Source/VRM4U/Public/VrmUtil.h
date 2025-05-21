@@ -404,6 +404,9 @@ public:
 	bool bSkipPhysics = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bSkipRetargeter = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bSkipMorphTarget = false;
 
 	bool bEnableMorphTargetNormal = false;

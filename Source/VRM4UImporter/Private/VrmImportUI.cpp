@@ -51,6 +51,8 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bSkipPhysics);
 
+	c(bSkipRetargeter);
+
 	c(bSkipMorphTarget);
 
 	c(bEnableMorphTargetNormal);
