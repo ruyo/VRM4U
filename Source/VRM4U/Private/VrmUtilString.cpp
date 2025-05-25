@@ -106,7 +106,7 @@ namespace {
 
 bool VRMUtil::IsNoSafeName(const FString& str) {
 	for (int i = 0; i < str.Len(); ++i) {
-		if (str[i] != '_') {
+		if ((str[i] != '_') && (FString::Chr(str[i]).IsNumeric()==false)) {
 			return false;
 		}
 	}
