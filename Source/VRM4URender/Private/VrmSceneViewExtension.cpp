@@ -51,6 +51,7 @@ class FMyComputeShader : public FGlobalShader
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, InputTexture)
 		//RENDER_TARGET_BINDING_SLOTS()
+		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -67,6 +68,7 @@ BEGIN_SHADER_PARAMETER_STRUCT(FMyComputeShaderParameters, )
 END_SHADER_PARAMETER_STRUCT()
 */
 IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf", "MainCS", SF_Compute);
+
 
 
 
@@ -235,6 +237,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	Parameters->OutputTexture = GBufferUAV;
 	Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
 
+	Parameters->View = InView.ViewUniformBuffer;
 	//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
 //Parameters->RenderTargets = RenderTargets;
 
