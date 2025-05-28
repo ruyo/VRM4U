@@ -30,6 +30,12 @@
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
 
+#include "RenderGraphEvent.h"
+#include "RenderGraphBuilder.h"
+#include "ProfilingDebugging/CpuProfilerTrace.h"
+#include "Stats/Stats.h"
+
+
 DECLARE_GPU_STAT(VRM4U);
 
 
