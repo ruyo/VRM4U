@@ -30,15 +30,7 @@
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
 
-#include "RenderGraphEvent.h"
-#include "RenderGraphBuilder.h"          // FRDGBuilder と RDG 関連機能
-#include "ProfilingDebugging/ScopedTimers.h"  // DECLARE_CYCLE_STAT などの統計マクロ
-#include "ProfilingDebugging/CpuProfilerTrace.h" // Trace サポート（必要に応じて）
-#include "Stats/Stats.h"                 // STAT マクロ（DECLARE_CYCLE_STAT など）
-
 DECLARE_GPU_STAT(VRM4U);
-//DECLARE_GPU_STAT(VolCloudReconstruction);
-
 
 
 class FMyComputeShader : public FGlobalShader
