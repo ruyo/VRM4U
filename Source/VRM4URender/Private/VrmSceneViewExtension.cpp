@@ -175,7 +175,8 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					CopyTexture[i]
 				);
 			} else {
-#if	UE_VERSION_OLDER_THAN(5,5,0)
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#elif UE_VERSION_OLDER_THAN(5,5,0)
 				AddDrawTexturePass(
 					GraphBuilder,
 					InView,
