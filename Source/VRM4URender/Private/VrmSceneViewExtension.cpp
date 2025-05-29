@@ -141,7 +141,10 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	FRDGTextureRef CopyTexture[copyNum] = {};
 
 	{
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
 		RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy");
+#endif
 		RDG_GPU_STAT_SCOPE(GraphBuilder, VRM4U);
 		SCOPED_NAMED_EVENT(VRM4U, FColor::Emerald);
 
@@ -172,6 +175,17 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					CopyTexture[i]
 				);
 			} else {
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+				AddDrawTexturePass(
+					GraphBuilder,
+					InView,
+					SourceTexture,
+					//CopyTexture[i - 1],
+					CopyTexture[i],
+					FIntPoint(0, 0), CopyDesc[0].Extent,
+					FIntPoint(0, 0), CopyDesc[i].Extent
+				);
+#else
 				AddDrawTexturePass(
 					GraphBuilder,
 					ViewInfo,
@@ -181,6 +195,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					FIntPoint(0,0), CopyDesc[0].Extent,
 					FIntPoint(0,0), CopyDesc[i].Extent
 					);
+#endif
 //					FIntRect(FIntPoint(0, 0), DestSize)
 //				);
 //				AddCopyTexturePass(
