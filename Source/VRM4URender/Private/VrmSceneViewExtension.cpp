@@ -65,8 +65,11 @@ BEGIN_SHADER_PARAMETER_STRUCT(FMyComputeShaderParameters, )
 	//RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
 */
-IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf", "MainCS", SF_Compute);
 
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
+IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf", "MainCS", SF_Compute);
+#endif
 
 
 
@@ -75,6 +78,7 @@ FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister
 }
 
 void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
+
 
 	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
 
@@ -200,8 +204,6 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					FIntPoint(0,0), CopyDesc[i].Extent
 					);
 #endif
-//					FIntRect(FIntPoint(0, 0), DestSize)
-//				);
 //				AddCopyTexturePass(
 //					GraphBuilder,
 //					CopyTexture[i-1],
@@ -213,26 +215,14 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 		//RenderTargets.DepthStencil.GetTexture();
 
 
-/*		// コピー先のテクスチャを作成
-		FRDGTextureDesc CopyDesc = SourceTexture->Desc;
-		FRDGTextureRef CopiedTexture = GraphBuilder.CreateTexture(
-			CopyDesc,
-			TEXT("CopiedGBuffer")
-		);
-
-		// テクスチャをコピー
-		AddCopyTexturePass(
-			GraphBuilder,
-			SourceTexture,
-			CopiedTexture
-		);
-		*/
-
 		// SRV（読み込み用）を作成
 		//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
 	}
 
-		// RenderTargets の0番目を取得
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
+
+	// RenderTargets の0番目を取得
 	const FRenderTargetBinding& FirstTarget = RenderTargets[0];
 	//if (!FirstTarget.IsValid())
 	//{
@@ -292,6 +282,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	GraphBuilder.Execute();
 	*/
 
+#endif
 
 }
 void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) {
