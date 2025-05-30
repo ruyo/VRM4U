@@ -105,7 +105,10 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	//check(InView.bIsViewInfo);
 	//auto ViewInfo = static_cast<const FViewInfo*>(&InView);
 
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
 	FScreenPassViewInfo ViewInfo(InView);
+#endif
 
 	//decltype(auto) View = InView;
 	//check(View.bIsViewInfo);
