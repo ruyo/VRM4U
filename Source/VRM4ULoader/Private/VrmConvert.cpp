@@ -430,6 +430,14 @@ bool VRMConverter::Options::IsSkipPhysics() const {
 	return ImportOption->bSkipPhysics;
 }
 
+bool VRMConverter::Options::IsSkipRetargeter() const {
+	bool ret = false;
+
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bSkipRetargeter;
+}
+
 bool VRMConverter::Options::IsForceOpaque() const {
 	if (ImportOption == nullptr) return false;
 	return ImportOption->bForceOpaque;

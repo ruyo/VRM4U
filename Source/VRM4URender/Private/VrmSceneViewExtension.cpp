@@ -30,14 +30,26 @@
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
 
+#include "RenderGraphEvent.h"
+#include "RenderGraphBuilder.h"
+#include "ProfilingDebugging/CpuProfilerTrace.h"
+#include "Stats/Stats.h"
+
+
+DECLARE_GPU_STAT(VRM4U);
+
+
 class FMyComputeShader : public FGlobalShader
 {
+
 	DECLARE_GLOBAL_SHADER(FMyComputeShader);
 	SHADER_USE_PARAMETER_STRUCT(FMyComputeShader, FGlobalShader);
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, InputTexture)
 		//RENDER_TARGET_BINDING_SLOTS()
+		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -47,13 +59,17 @@ public:
 	}
 };
 
-
+/*
 BEGIN_SHADER_PARAMETER_STRUCT(FMyComputeShaderParameters, )
 	SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
 	//RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
+*/
 
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
 IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf", "MainCS", SF_Compute);
+#endif
 
 
 
@@ -63,11 +79,40 @@ FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister
 
 void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
 
+
 	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
 
 	if (s == nullptr) return;
-
 	if (s->bUsePostRenderBasePass == false) return;
+
+	{
+		
+
+		bool bActive = false;
+
+		//bool bCapture = InView.bIsSceneCapture;
+
+		auto t = InView.Family->Scene->GetWorld()->WorldType;
+		switch (t) {
+		case EWorldType::Editor:
+		case EWorldType::Game:
+		case EWorldType::PIE:
+			bActive = true;
+			break;
+		}
+
+		if (bActive == false) {
+			return;
+		}
+	}
+
+	//check(InView.bIsViewInfo);
+	//auto ViewInfo = static_cast<const FViewInfo*>(&InView);
+
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
+	FScreenPassViewInfo ViewInfo(InView);
+#endif
 
 	//decltype(auto) View = InView;
 	//check(View.bIsViewInfo);
@@ -96,37 +141,88 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 //	FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(ScreenPassTex.Texture);
 
 
+		// copy枚数
+	const int copyNum = 4;
+
+	FRDGTextureDesc CopyDesc[copyNum] = {};
+	FRDGTextureRef CopyTexture[copyNum] = {};
+
 	{
-		RenderTargets.DepthStencil.GetTexture();
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+		RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy");
+#endif
+		RDG_GPU_STAT_SCOPE(GraphBuilder, VRM4U);
+		SCOPED_NAMED_EVENT(VRM4U, FColor::Emerald);
 
 		// RenderTargets の0番目を取得
 		const FRenderTargetBinding& FirstTarget = RenderTargets[0];
-		//if (!FirstTarget.IsValid()) return;
 
 		FRDGTextureRef SourceTexture = FirstTarget.GetTexture();
 		if (!SourceTexture) return;
 
-		// コピー先のテクスチャを作成
-		FRDGTextureDesc CopyDesc = SourceTexture->Desc;
-		FRDGTextureRef CopiedTexture = GraphBuilder.CreateTexture(
-			CopyDesc,
-			TEXT("CopiedGBuffer")
-		);
 
-		// テクスチャをコピー
-		AddCopyTexturePass(
-			GraphBuilder,
-			SourceTexture,
-			CopiedTexture,
-			FIntPoint(0, 0),  // コピー元オフセット
-			FIntPoint(0, 0)   // コピー先オフセット
-		);
+		for (int i = 0; i < copyNum; ++i) {
+			CopyDesc[i] = SourceTexture->Desc;
+			if (i == 0) {
+			}else{
+				CopyDesc[i].Extent = CopyDesc[i-1].Extent / 2;
+			}
+
+			FString name = TEXT("CopiedGBuffer") + FString::FromInt(i);
+			CopyTexture[i] = GraphBuilder.CreateTexture(
+				CopyDesc[i],
+				*name
+			);
+			// テクスチャをコピー
+			if (i == 0) {
+				AddCopyTexturePass(
+					GraphBuilder,
+					SourceTexture,
+					CopyTexture[i]
+				);
+			} else {
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#elif UE_VERSION_OLDER_THAN(5,5,0)
+				AddDrawTexturePass(
+					GraphBuilder,
+					InView,
+					SourceTexture,
+					//CopyTexture[i - 1],
+					CopyTexture[i],
+					FIntPoint(0, 0), CopyDesc[0].Extent,
+					FIntPoint(0, 0), CopyDesc[i].Extent
+				);
+#else
+				AddDrawTexturePass(
+					GraphBuilder,
+					ViewInfo,
+					SourceTexture,
+					//CopyTexture[i - 1],
+					CopyTexture[i],
+					FIntPoint(0,0), CopyDesc[0].Extent,
+					FIntPoint(0,0), CopyDesc[i].Extent
+					);
+#endif
+//				AddCopyTexturePass(
+//					GraphBuilder,
+//					CopyTexture[i-1],
+//					CopyTexture[i]
+//				);
+			}
+		}
+
+		//RenderTargets.DepthStencil.GetTexture();
+
 
 		// SRV（読み込み用）を作成
-		FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopiedTexture);
+		//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
 	}
 
-		// RenderTargets の0番目を取得
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+#else
+
+	// RenderTargets の0番目を取得
 	const FRenderTargetBinding& FirstTarget = RenderTargets[0];
 	//if (!FirstTarget.IsValid())
 	//{
@@ -146,7 +242,11 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 
 	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
 	Parameters->OutputTexture = GBufferUAV;
-	//Parameters->RenderTargets = RenderTargets;
+	Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
+
+	Parameters->View = InView.ViewUniformBuffer;
+	//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
+//Parameters->RenderTargets = RenderTargets;
 
 	TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	FComputeShaderUtils::AddPass(
@@ -182,6 +282,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	GraphBuilder.Execute();
 	*/
 
+#endif
 
 }
 void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& View, const FPostProcessingInputs& Inputs) {

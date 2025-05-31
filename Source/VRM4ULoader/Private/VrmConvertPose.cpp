@@ -766,7 +766,7 @@ namespace {
 
 bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 
-	if (VRMConverter::Options::Get().IsDebugOneBone()) {
+	if (VRMConverter::Options::Get().IsDebugOneBone() || VRMConverter::Options::Get().IsSkipRetargeter()) {
 		return true;
 	}
 
@@ -787,7 +787,7 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 #if WITH_EDITOR
 
 	// pose asset
-	if (VRMConverter::Options::Get().IsDebugOneBone() == false && bPlay==false){
+	if (bPlay==false){
 		USkeletalMesh *sk = vrmAssetList->SkeletalMesh;
 		USkeleton* k = VRMGetSkeleton(sk);
 

@@ -1,16 +1,30 @@
 #include "/Engine/Public/Platform.ush"
+#include "/Engine/Generated/UniformBuffers/View.ush"
+DECLARE_UNIFORM_BUFFER(View);
 
 RWTexture2D<float4> OutputTexture : register(u0); // Render Targetへの書き込み用
+
+Texture2D<float4> InputTexture;
+//SamplerState InputSampler;
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
+    uint width, height;
+    OutputTexture.GetDimensions(width, height);
+
+    float2 ViewSize = View.ViewSizeAndInvSize.xy;
+    
     // ピクセル座標を取得
     uint2 pixelCoord = DispatchThreadID.xy;
 
     // 簡単な例として、座標に基づく色を書き込み
-    float4 color = float4(float(pixelCoord.x) / 512.0, float(pixelCoord.y) / 512.0, 0.5, 1.0);
-    if (pixelCoord.x == pixelCoord.y) color = 0;
-    OutputTexture[pixelCoord] = color;
+    //float4 color = float4(float(pixelCoord.x) / width, float(pixelCoord.y) / height, 0.5, 1.0);
+    float4 color = float4(float(pixelCoord.x) / ViewSize.x, float(pixelCoord.y) / ViewSize.y, 0.5, 1.0);
+    if (color.x < 0.5)  color.x = 1;
+    //if (pixelCoord.x == pixelCoord.y) color = 0;
+        OutputTexture[pixelCoord] = color;
+
+    //OutputTexture[pixelCoord] = InputTexture[pixelCoord].xxxw;// / 10.f;
    
 }

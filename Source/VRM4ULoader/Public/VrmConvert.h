@@ -97,6 +97,7 @@ public:
 		bool IsActiveBone() const;
 
 		bool IsSkipPhysics() const;
+		bool IsSkipRetargeter() const;
 
 		bool IsSkipNoMeshBone() const;
 
