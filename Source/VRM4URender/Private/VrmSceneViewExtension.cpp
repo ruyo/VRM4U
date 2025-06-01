@@ -48,8 +48,16 @@ class FMyComputeShader : public FGlobalShader
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, InputTexture)
-		//RENDER_TARGET_BINDING_SLOTS()
+
+		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTextures)
+
+		//SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneDepthTexture) // 深度
+		//SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneColorTexture) // カラー
+		//SHADER_PARAMETER_SAMPLER(SamplerState, DepthSampler)
+		//SHADER_PARAMETER_SAMPLER(SamplerState, ColorSampler)
+
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+		//RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
@@ -146,8 +154,57 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 
 	FRDGTextureDesc CopyDesc[copyNum] = {};
 	FRDGTextureRef CopyTexture[copyNum] = {};
+	FRDGTextureRef CopyTextureDepth[copyNum] = {};
 
 	{
+
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#else
+		{
+			// depth copy
+			RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy");
+
+			FRDGTextureRef SourceTexture = SceneTextures->GetParameters()->SceneDepthTexture;
+			if (!SourceTexture) return;
+
+			for (int i = 0; i < copyNum; ++i) {
+				CopyDesc[i] = SourceTexture->Desc;
+				if (i == 0) {
+				}
+				else {
+					CopyDesc[i].Extent = CopyDesc[i - 1].Extent / 2;
+				}
+				CopyDesc[i].Flags |= TexCreate_RenderTargetable | TexCreate_UAV;
+
+				FString name = TEXT("CopiedGBuffer") + FString::FromInt(i);
+				CopyTextureDepth[i] = GraphBuilder.CreateTexture(
+					CopyDesc[i],
+					*name
+				);
+				// テクスチャをコピー
+				if (i == 0) {
+					AddCopyTexturePass(
+						GraphBuilder,
+						SourceTexture,
+						CopyTextureDepth[i]
+					);
+				}
+				else {
+					AddDrawTexturePass(
+						GraphBuilder,
+						ViewInfo,
+						//SourceTexture,
+						CopyTextureDepth[i - 1],
+						CopyTextureDepth[i],
+						FIntPoint(0, 0), CopyDesc[0].Extent,
+						FIntPoint(0, 0), CopyDesc[i].Extent
+					);
+				}
+			}
+		}
+#endif
+
+
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
 		RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy");
@@ -168,6 +225,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 			}else{
 				CopyDesc[i].Extent = CopyDesc[i-1].Extent / 2;
 			}
+			CopyDesc[i].Flags |= TexCreate_RenderTargetable | TexCreate_UAV;
 
 			FString name = TEXT("CopiedGBuffer") + FString::FromInt(i);
 			CopyTexture[i] = GraphBuilder.CreateTexture(
@@ -187,20 +245,20 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 				AddDrawTexturePass(
 					GraphBuilder,
 					InView,
-					SourceTexture,
-					//CopyTexture[i - 1],
+					//SourceTexture,
+					CopyTexture[i - 1],
 					CopyTexture[i],
 					FIntPoint(0, 0), CopyDesc[0].Extent,
-					FIntPoint(0, 0), CopyDesc[i].Extent
+					FIntPoint(0, 0), CopyDesc[i-1].Extent
 				);
 #else
 				AddDrawTexturePass(
 					GraphBuilder,
 					ViewInfo,
-					SourceTexture,
-					//CopyTexture[i - 1],
+					//SourceTexture,
+					CopyTexture[i - 1],
 					CopyTexture[i],
-					FIntPoint(0,0), CopyDesc[0].Extent,
+					FIntPoint(0,0), CopyDesc[i-1].Extent,
 					FIntPoint(0,0), CopyDesc[i].Extent
 					);
 #endif
@@ -243,8 +301,11 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
 	Parameters->OutputTexture = GBufferUAV;
 	Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
-
 	Parameters->View = InView.ViewUniformBuffer;
+	Parameters->SceneTextures = SceneTextures;
+	//Parameters->RenderTargets[0] = Output.GetRenderTargetBinding();
+	//PassParameters->OutputTexture = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(OutputTexture));
+
 	//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
 //Parameters->RenderTargets = RenderTargets;
 

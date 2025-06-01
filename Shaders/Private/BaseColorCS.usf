@@ -21,7 +21,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     // 簡単な例として、座標に基づく色を書き込み
     //float4 color = float4(float(pixelCoord.x) / width, float(pixelCoord.y) / height, 0.5, 1.0);
     float4 color = float4(float(pixelCoord.x) / ViewSize.x, float(pixelCoord.y) / ViewSize.y, 0.5, 1.0);
-    if (color.x < 0.5)  color.x = 1;
+    //if (color.x < 0.5)  color.x = 1;
     //if (pixelCoord.x == pixelCoord.y) color = 0;
         OutputTexture[pixelCoord] = color;
 
