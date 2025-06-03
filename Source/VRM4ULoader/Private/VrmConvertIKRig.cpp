@@ -721,7 +721,10 @@ public:
 		//FScopedTransaction Transaction(LOCTEXT("SetRetargetRootBone_Label", "Set Retarget Root Bone"));
 		RigDefinition->Modify();
 
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 		*const_cast<FName*>(&RigDefinition->GetRetargetRoot()) = NewRootBone;
+#else
+#endif
 
 		//BroadcastNeedsReinitialized();
 
@@ -1269,11 +1272,15 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
-#if	UE_VERSION_OLDER_THAN(5,5,0)
+#if WITH_EDITOR
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 						const FName RetargetRootBoneName = table_rig_ik[ikr_to_ik[ikr_no]]->GetRetargetRoot();
 #else
 						auto rigc = UIKRigController::GetController(table_rig_ik[ikr_to_ik[ikr_no]]);
 						const FName RetargetRootBoneName = rigc->GetRetargetRoot();
+#endif
+#else
+						const FName RetargetRootBoneName = "";
 #endif
 						for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 						{
