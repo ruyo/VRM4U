@@ -1269,7 +1269,12 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
+#if	UE_VERSION_OLDER_THAN(5,5,0)
 						const FName RetargetRootBoneName = table_rig_ik[ikr_to_ik[ikr_no]]->GetRetargetRoot();
+#else
+						auto rigc = UIKRigController::GetController(table_rig_ik[ikr_to_ik[ikr_no]]);
+						const FName RetargetRootBoneName = rigc->GetRetargetRoot();
+#endif
 						for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 						{
 							auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
