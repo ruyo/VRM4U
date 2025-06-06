@@ -22,6 +22,10 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5,6,0)
+#include "MaterialShared.h"
+#endif
+
 #if WITH_EDITOR
 #include "Factories.h"
 #include "Factories/TextureFactory.h"
@@ -767,7 +771,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 #endif
 
 				if (NormalBoolTable[i]) {
-					// UE5.5‚ÅƒNƒ‰ƒbƒVƒ…‚·‚é‚Ì‚Å updateŒã‚ÉÄ“xXV
+					// UE5.5ï¿½ÅƒNï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ updateï¿½ï¿½ÉÄ“xï¿½Xï¿½V
 					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->UpdateResource();
 #if WITH_EDITOR
