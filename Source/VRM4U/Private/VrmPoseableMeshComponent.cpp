@@ -3,6 +3,7 @@
 #include "VrmPoseableMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "VrmAnimInstance.h"
+#include "VrmUtil.h"
 
 
 
@@ -78,7 +79,7 @@ void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick T
 }
 
 void UVrmPoseableMeshComponent::VRMCopyPoseAndMorphFromSkeletalComponent(USkeletalMeshComponent* InComponentToCopy) {
-	if (InComponentToCopy) {
+	if (InComponentToCopy && VRMGetSkinnedAsset(InComponentToCopy)) {
 		Super::CopyPoseFromSkeletalComponent(InComponentToCopy);
 
 		MorphTargetWeights = InComponentToCopy->MorphTargetWeights;

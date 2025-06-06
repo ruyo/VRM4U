@@ -82,14 +82,11 @@ struct FRigUnit_VRMGenerateBoneToControlTable: public FRigUnitMutable
 	RIGVM_METHOD()
 	virtual void Execute() override;
 
-	//UPROPERTY(meta = (Output))
-	//TArray<FRigElementKey> Items_MannequinBone;
+	UPROPERTY(meta = (Output))
+	TArray<FName> Items_MannequinBone;
 
 	UPROPERTY(meta = (Output))
-	TArray<FRigElementKey> Items_MannequinControl;
-
-	UPROPERTY(meta = (Output))
-	TArray<FRigElementKey> Items_VRMBone;
+	TArray<FName> Items_VRMBone;
 };
 
 /**

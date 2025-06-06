@@ -1,5 +1,8 @@
 ﻿#include "VrmSpringBone.h"
 
+#include "VrmAssetListObject.h"
+#include "Engine/World.h"
+
 VrmSpringBone::VrmSpringBone()
 {
 }
@@ -277,9 +280,8 @@ namespace VRMSpringBone {
 		if (meta == nullptr) return;
 		if (bInit) return;
 
-		if (meta->GetVRMVersion() == 1) {
-			return;
-		}
+		if (meta->GetVRMVersion() == 1) return;
+		if (meta->VrmAssetListObject == nullptr) return;
 
 		skeletalMesh = VRMGetSkinnedAsset(Output.AnimInstanceProxy->GetSkelMeshComponent());
 		//skeletalMesh = meta->SkeletalMesh;
@@ -296,7 +298,7 @@ namespace VRMSpringBone {
 
 			s.stiffness = metaS.stiffness;
 			s.gravityPower = metaS.gravityPower;
-			s.gravityDir = metaS.gravityDir;
+			s.gravityDir = meta->VrmAssetListObject->model_root_transform.TransformVector(metaS.gravityDir);
 			s.dragForce = metaS.dragForce;
 			s.hitRadius = metaS.hitRadius;
 
@@ -546,6 +548,10 @@ namespace VRM1Spring {
 
 				auto &j1 = s.joints[jointNo];
 
+				if (j1.boneNo == INDEX_NONE) {
+					continue;
+				}
+
 				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
 				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
@@ -686,6 +692,7 @@ namespace VRM1Spring {
 					* 100.f * j1.stiffness * animNode->stiffnessScale + animNode->stiffnessAdd;
 
 				FVector ue4grav(-j1.gravityDir.X, j1.gravityDir.Z, j1.gravityDir.Y);
+				ue4grav = vrmMetaObject->VrmAssetListObject->model_root_transform.Inverse().TransformVector(ue4grav);
 				FVector external = ComponentToLocal.TransformVector(ue4grav) * (j1.gravityPower * DeltaTime) * animNode->gravityScale
 					+ ComponentToLocal.TransformVector(animNode->gravityAdd) * DeltaTime;
 

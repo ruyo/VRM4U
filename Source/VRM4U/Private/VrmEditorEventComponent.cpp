@@ -25,6 +25,11 @@
 #include "LevelSequenceEditorBlueprintLibrary.h"
 #endif
 
+#if UE_VERSION_OLDER_THAN(5,5,0)
+#else
+#include "MovieSceneSequencePlayer.h"
+#endif
+
 
 #include "LevelSequence.h"
 #include "ISequencer.h"
@@ -47,6 +52,7 @@ void UVrmEditorEventComponent::OnUnregister() {
 
 void UVrmEditorEventComponent::OnSelectionChangeFunc(UObject *obj) {
 #if WITH_EDITOR
+	if (GEditor == nullptr) return;
 	bool bFound = false;
 	USelection* Selection = Cast<USelection>(obj);
 	if (Selection == GEditor->GetSelectedComponents() || Selection == GEditor->GetSelectedActors()){
@@ -66,6 +72,7 @@ void UVrmEditorEventComponent::OnSelectionChangeFunc(UObject *obj) {
 }
 void UVrmEditorEventComponent::OnSelectionObjectFunc(UObject *obj) {
 #if WITH_EDITOR
+	if (GEditor == nullptr) return;
 	bool bFound = false;
 	USelection* Selection = Cast<USelection>(obj);
 	if (Selection == GEditor->GetSelectedComponents() || Selection == GEditor->GetSelectedActors()) {
@@ -114,8 +121,14 @@ void UVrmEditorEventComponent::SetSelectCheck(bool bCheckOn) {
 void UVrmEditorEventComponent::OnGlobalTimeChangeFunc() {
 #if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
+#elif UE_VERSION_OLDER_THAN(5,5,0)
+
 	int32  t = ULevelSequenceEditorBlueprintLibrary::GetCurrentTime();
+	OnGlobalTimeChange.Broadcast((float)t);
+#else
+	//int32  t = ULevelSequenceEditorBlueprintLibrary::GetCurrentTime();
+	auto mm = ULevelSequenceEditorBlueprintLibrary::GetGlobalPosition();
+	int32 t = mm.Timecode.Frames;
 	OnGlobalTimeChange.Broadcast((float)t);
 #endif
 #endif
@@ -127,6 +140,7 @@ void UVrmEditorEventComponent::SetGlobalTimeCheck(bool bCheckOn) {
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #else
 	{
+		if (GEditor == nullptr) return;
 		auto *LevelSeq = ULevelSequenceEditorBlueprintLibrary::GetCurrentLevelSequence();
 		if (LevelSeq == nullptr) return;
 

@@ -13,6 +13,15 @@
 #include "VrmAssetUserData.h"
 #endif
 
+#if	UE_VERSION_OLDER_THAN(4,26,0)
+#include "AssetRegistryModule.h"
+#include "ARFilter.h"
+#else
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/ARFilter.h"
+#include "AssetRegistry/AssetData.h"
+#endif
+
 
 void FImportOptionData::init() {
 }
@@ -532,40 +541,7 @@ const TArray<FName> VRMUtil::ue4_humanoid_bone_list_name = {
 	"Custom_5",
 };
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,2,0)
-
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Solvers/IKRig_PBIKSolver.h"
-#endif
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#endif
-
-#else
-
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#endif
-
-#endif
+#include "VrmRigHeader.h"
 
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -872,6 +848,7 @@ int32 VRMUtil::GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneInd
 
 
 UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
+	if (obj == nullptr) return nullptr;
 	if (Cast<USkeletalMesh>(obj)) {
 		auto* p = GetAssetListObject(Cast<USkeletalMesh>(obj));
 		if (p) return p;
@@ -889,7 +866,7 @@ UVrmAssetListObject* VRMUtil::GetAssetListObjectAny(const UObject* obj) {
 	{
 		int index = 0;
 		if (core.FindChar('_', index)) {
-			core.RemoveAt(0, index, true);
+			core.RemoveAt(0, index);
 		}
 	}
 
@@ -976,3 +953,65 @@ UVrmAssetListObject* VRMUtil::GetAssetListObject(const USkeletalMesh *sk) {
 	return nullptr;
 }
 
+
+void VRMUtil::CloseEditorWindowByFolderPath(const UObject* Asset){
+#if WITH_EDITOR
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+#else
+
+	if (IsValid(Asset) == false) {
+		return;
+	}
+	if (GEditor == nullptr) return;
+
+	FString AssetPath = Asset->GetPathName();
+	FString FolderPath = FPackageName::GetLongPackagePath(AssetPath);
+
+	auto* AssetEditorSS = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (AssetEditorSS == nullptr) return;
+
+	TArray<UObject*> EditedAssets = AssetEditorSS->GetAllEditedAssets();
+	for (UObject* EditedAsset : EditedAssets) {
+
+		FString EditedAssetPath = EditedAsset->GetPathName();
+		FString EditedFolderPath = FPackageName::GetLongPackagePath(AssetPath);
+
+		if (EditedFolderPath == FolderPath) {
+
+			if (IAssetEditorInstance* Editor = AssetEditorSS->FindEditorForAsset(EditedAsset, false)) {
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+				Editor->CloseWindow();
+#else
+				Editor->CloseWindow(EAssetEditorCloseReason::AssetUnloadingOrInvalid);
+#endif
+			}
+		}
+	}
+#endif
+#endif
+}
+
+int VRMUtil::GetChildBone(const USkeleton* skeleton, const int32 ParentBoneIndex, bool recursive, TArray<int32>& Children) {
+
+	Children.Reset();
+	auto& r = skeleton->GetReferenceSkeleton();
+
+	const int32 NumBones = r.GetRawBoneNum();
+	for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
+	{
+		if (ParentBoneIndex == r.GetParentIndex(ChildIndex))
+		{
+			Children.Add(ChildIndex);
+		}
+	}
+	if (recursive) {
+		TArray<int32> c2;
+		for (auto i : Children) {
+			TArray<int32> c;
+			GetChildBone(skeleton, i, true, c);
+			c2.Append(c);
+		}
+		Children.Append(c2);
+	}
+	return Children.Num();
+}

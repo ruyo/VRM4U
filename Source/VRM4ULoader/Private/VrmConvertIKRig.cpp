@@ -27,47 +27,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "PhysicsEngine/PhysicsConstraintTemplate.h"
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,2,0)
-
-#include "UObject/UnrealTypePrivate.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Solvers/IKRig_PBIKSolver.h"
-#endif
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-
-#include "UObject/UnrealTypePrivate.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Solvers/IKRig_FBIKSolver.h"
-#endif
-
-#else
-
-#include "UObject/UnrealTypePrivate.h"
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#include "Retargeter/IKRetargeter.h"
-#if WITH_EDITOR
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Rig/Solvers/IKRig_FBIKSolver.h"
-#endif
-
-#endif
-
-
+#include "VrmRigHeader.h"
 
 #if WITH_EDITOR
 #include "IPersonaToolkit.h"
@@ -97,10 +57,11 @@
 #endif
 
 
+#define VRM4U_USE_EDITOR_RIG WITH_EDITOR
 
 namespace {
 
-#if WITH_EDITOR
+#if VRM4U_USE_EDITOR_RIG && WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 
@@ -118,8 +79,11 @@ namespace {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 			sol_index = rigcon->AddSolver(UIKRigPBIKSolver::StaticClass());
 			sol = rigcon->GetSolver(sol_index);
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 			sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
+			sol = rigcon->GetSolverAtIndex(sol_index);
+#else
+			sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
 			sol = rigcon->GetSolverAtIndex(sol_index);
 #endif
 		}
@@ -137,7 +101,12 @@ namespace {
 				continue;
 			}
 			if (modelName.Key == TEXT("hips")) {
+#if UE_VERSION_OLDER_THAN(5,6,0)
 				sol->SetRootBone(*modelName.Value);
+#else
+				sol->SetStartBone(*modelName.Value);
+#endif
+
 			}
 		}
 
@@ -160,6 +129,30 @@ namespace {
 				};
 				a = tmp;
 			}
+
+
+			if (VRMConverter::Options::Get().IsBVHModel()) {
+				{
+					TArray < FString > tmp = {
+						TEXT("l_hand"),
+						TEXT("r_hand"),
+						TEXT("l_foot"),
+						TEXT("r_foot"),
+					};
+					a = tmp;
+				}
+				
+				if (table_no == 1) {
+					TArray < FString > tmp = {
+						TEXT("l_hand"),
+						TEXT("r_hand"),
+						TEXT("l_toes"),
+						TEXT("r_toes"),
+					};
+					a = tmp;
+				}
+			}
+
 			for (int i = 0; i < a.Num(); ++i) {
 				for (auto& t : assetList->VrmMetaObject->humanoidBoneTable) {
 					if (t.Key.ToLower() == a[i].ToLower()) {
@@ -185,7 +178,7 @@ namespace {
 								}
 							}
 						}
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 						auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *t.Value);
 						if (goal != NAME_None) {
 							rigcon->ConnectGoalToSolver(goal, sol_index);
@@ -205,10 +198,109 @@ namespace {
 								}
 							}
 						}
+#else
+						auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *t.Value);
+						if (goal != NAME_None) {
+							rigcon->ConnectGoalToSolver(goal, sol_index);
+
+							// arm chain
+							if (i == 0 || i == 1) {
+								auto *sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+
+								if (sc) {
+									auto settings = sc->GetGoalSettings(goal);
+									settings.PullChainAlpha = 0.f;
+									sc->SetGoalSettings(goal, settings);
+								}
+							}
+
+							const auto& chain = rigcon->GetRetargetChains();
+							for (auto& c : chain) {
+								if (c.EndBone.BoneName == *t.Value) {
+									rigcon->SetRetargetChainGoal(c.ChainName, goal);
+								}
+							}
+						}
 #endif
 					}
 				}
 			}
+			// BVH
+			if (VRMConverter::Options::Get().IsBVHModel()) {
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#elif UE_VERSION_OLDER_THAN(5,6,0)
+				for (int i = 0; i < a.Num(); ++i) {
+
+
+					USkeletalMesh* sk = assetList->SkeletalMesh;
+
+					//auto boneList = VRMGetRefSkeleton(sk).GetRefBonePose();
+					auto ind = VRMGetRefSkeleton(sk).FindBoneIndex(*a[i]);
+
+					if (ind < 0) continue;
+
+					auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *a[i]);
+					if (goal != NAME_None) {
+						rigcon->ConnectGoalToSolver(goal, sol_index);
+
+						// arm chain
+						if (i == 0 || i == 1) {
+							UIKRig_FBIKEffector* e = Cast<UIKRig_FBIKEffector>(sol->GetGoalSettings(goal));
+							if (e) {
+								e->PullChainAlpha = 0.f;
+							}
+						}
+
+						const auto& chain = rigcon->GetRetargetChains();
+						for (auto& c : chain) {
+							if (c.EndBone.BoneName == *a[i]) {
+								rigcon->SetRetargetChainGoal(c.ChainName, goal);
+							}
+						}
+					}
+					
+				}
+#else
+				for (int i = 0; i < a.Num(); ++i) {
+
+					USkeletalMesh* sk = assetList->SkeletalMesh;
+
+					//auto boneList = VRMGetRefSkeleton(sk).GetRefBonePose();
+					auto ind = VRMGetRefSkeleton(sk).FindBoneIndex(*a[i]);
+
+					if (ind < 0) continue;
+
+					auto goal = rigcon->AddNewGoal(*(a[i] + TEXT("_Goal")), *a[i]);
+					if (goal != NAME_None) {
+						rigcon->ConnectGoalToSolver(goal, sol_index);
+
+						// arm chain
+						if (i == 0 || i == 1) {
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+
+							if (sc) {
+								auto settings = sc->GetGoalSettings(goal);
+								settings.PullChainAlpha = 0.f;
+								sc->SetGoalSettings(goal, settings);
+							}
+
+							//UIKRig_FBIKEffector* e = Cast<UIKRig_FBIKEffector>(sol->GetGoalSettings(goal));
+							//if (e) {
+							//	e->PullChainAlpha = 0.f;
+							//}
+						}
+
+						const auto& chain = rigcon->GetRetargetChains();
+						for (auto& c : chain) {
+							if (c.EndBone.BoneName == *a[i]) {
+								rigcon->SetRetargetChainGoal(c.ChainName, goal);
+							}
+						}
+					}
+
+				}
+#endif
+			}// bvh
 		}
 		{
 			TArray<FString> a = {
@@ -244,15 +336,26 @@ namespace {
 
 						// shoulder
 						if (i == 0 || i == 1) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							s->RotationStiffness = 0.95f;
+#else
+							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.RotationStiffness = 0.95f;
+								sc->SetBoneSettings(*t.Value, settings);
+							}
+#endif
 						}
 
 						// arm
 						if (i == 2 || i == 3) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
@@ -260,13 +363,29 @@ namespace {
 							s->bUsePreferredAngles = true;
 							if (i == 2) {
 								s->PreferredAngles.Set(0, 0, 90);
-							} else {
+							}
+							else {
 								s->PreferredAngles.Set(0, 0, -90);
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.bUsePreferredAngles = true;
+								if (i == 2) {
+									settings.PreferredAngles.Set(0, 0, 90);
+								} else {
+									settings.PreferredAngles.Set(0, 0, -90);
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
+#endif
 						}
 
 						// only lower leg
 						if (i == 6 || i == 7) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
@@ -274,33 +393,77 @@ namespace {
 							s->bUsePreferredAngles = true;
 							if (i == 4 || i == 5) {
 								s->PreferredAngles.Set(-180, 0, 0);
-							} else {
+							}
+							else {
 								s->PreferredAngles.Set(180, 0, 0);
 								s->Y = EPBIKLimitType::Locked;
 								s->Z = EPBIKLimitType::Locked;
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.bUsePreferredAngles = true;
+								if (i == 4 || i == 5) {
+									settings.PreferredAngles.Set(-180, 0, 0);
+								}
+								else {
+									settings.PreferredAngles.Set(180, 0, 0);
+									settings.Y = EPBIKLimitType::Locked;
+									settings.Z = EPBIKLimitType::Locked;
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
+#endif
 						}
 
 						// foot
 						if (i == 8 || i == 9) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							s->RotationStiffness = 0.85f;
+#else
+							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								settings.RotationStiffness = 0.85f;
+								sc->SetBoneSettings(*t.Value, settings);
+							}
+#endif
 						}
 
 						// spine
 						if (i >= 10) {
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 							sol->AddBoneSetting(*t.Value);
 							UIKRig_PBIKBoneSettings* s = Cast<UIKRig_PBIKBoneSettings>(sol->GetBoneSetting(*t.Value));
 							if (s == nullptr) continue;
 
 							if (i == 10) {
 								s->RotationStiffness = 1.f;
-							} else {
+							}
+							else {
 								s->RotationStiffness = 0.9f;
 							}
+#else
+							sol->AddSettingsToBone(*t.Value);
+							auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+							if (sc) {
+								auto settings = sc->GetBoneSettings(*t.Value);
+								if (i == 10) {
+									settings.RotationStiffness = 1.f;
+								}
+								else {
+									settings.RotationStiffness = 0.9f;
+								}
+								sc->SetBoneSettings(*t.Value, settings);
+							}
+#endif
 						}
 
 					}
@@ -311,8 +474,6 @@ namespace {
 #endif
 #endif
 }
-
-#define VRM4U_USE_EDITOR_RIG WITH_EDITOR
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
@@ -380,38 +541,11 @@ public:
 		UIKRetargeterController* c = UIKRetargeterController::GetController(Retargeter);
 		c->SetIKRig(SourceOrTarget, IKRig);
 #else
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 		UIKRetargeterController::setSourceRig(Retargeter, IKRig);
-		/*
-		//FScopeLock Lock(&ControllerLock);
-
-		if (SourceOrTarget == ERetargetSourceOrTarget::Source)
-		{
-			UIKRetargeterController::setSourceRig(setSourceRig, IKRig);
-			//Retargeter->SourceIKRigAsset = IKRig;
-			//Retargeter->SourcePreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
-		}
-		else
-		{
-			//Retargeter->TargetIKRigAsset = IKRig;
-			//Retargeter->TargetPreviewMesh = IKRig ? IKRig->GetPreviewMesh() : nullptr;
-		}
-
-		// re-ask to fix root height for this mesh
-		if (IKRig)
-		{
-			SetAskedToFixRootHeightForMesh(GetPreviewMesh(SourceOrTarget), false);
-		}
-
-		CleanChainMapping();
-
-		constexpr bool bForceRemap = false;
-		AutoMapChains(EAutoMapChainType::Fuzzy, bForceRemap);
-
-		// update any editors attached to this asset
-		//BroadcastIKRigReplaced(SourceOrTarget);
-		//BroadcastPreviewMeshReplaced(SourceOrTarget);
-		//BroadcastNeedsReinitialized();
-		*/
+#else
+		// no rig
+#endif
 #endif
 	}
 #endif
@@ -516,7 +650,7 @@ public:
 };
 #endif // 5.0
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(5,0,0) 
 #else
 
 class SimpleRigController {
@@ -587,7 +721,10 @@ public:
 		//FScopedTransaction Transaction(LOCTEXT("SetRetargetRootBone_Label", "Set Retarget Root Bone"));
 		RigDefinition->Modify();
 
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 		*const_cast<FName*>(&RigDefinition->GetRetargetRoot()) = NewRootBone;
+#else
+#endif
 
 		//BroadcastNeedsReinitialized();
 
@@ -885,6 +1022,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					FString s2;
 					uint32_t mask = 0xFFFF;
 				};
+
+				TArray<FString> AddedChainList;
+
 				TArray<TT> table = {
 					{TEXT("Spine"),		TEXT("spine"),				TEXT("chest"),},
 	#if	UE_VERSION_OLDER_THAN(5,4,0)
@@ -930,8 +1070,43 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					{TEXT("HandRootIK"),		TEXT("ik_hand_root"),	TEXT("ik_hand_root"),},
 				};
 
+				TArray<TT> table_BVH = {
+					{TEXT("Spine"),		TEXT("torso_1"),				TEXT("torso_7"),},
+	#if	UE_VERSION_OLDER_THAN(5,4,0)
+					{TEXT("Head"),		TEXT("neck_1"),				TEXT("head"),},
+	#else
+					{TEXT("Neck"),		TEXT("neck_1"),				TEXT("neck_2"),},
+					{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
+	#endif
+					{TEXT("RightArm"),	TEXT("r_up_arm"),		TEXT("r_hand"),},
+					{TEXT("LeftArm"),	TEXT("l_up_arm"),		TEXT("l_hand"),},
+
+					// 0
+					{TEXT("RightLeg"),	TEXT("r_up_leg"),		TEXT("r_toes"),	0x01},
+					{TEXT("LeftLeg"),	TEXT("l_up_leg"),		TEXT("l_toes"),	0x01},
+
+					// 1
+					{TEXT("RightLeg"),	TEXT("r_up_leg"),		TEXT("r_foot"),	0x02},
+					{TEXT("LeftLeg"),	TEXT("l_up_leg"),		TEXT("l_foot"),	0x02},
+					{TEXT("RightToe"),	TEXT("r_toes"),		TEXT("r_toes"),		0x02},
+					{TEXT("LeftToe"),	TEXT("l_toes"),		TEXT("l_toes"),		0x02},
+
+					{TEXT("LeftClavicle"),		TEXT("l_shoulder"),	TEXT("l_shoulder"),},
+					{TEXT("RightClavicle"),		TEXT("r_shoulder"),	TEXT("r_shoulder"),},
+				};
+
+				// mocopi bvh  bone name
+				if (Options::Get().IsBVHModel()) {
+					table.Append(table_BVH);
+
+					rigcon.SetRetargetRoot("root");
+				}
+
 				for (auto& t : table) {
 					if ((t.mask & (1 << ik_no)) == 0) {
+						continue;
+					}
+					if (AddedChainList.Contains(t.chain)) {
 						continue;
 					}
 					if (t.chain == TEXT("LeftThumb") || (t.chain == TEXT("RightThumb"))) {
@@ -983,6 +1158,7 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 							}
 						}
 						rigcon.VRMAddRetargetChain(*t.chain, *conv.s1, *s2);
+						AddedChainList.Add(t.chain);
 					}
 				}
 				rigcon.LocalSolverSetup(vrmAssetList, ik_no);
@@ -1002,16 +1178,24 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 		{
-			FString table_name[2] = {
+			FString table_name[3] = {
 				FString(TEXT("RTG_")) + vrmAssetList->BaseFileName,
+				FString(TEXT("RTG_UE4_")) + vrmAssetList->BaseFileName,
 				FString(TEXT("RTG_UEFN_")) + vrmAssetList->BaseFileName,
 			};
-			FString table_asset[2] = {
+			FString table_asset[3] = {
 				TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"),
+				TEXT("/Game/Characters/Mannequin_UE4/Rigs/IK_UE4_Mannequin.IK_UE4_Mannequin"),
 				TEXT("/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin"),
 			};
 
-			for (int ikr_no=0; ikr_no<2; ikr_no++){
+			for (int ikr_no=0; ikr_no<3; ikr_no++){
+
+				int ikr_to_ik[3] = {
+					0, // mannequin
+					0, // mannequin
+					1  // uefn mannequin
+				};
 
 				FSoftObjectPath r(table_asset[ikr_no]);
 				UObject* u = r.TryLoad();
@@ -1027,15 +1211,14 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				auto SourceOrTargetVRM = ERetargetSourceOrTarget::Target;
 				auto SourceOrTargetMannequin = ERetargetSourceOrTarget::Source;
 
-				if (Options::Get().IsVRMAModel()) {
+				if (Options::Get().IsVRMAModel() || Options::Get().IsBVHModel()) {
 					SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
 					SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
 
 				}
 
 				SimpleRetargeterController c = SimpleRetargeterController(ikr);
-
-				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_no]);
+				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_to_ik[ikr_no]]);
 
 				if (u) {
 					auto r2 = Cast<UIKRigDefinition>(u);
@@ -1085,10 +1268,20 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						FName PoseName = "POSE_A";
 						const FName NewPoseName = c.CreateRetargetPose(PoseName, SourceOrTargetVRM);
 						FIKRetargetPose* NewPose = c.GetRetargetPosesByName(SourceOrTargetVRM, NewPoseName);
+						if (NewPose == nullptr) continue;
 
 						FReferenceSkeleton& RefSkeleton = sk->GetRefSkeleton();
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
-						const FName RetargetRootBoneName = table_rig_ik[ikr_no]->GetRetargetRoot();
+#if WITH_EDITOR
+#if	UE_VERSION_OLDER_THAN(5,6,0)
+						const FName RetargetRootBoneName = table_rig_ik[ikr_to_ik[ikr_no]]->GetRetargetRoot();
+#else
+						auto rigc = UIKRigController::GetController(table_rig_ik[ikr_to_ik[ikr_no]]);
+						const FName RetargetRootBoneName = rigc->GetRetargetRoot();
+#endif
+#else
+						const FName RetargetRootBoneName = "";
+#endif
 						for (int32 BoneIndex = 0; BoneIndex < RefSkeleton.GetNum(); ++BoneIndex)
 						{
 							auto BoneName = RefSkeleton.GetBoneName(BoneIndex);
@@ -1152,17 +1345,29 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 					}
 
 #if VRM4U_USE_AUTOALIGN
+
+#if UE_VERSION_OLDER_THAN(5,6,0)
+#else
+					{
+						UIKRetargeterController* cp = UIKRetargeterController::GetController(ikr);
+						//UIKRetargeterController& c = *cp;
+						cp->AddDefaultOps();
+					}
+#endif
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetVRM);
 					c.SetCurrentRetargetPose(UIKRetargeter::GetDefaultPoseName(), SourceOrTargetMannequin);
 
 					// 自動で姿勢を作る。
-					// ただし足首はそのまま。自動設定がうまく動作しないため。
-					c.AutoAlignAllBones(SourceOrTargetMannequin);
-					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
-					c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
 
-					// VRM側は変更しない
-					//c.AutoAlignAllBones(SourceOrTargetVRM);
+					if (VRMConverter::Options::Get().IsBVHModel()) {
+						// bvhは bvh側をalignする
+						c.AutoAlignAllBones(SourceOrTargetVRM);
+					}else{
+						// 足首はそのまま。自動設定がうまく動作しないため。
+						c.AutoAlignAllBones(SourceOrTargetMannequin);
+						c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_l"), FQuat::Identity, SourceOrTargetMannequin);
+						c.SetRotationOffsetForRetargetPoseBone(TEXT("foot_r"), FQuat::Identity, SourceOrTargetMannequin);
+					}
 #endif
 				}
 				c.SetChainSetting();

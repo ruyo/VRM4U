@@ -674,7 +674,7 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				}
 			}
 		}
-		result.meshInfo.SetNum(aiData->mNumMeshes, false);
+		result.meshInfo.SetNum(aiData->mNumMeshes);
 
 
 		// find and remove unused vertex
@@ -1001,7 +1001,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 
 		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false
-			&& VRMConverter::Options::Get().IsDebugOneBone() == false) {
+			&& VRMConverter::Options::Get().IsDebugOneBone() == false
+			&& VRMConverter::Options::Get().IsVRM10BindToRestPose() == true) {
 			if (vrmAssetList->Pose_bind.Num() == 0 || vrmAssetList->Pose_tpose.Num() == 0) {
 				UE_LOG(LogVRM4ULoader, Warning, TEXT("BindPose -> TPose :: no bindpose array!"));
 			}
@@ -2063,11 +2064,29 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		}
 	}
 	if (aiData->mVRMMeta && Options::Get().IsSkipPhysics()==false) {
-		VRM::VRMMetadata *meta = reinterpret_cast<VRM::VRMMetadata*>(aiData->mVRMMeta);
+
+		bool spring0 = false;
+		bool spring1 = false;
+
+		VRM::VRMMetadata* meta = reinterpret_cast<VRM::VRMMetadata*>(aiData->mVRMMeta);
+		// vrm0
 		if (meta->springNum > 0) {
+			spring0 = true;
+		}
+
+		if (vrmAssetList) {
+			if (vrmAssetList->VrmMetaObject) {
+				if (vrmAssetList->VrmMetaObject->VRM1SpringBoneMeta.Colliders.Num() > 0) {
+					spring1 = true;
+				}
+			}
+		}
+
+		if (spring0 || spring1) {
 			if (vrmAssetList->Package == GetTransientPackage()) {
 				pa = VRM4U_NewObject<UPhysicsAsset>(GetTransientPackage(), NAME_None, EObjectFlags::RF_Public | RF_Transient, NULL);
-			}else {
+			}
+			else {
 				FString name = (TEXT("PHYS_") + vrmAssetList->BaseFileName);
 				pa = VRM4U_NewObject<UPhysicsAsset>(vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 			}
@@ -2078,43 +2097,179 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 			VRMSetPhysicsAsset(sk, pa);
 
 			addedList.Empty();
+		}
+
+		// vrm0
+		if (spring0) {
+			TArray<int> swingBoneIndexArray;
+
+			for (int i = 0; i < meta->springNum; ++i) {
+				auto& spring = meta->springs[i];
+				for (int j = 0; j < spring.boneNum; ++j) {
+					auto& sbone = spring.bones_name[j];
+
+					FString s = UTF8_TO_TCHAR(sbone.C_Str());
+
+					int sboneIndex = VRMGetRefSkeleton(sk).FindRawBoneIndex(*s);
+					if (sboneIndex == INDEX_NONE) {
+						continue;
+					}
+
+					FName parentName = *s;
+					CreateSwingHead(vrmAssetList, spring, parentName, swingBoneIndexArray, sboneIndex);
+
+				}
+			} // all spring
 			{
-				TArray<int> swingBoneIndexArray;
+				swingBoneIndexArray.Sort();
 
-				for (int i = 0; i < meta->springNum; ++i) {
-					auto &spring = meta->springs[i];
-					for (int j = 0; j < spring.boneNum; ++j) {
-						auto &sbone = spring.bones_name[j];
+				for (int i = 0; i < swingBoneIndexArray.Num() - 1; ++i) {
+					for (int j = i + 1; j < swingBoneIndexArray.Num(); ++j) {
+						pa->DisableCollision(swingBoneIndexArray[i], swingBoneIndexArray[j]);
+					}
+				}
+			}
 
-						FString s = UTF8_TO_TCHAR(sbone.C_Str());
+			// collision
+			for (int i = 0; i < meta->colliderGroupNum; ++i) {
+				auto& c = meta->colliderGroups[i];
 
+				USkeletalBodySetup* bs = nullptr;
+				{
+					FString s = UTF8_TO_TCHAR(c.node_name.C_Str());
+					{
 						int sboneIndex = VRMGetRefSkeleton(sk).FindRawBoneIndex(*s);
 						if (sboneIndex == INDEX_NONE) {
 							continue;
 						}
+					}
+					s = s.ToLower();
 
-						FName parentName = *s;
-						CreateSwingHead(vrmAssetList, spring, parentName, swingBoneIndexArray, sboneIndex);
+					// addlist changed recur...
+					if (1) {//addedList.Find(s) >= 0) {
+						for (auto& a : pa->SkeletalBodySetups) {
+							if (a->BoneName.IsEqual(*s)) {
+								bs = a;
+								break;
+							}
+						}
 
 					}
-				} // all spring
-				{
-					swingBoneIndexArray.Sort();
-
-					for (int i = 0; i < swingBoneIndexArray.Num()-1; ++i) {
-						for (int j = i+1; j < swingBoneIndexArray.Num(); ++j) {
-							pa->DisableCollision(swingBoneIndexArray[i], swingBoneIndexArray[j]);
-						}
+					else {
+						addedList.Add(s);
 					}
 				}
+				if (bs == nullptr) {
+					bs = NewObject<USkeletalBodySetup>(pa, NAME_None, RF_Transactional);
+					bs->InvalidatePhysicsData();
 
-				// collision
-				for (int i = 0; i < meta->colliderGroupNum; ++i) {
-					auto &c = meta->colliderGroups[i];
+					pa->SkeletalBodySetups.Add(bs);
+				}
 
-					USkeletalBodySetup *bs = nullptr;
+				FKAggregateGeom agg;
+				for (int j = 0; j < c.colliderNum; ++j) {
+					FKSphereElem SphereElem;
+					VRM::vec3 v = {
+						c.colliders[j].offset[0] * 100.f,
+						c.colliders[j].offset[1] * 100.f,
+						c.colliders[j].offset[2] * 100.f,
+					};
+
+					SphereElem.Center = FVector(-v[0], v[2], v[1]);
+					SphereElem.Radius = c.colliders[j].radius * 100.f;
+					agg.SphereElems.Add(SphereElem);
+				}
+
+				bs->Modify();
+				bs->BoneName = UTF8_TO_TCHAR(c.node_name.C_Str());
+				bs->AddCollisionFrom(agg);
+				bs->CollisionTraceFlag = CTF_UseSimpleAsComplex;
+				// newly created bodies default to simulating
+				bs->PhysicsType = PhysType_Kinematic;	// fix!
+
+				//bs.constra
+				//sk->SkeletalBodySetups.Num();
+				bs->CreatePhysicsMeshes();
+
+			}// collision
+		}// vrm0
+
+		if (spring1){
+			auto& sm = vrmAssetList->VrmMetaObject->VRM1SpringBoneMeta;
+
+			TArray<int> swingBoneIndexArray;
+
+			for (int i = 0; i < sm.Springs.Num(); ++i) {
+				auto& spring = sm.Springs[i];
+
+				for (int j = 0; j < spring.joints.Num(); ++j) {
+					auto& sbone = spring.joints[j].boneName;
+
+					FString s = sbone;
+
+					int sboneIndex = VRMGetRefSkeleton(sk).FindRawBoneIndex(*s);
+					if (sboneIndex == INDEX_NONE) {
+						continue;
+					}
+
+					FName parentName = *s;
+					//CreateSwingHead(vrmAssetList, spring, parentName, swingBoneIndexArray, sboneIndex);
+
+				}
+			} // all spring
+			{
+				swingBoneIndexArray.Sort();
+
+				for (int i = 0; i < swingBoneIndexArray.Num() - 1; ++i) {
+					for (int j = i + 1; j < swingBoneIndexArray.Num(); ++j) {
+						pa->DisableCollision(swingBoneIndexArray[i], swingBoneIndexArray[j]);
+					}
+				}
+			}
+
+			// collision
+			for (int i = 0; i < sm.ColliderGroups.Num(); ++i) {
+				auto& c = sm.ColliderGroups[i];
+
+				USkeletalBodySetup* bs = nullptr;
+				/*
+				{
+					FString s = c.name;
 					{
-						FString s = UTF8_TO_TCHAR(c.node_name.C_Str());
+						int sboneIndex = VRMGetRefSkeleton(sk).FindRawBoneIndex(*s);
+						if (sboneIndex == INDEX_NONE) {
+							continue;
+						}
+					}
+					s = s.ToLower();
+
+					// addlist changed recur...
+					if (1) {//addedList.Find(s) >= 0) {
+						for (auto& a : pa->SkeletalBodySetups) {
+							if (a->BoneName.IsEqual(*s)) {
+								bs = a;
+								break;
+							}
+						}
+
+					}
+					else {
+						addedList.Add(s);
+					}
+				}
+				*/
+
+				for (int j = 0; j < c.colliders.Num(); ++j) {
+
+					FKAggregateGeom agg;
+
+					int ind = c.colliders[j];
+					auto& col = sm.Colliders[ind];
+
+
+					// sb setup
+					{
+						FString s = col.boneName;
 						{
 							int sboneIndex = VRMGetRefSkeleton(sk).FindRawBoneIndex(*s);
 							if (sboneIndex == INDEX_NONE) {
@@ -2124,15 +2279,16 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 						s = s.ToLower();
 
 						// addlist changed recur...
-						if (1){//addedList.Find(s) >= 0) {
-							for (auto &a : pa->SkeletalBodySetups) {
+						if (1) {//addedList.Find(s) >= 0) {
+							for (auto& a : pa->SkeletalBodySetups) {
 								if (a->BoneName.IsEqual(*s)) {
 									bs = a;
 									break;
 								}
 							}
 
-						}else {
+						}
+						else {
 							addedList.Add(s);
 						}
 					}
@@ -2143,34 +2299,66 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 						pa->SkeletalBodySetups.Add(bs);
 					}
 
-					FKAggregateGeom agg;
-					for (int j = 0; j < c.colliderNum; ++j) {
-						FKSphereElem SphereElem;
+
+					if (col.shapeType == TEXT("sphere")) {
 						VRM::vec3 v = {
-							c.colliders[j].offset[0] * 100.f,
-							c.colliders[j].offset[1] * 100.f,
-							c.colliders[j].offset[2] * 100.f,
+							col.offset[0] * 100,
+							col.offset[1] * 100,
+							col.offset[2] * 100
 						};
 
-						SphereElem.Center = FVector(-v[0], v[2], v[1]);
-						SphereElem.Radius = c.colliders[j].radius * 100.f;
+						FKSphereElem SphereElem;
+						SphereElem.Center = FVector(v[0], -v[2], v[1]);
+						SphereElem.Radius = col.radius * 100.f;
 						agg.SphereElems.Add(SphereElem);
 					}
+					else {
+						VRM::vec3 v0 = {
+							col.offset[0] * 100,
+							col.offset[1] * 100,
+							col.offset[2] * 100
+						};
 
+						VRM::vec3 v1 = {
+							col.tail[0] * 100,
+							col.tail[1] * 100,
+							col.tail[2] * 100
+						};
+						VRM::vec3 v = {
+							v0[0] + v1[0] / 2,
+							v0[1] + v1[1] / 2,
+							v0[2] + v1[2] / 2,
+						};
+
+						float len =
+							FMath::Sqrt(
+								FMath::Square(v0[0] - v1[0])
+								+ FMath::Square(v0[1] - v1[1])
+								+ FMath::Square(v0[2] - v1[2])
+							);
+
+
+						FKSphylElem s;
+						s.Center = FVector(v[0], -v[2], v[1]);
+						s.Radius = col.radius * 100.f;
+						s.Length = len;
+						agg.SphylElems.Add(s);
+					}
 					bs->Modify();
-					bs->BoneName = UTF8_TO_TCHAR(c.node_name.C_Str());
+					bs->BoneName = *col.boneName;
 					bs->AddCollisionFrom(agg);
 					bs->CollisionTraceFlag = CTF_UseSimpleAsComplex;
 					// newly created bodies default to simulating
 					bs->PhysicsType = PhysType_Kinematic;	// fix!
 
-															//bs.constra
-															//sk->SkeletalBodySetups.Num();
+					//bs.constra
+					//sk->SkeletalBodySetups.Num();
 					bs->CreatePhysicsMeshes();
-
 				}// collision
-			}
+			}// collision group
+		}
 
+		if (pa){
 			pa->UpdateBodySetupIndexMap();
 
 			RefreshSkelMeshOnPhysicsAssetChange(sk);
@@ -2184,7 +2372,6 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				pa->PostEditChange();
 			}
 #endif
-
 		}
 		//FSkeletalMeshModel* ImportedResource = sk->GetImportedModel();
 		//if (ImportedResource->LODModels.Num() == 0)

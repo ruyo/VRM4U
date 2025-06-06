@@ -46,7 +46,12 @@ void FAnimNode_VrmVMC::Initialize_AnyThread(const FAnimationInitializeContext& C
 
 	UVRM4U_VMCSubsystem* subsystem = GEngine->GetEngineSubsystem<UVRM4U_VMCSubsystem>();
 	if (subsystem == nullptr) return;
-	subsystem->CreateVMCServer(ServerAddress, Port);
+	{
+		auto *s = subsystem->FindOrAddServer(ServerAddress, Port);
+		if (s) {
+			s->bForceUpdate = bForceUpdate;
+		}
+	}
 	bCreateServer = true;
 
 	// init global reftransform

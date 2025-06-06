@@ -106,8 +106,8 @@ FRigUnit_VRMInitControllerTransform_Execute() {
 
 FRigUnit_VRMGenerateBoneToControlTable_Execute()
 {
-	//Items_MannequinBone.Empty();
-	Items_MannequinControl.Empty();
+	Items_MannequinBone.Empty();
+	//Items_MannequinControl.Empty();
 	Items_VRMBone.Empty();
 
 	const USkeletalMeshComponent* skc = ExecuteContext.UnitContext.DataSourceRegistry->RequestSource<USkeletalMeshComponent>(UControlRig::OwnerComponent);
@@ -137,8 +137,8 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 
 	for (auto& table : VRMUtil::table_ue4_vrm) {
 
-		auto *elem = controllerList.FindByPredicate(
-			[&table](FRigControlElement *e) {
+		auto* elem = controllerList.FindByPredicate(
+			[&table](FRigControlElement* e) {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 				if (e->GetNameString().Compare(table.BoneUE4 + "_c") == 0) {
 					return true;
@@ -162,16 +162,24 @@ FRigUnit_VRMGenerateBoneToControlTable_Execute()
 
 			bone.Type = ERigElementType::Bone;
 			bone.Name = *(*str);
+
+			Items_VRMBone.Add(*(*str));
 		}
 
 
-		FRigElementKey a;
-		a.Name = *(table.BoneUE4 + "_c");
-		a.Type = ERigElementType::Control;
-
-
-		Items_MannequinControl.Add(a);
-		Items_VRMBone.Add(bone);
+		{
+			FRigElementKey a;
+			a.Name = *(table.BoneUE4);
+			a.Type = ERigElementType::Control;
+			Items_MannequinBone.Add(*(table.BoneUE4));
+		}
+		{
+			FRigElementKey a;
+			a.Name = *(table.BoneUE4 + "_c");
+			a.Type = ERigElementType::Control;
+			//Items_MannequinControl.Add(a);
+		}
+		//Items_VRMBone.Add(bone);
 	}
 }
 

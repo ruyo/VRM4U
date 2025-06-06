@@ -376,7 +376,16 @@ public:
 	float PlayRateScale = 1.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bRemoveRootBoneRotation = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bRemoveRootBonePosition = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bVrm10RemoveLocalRotation = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bVrm10UseBindToRestPose = true;
 
 	bool bVrm10Bindpose = false;
 
@@ -393,6 +402,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bSkipPhysics = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bSkipRetargeter = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bSkipMorphTarget = false;
@@ -533,13 +545,20 @@ public:
 
 	static bool IsNoSafeName(const FString& str);
 	static FString GetSafeNewName(const FString& str);
-
 	static FString MakeName(const FString& str, bool IsJoint = false);
+	static FName GetSanitizedName(const FString& str);
 
 	static int32 GetDirectChildBones(FReferenceSkeleton& refs, int32 ParentBoneIndex, TArray<int32>& Children);
 
 	static class UVrmAssetListObject* GetAssetListObjectAny(const UObject* obj);
 	static class UVrmAssetListObject* GetAssetListObject(const USkeletalMesh *);
+
+	static void CloseEditorWindowByFolderPath(const UObject* obj);
+
+	static int GetChildBone(const USkeleton* skeleton, const int32 ParentBoneIndex, bool recursive, TArray<int32>& Children);
+	static int GetChildBone(const USkeleton* skeleton, const int32 ParentBoneIndex, TArray<int32>& Children) {
+		return GetChildBone(skeleton, ParentBoneIndex, true, Children);
+	}
 
 };
 

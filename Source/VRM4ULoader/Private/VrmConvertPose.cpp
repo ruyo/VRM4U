@@ -27,6 +27,10 @@
 #include "PersonaModule.h"
 #include "Modules/ModuleManager.h"
 #include "Animation/DebugSkelMeshComponent.h"
+#if UE_VERSION_OLDER_THAN(5,0,0)
+#else
+#include "Rigs/RigHierarchy.h"
+#endif
 #endif
 
 #include <assimp/Importer.hpp>
@@ -279,15 +283,21 @@ namespace {
 			auto* skc = Cast<USkeletalMeshComponent>(PreviewComponent);
 
 #elif	UE_VERSION_OLDER_THAN(5,1,0)
-			ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
-			AutoDestroy autoDestroy(ska);
-			auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
-			skc->SetSkeletalMesh(sk);
+			USkeletalMeshComponent* skc = nullptr;
+			if (GWorld) {
+				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+				AutoDestroy autoDestroy(ska);
+				skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+				skc->SetSkeletalMesh(sk);
+			}
 #else
-			ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
-			AutoDestroy autoDestroy(ska);
-			auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
-			skc->SetSkeletalMeshAsset(sk);
+			USkeletalMeshComponent* skc = nullptr;
+			//if (GWorld) {
+				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+				AutoDestroy autoDestroy(ska);
+				skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+				skc->SetSkeletalMeshAsset(sk);
+			//}
 #endif
 			skc->SetComponentSpaceTransformsDoubleBuffering(false);
 		}
@@ -528,6 +538,22 @@ namespace {
 							}
 						}
 
+						{
+							// DisplayName check
+#if UE_VERSION_OLDER_THAN(5,3,0)
+							FName n = VRMUtil::GetSanitizedName(curveName.DisplayName.ToString());
+							if (n == NAME_None) {
+								continue;
+							}
+#else
+							FName n = VRMUtil::GetSanitizedName(curveName.ToString());
+							if (n == NAME_None) {
+								continue;
+							}
+#endif
+						}
+						
+
 #if UE_VERSION_OLDER_THAN(5,2,0)
 						ase->RawCurveData.AddCurveData(curveName);
 #else
@@ -740,7 +766,7 @@ namespace {
 
 bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 
-	if (VRMConverter::Options::Get().IsDebugOneBone()) {
+	if (VRMConverter::Options::Get().IsDebugOneBone() || VRMConverter::Options::Get().IsSkipRetargeter()) {
 		return true;
 	}
 
@@ -753,7 +779,7 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 		bool b1, b2, b3;
 		b1 = b2 = b3 = false;
 		UVrmBPFunctionLibrary::VRMGetPlayMode(b1, b2, b3);
-		bPlay = b1;
+		bPlay = b1 || b2;
 	}
 
 #if	UE_VERSION_OLDER_THAN(4,20,0)
@@ -761,7 +787,7 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 #if WITH_EDITOR
 
 	// pose asset
-	if (VRMConverter::Options::Get().IsDebugOneBone() == false && bPlay==false){
+	if (bPlay==false){
 		USkeletalMesh *sk = vrmAssetList->SkeletalMesh;
 		USkeleton* k = VRMGetSkeleton(sk);
 
@@ -835,15 +861,21 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 				auto* skc = Cast<USkeletalMeshComponent>(PreviewComponent);
 
 #elif	UE_VERSION_OLDER_THAN(5,1,0)
-				ASkeletalMeshActor *ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
-				AutoDestroy autoDestroy(ska);
-				auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
-				skc->SetSkeletalMesh(sk);
+				USkeletalMeshComponent *skc = nullptr;
+				//if (GWorld) {
+					ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+					AutoDestroy autoDestroy(ska);
+					skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+					skc->SetSkeletalMesh(sk);
+				//}
 #else
-				ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
-				AutoDestroy autoDestroy(ska);
-				auto skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
-				skc->SetSkeletalMeshAsset(sk);
+				USkeletalMeshComponent* skc = nullptr;
+				//if (GWorld) {
+					ASkeletalMeshActor* ska = GWorld->SpawnActor<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), FTransform::Identity);
+					AutoDestroy autoDestroy(ska);
+					skc = Cast<USkeletalMeshComponent>(ska->GetRootComponent());
+					skc->SetSkeletalMeshAsset(sk);
+				//}
 #endif
 
 

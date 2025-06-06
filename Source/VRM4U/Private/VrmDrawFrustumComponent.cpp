@@ -9,6 +9,7 @@
 #include "PrimitiveSceneProxy.h"
 #include "Engine/CollisionProfile.h"
 #include "SceneManagement.h"
+#include "SceneView.h"
 #include "Misc/EngineVersionComparison.h"
 
 

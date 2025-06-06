@@ -55,51 +55,18 @@
 //#include "Windows/WindowsSystemIncludes.h"
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
-
-#elif UE_VERSION_OLDER_THAN(5,2,0)
-
-#include "UObject/SavePackage.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Solvers/IKRig_PBIKSolver.h"
-#endif
-
-#elif UE_VERSION_OLDER_THAN(5,3,0)
-#include "UObject/SavePackage.h"
-#include "IKRigDefinition.h"
-#include "IKRigSolver.h"
-#if WITH_EDITOR
-#include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
-#include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Solvers/IKRig_FBIKSolver.h"
-#endif
-
 #else
-#include "UObject/SavePackage.h"
-#include "Rig/IKRigDefinition.h"
-#include "Rig/Solvers/IKRigSolver.h"
-#if WITH_EDITOR
 #include "EditorFramework/AssetImportData.h"
-#include "IContentBrowserSingleton.h"
+#include "UObject/SavePackage.h"
+
+#if WITH_EDITOR
 #include "ContentBrowserModule.h"
-#include "RigEditor/IKRigController.h"
-#include "RetargetEditor/IKRetargeterController.h"
-#include "Retargeter/IKRetargeter.h"
-#include "Rig/Solvers/IKRig_FBIKSolver.h"
+#include "IContentBrowserSingleton.h"
 #endif
 
 #endif
+
+#include "VrmRigHeader.h"
 
 #if UE_VERSION_OLDER_THAN(5,4,0)
 #else
@@ -535,6 +502,7 @@ void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& 
 	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:std::stringFileName=%hs"), file.c_str());
 
 	Assimp::Importer mImporter;
+	mImporter.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
 	const aiScene *mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
 
 	VRMConverter vc;
@@ -688,6 +656,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 	}
 
 	Assimp::Importer mImporter;
+	mImporter.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
 	const aiScene* mScenePtr = nullptr; // delete by Assimp::Importer::~Importer
 
 	if (filepath.IsEmpty())
@@ -716,7 +685,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 		e_imp = GetExtAndSetModelTypeLocal(e, pFileDataData, dataSize);
 
 		mScenePtr = mImporter.ReadFileFromMemory(pFileDataData, dataSize,
-			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes,
+			aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_PopulateArmatureData,
 			e_imp.c_str());
 
 		if (mScenePtr == nullptr) {
@@ -726,7 +695,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 #else
 			file = TCHAR_TO_UTF8(*filepath);
 #endif
-			mScenePtr = mImporter.ReadFile(file, aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes);
+			mScenePtr = mImporter.ReadFile(file, aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_OptimizeMeshes | aiProcess_PopulateArmatureData);
 		}
 
 		UE_LOG(LogVRM4ULoader, Log, TEXT("VRM:(%3.3lf secs) ReadFileFromMemory"), FPlatformTime::Seconds() - StartTime);
@@ -1332,13 +1301,20 @@ static void LocalEpicSkeletonSetup(UIKRigController *rigcon) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 		sol_index = rigcon->AddSolver(UIKRigPBIKSolver::StaticClass());
 		sol = rigcon->GetSolver(sol_index);
-#else
+#elif UE_VERSION_OLDER_THAN(5,6,0)
 		sol_index = rigcon->AddSolver(UIKRigFBIKSolver::StaticClass());
+		sol = rigcon->GetSolverAtIndex(sol_index);
+#else
+		sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
 		sol = rigcon->GetSolverAtIndex(sol_index);
 #endif
 	}
 	if (sol == nullptr) return;
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 	sol->SetRootBone(TEXT("root"));
+#else
+	sol->SetStartBone(TEXT("root"));
+#endif
 
 	{
 		TArray<FString> a = {

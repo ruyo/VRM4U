@@ -2,6 +2,7 @@
 
 #include "AnimNode_VrmRetargetFromMannequin.h"
 #include "AnimationRuntime.h"
+#include "Animation/AnimInstance.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"

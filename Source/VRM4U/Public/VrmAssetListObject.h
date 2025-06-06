@@ -185,6 +185,9 @@ public:
 	TMap<FString, FTransform> Pose_bind;
 	TMap<FString, FTransform> Pose_tpose;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Out")
+	FTransform model_root_transform;
+
 	//TArray<FTransform> poseGlobal_bindpose;	// bone
 	//TArray<FTransform> poseGlobal_tpose;	// node
 

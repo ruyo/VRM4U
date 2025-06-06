@@ -59,6 +59,8 @@ namespace {
 		} else {
 			material->Parent = parent;
 		}
+		FMaterialUpdateContext UpdateContext(FMaterialUpdateContext::EOptions::Default, GMaxRHIShaderPlatform);
+		UpdateContext.AddMaterialInstance(material);
 #else
 		material->Parent = parent;
 #endif
@@ -494,6 +496,9 @@ namespace {
 			{
 				auto n = TextureTypeToIndex[aiTextureType_NORMALS];
 				if (n >= 0) {
+					vrmAssetList->Textures[n]->SRGB = false;
+					vrmAssetList->Textures[n]->CompressionSettings = TC_Normalmap;
+					vrmAssetList->Textures[n]->UpdateResource();
 					LocalTextureSet(dm, TEXT("mtoon_tex_Normal"), vrmAssetList->Textures[n]);
 				}
 			}
@@ -719,7 +724,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 				if (VRMConverter::Options::Get().IsSingleUAssetFile() == false) {
 					pkg = VRM4U_CreatePackage(vrmAssetList->Package, *name);
 				}
-				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips, bNormalGreenFlip&&(VRMConverter::IsImportMode()==false));
+				UTexture2D* NewTexture2D = VRMLoaderUtil::CreateTextureFromImage(name, pkg, t.pcData, t.mWidth, bGenerateMips, NormalBoolTable[i], bNormalGreenFlip&&(VRMConverter::IsImportMode()==false));
 #if WITH_EDITOR
 				NewTexture2D->DeferCompression = false;
 #endif

@@ -1,0 +1,64 @@
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Generated/UniformBuffers/View.ush"
+//#include "SceneTexturesCommon.ush"
+DECLARE_UNIFORM_BUFFER(View);
+
+RWTexture2D<float4> OutputTexture : register(u0); // Render Targetへの書き込み用
+
+Texture2D<float4> InputTexture;
+
+Texture2D SceneDepthTexture : register(t0);
+SamplerState DepthSampler : register(s0);
+
+//SamplerState InputSampler;
+
+
+float GetLinearDepth(float2 UV)
+{
+    float Depth = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
+
+    float ZNear = View.ViewToClip[3][2] / View.ViewToClip[2][2];
+    float ZFar = View.ViewToClip[3][2] / (View.ViewToClip[2][2] - 1.0);
+
+    // 非リニア深度をリニア深度に変換
+    float LinearDepth = ZFar * ZNear / (ZNear + Depth * (ZFar - ZNear));
+    return LinearDepth;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
+{
+    uint width, height;
+    OutputTexture.GetDimensions(width, height);
+
+    
+    float2 ViewSize = View.ViewSizeAndInvSize.xy;
+    
+    // ピクセル座標を取得
+    uint2 pixelCoord = DispatchThreadID.xy;
+
+    // 簡単な例として、座標に基づく色を書き込み
+    //float4 color = float4(float(pixelCoord.x) / width, float(pixelCoord.y) / height, 0.5, 1.0);
+    float4 color = float4(float(pixelCoord.x) / ViewSize.x, float(pixelCoord.y) / ViewSize.y, 0.5, 1.0);
+    //if (color.x < 0.5)  color.x = 1;
+    //if (pixelCoord.x == pixelCoord.y) color = 0;
+    //color.xyz = 0;
+    //OutputTexture[pixelCoord] = color;
+
+    //OutputTexture[pixelCoord] = InputTexture[pixelCoord].xxxw;// / 10.f;
+
+    {
+        float2 UV = ViewSize / float2(width, height);
+        
+        float Depth = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0);
+        
+        float LinearDepth = GetLinearDepth(UV);
+
+        OutputTexture[pixelCoord].xyz = Depth;
+        //OutputTexture[pixelCoord] = float4(LinearDepth / 1000.0, 0.0, 0.0, 1.0);
+
+    }
+    
+
+   
+}
