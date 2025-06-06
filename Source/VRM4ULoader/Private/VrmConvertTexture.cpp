@@ -767,7 +767,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 #endif
 
 				if (NormalBoolTable[i]) {
-					// UE5.5�ŃN���b�V������̂� update��ɍēx�X�V
+					// UE5.5でクラッシュするので update後に再度更新
 					NewTexture2D->CompressionSettings = TC_Normalmap;
 					NewTexture2D->UpdateResource();
 #if WITH_EDITOR
