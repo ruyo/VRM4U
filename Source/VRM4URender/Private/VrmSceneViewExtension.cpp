@@ -48,6 +48,7 @@ class FMyComputeShader : public FGlobalShader
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, InputTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<uint2>, CustomStencilTexture)
 
 		//SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTextures)
 
@@ -163,7 +164,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 #else
 		{
 			// depth copy
-			RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy");
+			RDG_EVENT_SCOPE_STAT(GraphBuilder, VRM4U, "VRM4U::Copy2");
 
 			FRDGTextureRef SourceTexture = SceneTextures->GetParameters()->SceneDepthTexture;
 			if (!SourceTexture) return;
@@ -177,7 +178,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 				}
 				CopyDesc[i].Flags |= TexCreate_RenderTargetable | TexCreate_UAV;
 
-				FString name = TEXT("CopiedGBuffer") + FString::FromInt(i);
+				FString name = TEXT("CopiedGBuffer2") + FString::FromInt(i);
 				CopyTextureDepth[i] = GraphBuilder.CreateTexture(
 					CopyDesc[i],
 					*name
@@ -304,8 +305,11 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 
 	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
 	Parameters->OutputTexture = GBufferUAV;
-	Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
-	Parameters->SceneDepthTexture = SceneTextures->GetParameters()->SceneDepthTexture;
+	Parameters->InputTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
+	Parameters->CustomStencilTexture = (SceneTextures->GetParameters()->CustomStencilTexture);
+	//Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
+	//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->SceneDepthTexture;
+	Parameters->SceneDepthTexture = SceneTextures->GetParameters()->GBufferBTexture;
 	//check(DepthTexture);
 	Parameters->DepthSampler = TStaticSamplerState<SF_Point>::GetRHI();
 
