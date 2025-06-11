@@ -867,10 +867,9 @@ public:
 
 
 #if WITH_EDITOR
-static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) {
 #if UE_VERSION_OLDER_THAN(5,6,0)
-	return nullptr;
 #else
+static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) {
 
 	FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
 	UObject* u = r.TryLoad();
@@ -1054,8 +1053,8 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 		}
 	}
 	return rig_ik;
-#endif
 }
+#endif
 #endif
 
 
@@ -1397,7 +1396,10 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 					if (ikr_no == 0) {
 #if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,6,0)
+#else
 						u = GenerateMannequinIK(vrmAssetList);
+#endif
 #endif
 					}
 					if (u == nullptr) {
