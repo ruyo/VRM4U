@@ -7,6 +7,7 @@ RWTexture2D<float4> OutputTexture : register(u0); // Render Targetへの書き�
 
 Texture2D<float4> InputTexture;
 
+Texture2D CustomDepthTexture;
 Texture2D<uint2> CustomStencilTexture;
 
 Texture2D SceneDepthTexture : register(t0);
@@ -34,9 +35,19 @@ float GetLinearDepth(float2 UV, uint2 pixelCoord)
 */
 }
 
+float ToLinearDepth(float DeviceZ)
+{
+    
+    //float DeviceZ = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
+    //float DeviceZ = InputTexture[pixelCoord].x;
+    return 1.0f / (DeviceZ * View.InvDeviceZToWorldZTransform[2] - View.InvDeviceZToWorldZTransform[3]);
+}
+
+
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
+#if FEATURE_LEVEL >= FEATURE_LEVEL_SM6
     uint width, height;
     OutputTexture.GetDimensions(width, height);
 
@@ -76,21 +87,30 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     //    CustomStencilTexture
     //OutputTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
 
-    if (pixelCoord.x > 10 && pixelCoord.y > 10)
+    if (CustomStencilTexture[pixelCoord].y >= 1)
     {
-        float tmp = InputTexture[pixelCoord].r;
-
-        for (int x = 0; x < 5; ++x)
+        if (InputTexture[pixelCoord].r <= CustomDepthTexture[pixelCoord].r)
         {
-            float t = InputTexture[pixelCoord - uint2(x, x)*2].r;
-            if (tmp < t)
+            if (pixelCoord.x > 10 && pixelCoord.y > 10)
             {
-                OutputTexture[pixelCoord].xyz = 0;//                1; //        frac(LinearDepth / 5000.f);
-            }
+                float depth = InputTexture[pixelCoord].r;
+                float depth_linear = ToLinearDepth(depth);
 
+                for (int x = 0; x < 5; ++x)
+                {
+                    float t = InputTexture[pixelCoord - uint2(x, x) * 2].r;
+                    float t_linear = ToLinearDepth(t);
+
+                    //if (depth < t - 0.01)
+                    if (depth_linear < t_linear + 0.00001)
+                    {
+                        OutputTexture[pixelCoord].xyz *= 2; //                1; //        frac(LinearDepth / 5000.f);
+                        break;
+                    }
+
+                }
+            }
         }
     }
-    
-
-   
+#endif
 }
