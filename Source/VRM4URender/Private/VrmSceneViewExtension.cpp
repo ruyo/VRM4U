@@ -47,15 +47,17 @@ class FMyComputeShader : public FGlobalShader
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
-		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, InputTexture)
 
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D, NormalTexture)
+
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float>, SceneDepthTexture)
 		//SHADER_PARAMETER_RDG_TEXTURE(Texture2D, CustomDepthTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, CustomDepthTexture)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<uint2>, CustomStencilTexture)
 		//SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTextures)
 
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneDepthTexture) // 深度
-		SHADER_PARAMETER_SAMPLER(SamplerState, DepthSampler)
+		//SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneDepthTexture) // 深度
+		//SHADER_PARAMETER_SAMPLER(SamplerState, DepthSampler)
 
 		//SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SceneColorTexture) // カラー
 		//SHADER_PARAMETER_SAMPLER(SamplerState, ColorSampler)
@@ -299,6 +301,11 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	//RPInfo.ColorRenderTargets[0].Action = false;
 
 	// RenderTargets の0番目を取得
+	// 0 SceneColor
+	// 1 A normal
+	// 2 B MRS
+	// 3 C basecolor
+	// 4 D subsurface
 	const FRenderTargetBinding& FirstTarget = RenderTargets[3];
 	//if (!FirstTarget.IsValid())
 	//{
@@ -322,7 +329,10 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 
 	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
 	Parameters->OutputTexture = GBufferUAV;
-	Parameters->InputTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
+
+	Parameters->NormalTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->GBufferATexture);
+
+	Parameters->SceneDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
 
 	//
 	Parameters->CustomDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->CustomDepthTexture);
@@ -331,9 +341,9 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	//Parameters->CustomStencilTexture = bCustomDepthProduced ? CustomDepthTextures.Stencil : SystemTextures.StencilDummySRV;
 	//Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
 	//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->SceneDepthTexture;
-	Parameters->SceneDepthTexture = SceneTextures->GetParameters()->GBufferBTexture;
+	//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->GBufferBTexture;
 	//check(DepthTexture);
-	Parameters->DepthSampler = TStaticSamplerState<SF_Point>::GetRHI();
+	//Parameters->DepthSampler = TStaticSamplerState<SF_Point>::GetRHI();
 
 	Parameters->View = InView.ViewUniformBuffer;
 	//Parameters->SceneTextures = SceneTextures;
