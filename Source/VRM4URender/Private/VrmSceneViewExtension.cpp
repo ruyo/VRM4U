@@ -306,7 +306,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	// 2 B MRS
 	// 3 C basecolor
 	// 4 D subsurface
-	const FRenderTargetBinding& FirstTarget = RenderTargets[3];
+	const FRenderTargetBinding& FirstTarget = RenderTargets[0];
 	//if (!FirstTarget.IsValid())
 	//{
 	//	return; // ターゲットが無効な場合スキップ
@@ -330,7 +330,8 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
 	Parameters->OutputTexture = GBufferUAV;
 
-	Parameters->NormalTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->GBufferATexture);
+	//Parameters->NormalTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->GBufferATexture);
+	Parameters->NormalTexture = GraphBuilder.CreateSRV(RenderTargets[1].GetTexture());
 
 	Parameters->SceneDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
 

@@ -45,6 +45,28 @@ float ToLinearDepth(float DeviceZ)
 }
 
 
+float3 ReconstructWorldPosition(float2 UV, uint2 pixelCoord)
+{
+    // 1. UV座標をクリップ空間に変換
+    float2 ClipXY = UV * 2.0 - 1.0; // [0, 1] -> [-1, 1]
+    // 深度値はリニア化済み（SceneDepthは通常リニア深度）
+    //float ClipZ = Depth; // UnrealのSceneDepthはリニア深度（0=近, 1=遠）
+    float ClipZ = GetLinearDepth(UV, pixelCoord);
+
+    // 2. クリップ空間の座標を構築
+    // w=1としてクリップ空間座標を作成（透視投影の場合）
+    float4 ClipPos = float4(ClipXY, ClipZ, 1.0);
+
+    // 3. クリップ空間 -> ビュー空間
+    float4 ViewPos = mul(ClipPos, View.ClipToView); // 逆投影行列
+    ViewPos /= ViewPos.w; // 透視除算
+
+    // 4. ビュー空間 -> ワールド空間
+    float4 WorldPos = mul(ViewPos, View.ViewToWorld); // 逆ビュー行列
+    return WorldPos.xyz; // ワールド座標
+}
+
+
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
@@ -88,38 +110,43 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     //    CustomStencilTexture
     //OutputTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
 
-    if (CustomStencilTexture[pixelCoord].y >= 1)
-    {
-        if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r)
-        {
-            if (pixelCoord.x > 10 && pixelCoord.y > 10)
-            {
-                float depth = SceneDepthTexture[pixelCoord];
-                float depth_linear = ToLinearDepth(depth);
+    if (CustomStencilTexture[pixelCoord].y >= 1) {
+        if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r) {
+            float3 PackedNormal = NormalTexture[pixelCoord].xyz;
+            float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
+            //OutputTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
+            
+            float t = dot(WorldNormal, View.DirectionalLightDirection);
+            t = saturate(t);
 
-                for (int x = 0; x < 5; ++x)
-                {
-                    if (CustomStencilTexture[pixelCoord - uint2(x, x) * 2].y == 0)
-                    {
-                        OutputTexture[pixelCoord].xyz = 10; //                1; //        frac(LinearDepth / 5000.f);
-                        break;
-                        
-                    }
-                    
-                    float t = SceneDepthTexture[pixelCoord - uint2(x, x) * 2];
-                    float t_linear = ToLinearDepth(t);
+            if (t > 0.2) {
+                float4 ClipLightDir = mul(float4(-View.DirectionalLightDirection, 0.0), View.RelativeWorldToClip);
 
-                    //if (depth < t - 0.01)
-                    if (depth_linear < t_linear + 0.00001)
-                    {
-                        OutputTexture[pixelCoord].xyz = 5; //                1; //        frac(LinearDepth / 5000.f);
-                        //OutputTexture[pixelCoord].xyz = NormalTexture[pixelCoord].xyz * 5; //                1; //        frac(LinearDepth / 5000.f);
+                ClipLightDir.xyz = normalize(ClipLightDir.xyz);
+
+                bool bEdge = false;
+                for (int i = 0; i < 50; ++i) {
+                    int2 target = int2(ClipLightDir.xy * float2(i,i)) + pixelCoord;
+                    if (CustomStencilTexture[target].y == 0) {
+                        bEdge = true;
                         break;
                     }
-
                 }
+                if (bEdge) {
+                    OutputTexture[pixelCoord].x = 10; //            t * 10;
+                    OutputTexture[pixelCoord].yz = 0; //            t * 10;
+                    OutputTexture[pixelCoord].xyz = View.DirectionalLightColor.xyz * 10.0;
+                }
+                
+                
+                //for (int i = 0; i < 100; ++i) {
+                //    OutputTexture[pixelCoord + int2((ClipLightDir.xy * float2(i,i)))] = 10;
+                //}
             }
         }
     }
+
+    
 #endif
 }
+
