@@ -39,7 +39,7 @@
 
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
-#if WITH_EDITOR
+#if WITH_EDITOR && PLATFORM_WINDOWS
 #define VRM4U_USE_MRQ 1
 #endif
 #endif
