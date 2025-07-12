@@ -355,7 +355,7 @@ static void FindMeshInfo(const aiScene* scene, aiNode* node, FReturnedData& resu
 							UE_LOG(LogVRM4ULoader, Warning, TEXT("test uv2.\n"));
 						}
 					}
-					FVector2D uv = FVector2D(mesh->mTextureCoords[u][j].x, -mesh->mTextureCoords[u][j].y);
+					FVector2D uv = FVector2D(mesh->mTextureCoords[u][j].x, 1.0-mesh->mTextureCoords[u][j].y);
 					mi.UV0[u].Add(uv);
 				}
 			}
