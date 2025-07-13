@@ -77,11 +77,8 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     
     float2 ViewSize = View.ViewSizeAndInvSize.xy;
     
-    // ピクセル座標を取得
     uint2 pixelCoord = DispatchThreadID.xy;
-
     
-    // 簡単な例として、座標に基づく色を書き込み
     //float4 color = float4(float(pixelCoord.x) / width, float(pixelCoord.y) / height, 0.5, 1.0);
     float4 color = float4(float(pixelCoord.x) / ViewSize.x, float(pixelCoord.y) / ViewSize.y, 0.5, 1.0);
     //if (color.x < 0.5)  color.x = 1;
@@ -133,9 +130,9 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                     }
                 }
                 if (bEdge) {
-                    OutputTexture[pixelCoord].x = 10; //            t * 10;
-                    OutputTexture[pixelCoord].yz = 0; //            t * 10;
-                    OutputTexture[pixelCoord].xyz = View.DirectionalLightColor.xyz * 10.0;
+                    //OutputTexture[pixelCoord].x = 10; //            t * 10;
+                    //OutputTexture[pixelCoord].yz = 0; //            t * 10;
+                    OutputTexture[pixelCoord].xyz = max(OutputTexture[pixelCoord].xyz, saturate(View.DirectionalLightColor.xyz) * 10.0);
                 }
                 
                 
