@@ -865,6 +865,199 @@ public:
 
 #endif // 5.0
 
+
+#if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,6,0)
+#else
+static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) {
+
+	FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
+	UObject* u = r.TryLoad();
+	if (u == nullptr) {
+		FSoftObjectPath r2(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+		u = r2.TryLoad();
+	}
+
+	if (u == nullptr) return nullptr;
+
+	USkeletalMesh* sk = nullptr;
+	if (u) {
+		auto r2 = Cast<USkeletalMesh>(u);
+		if (r2) {
+			sk = r2;
+		}
+	}
+	if (sk == nullptr) return nullptr;
+
+	FString name = FString(TEXT("IK_")) + TEXT("Default") + TEXT("_Mannequin");
+	UIKRigDefinition* rig_ik = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+
+	{
+		SimpleRigController rigcon = SimpleRigController(rig_ik);
+		rigcon.SetSkeletalMesh(sk);
+
+		// root
+		{
+			auto s = VRMGetRefSkeleton(sk).GetBoneName(0);
+			rigcon.VRMAddRetargetChain(TEXT("Root"), s, s);
+		}
+
+		struct TT {
+			FString chain;
+			FString s1;
+			FString s2;
+			uint32_t mask = 0xFFFF;
+		};
+
+		TArray<FString> AddedChainList;
+
+		TArray<TT> table = {
+			{TEXT("Pelvis"),		TEXT("pelvis"),				TEXT("pelvis"),},
+			{TEXT("Spine"),		TEXT("spine_01"),				TEXT("spine_05"),},
+			{TEXT("Neck"),		TEXT("neck_01"),				TEXT("neck_02"),},
+			{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
+
+			{TEXT("LeftClavicle"),	TEXT("clavicle_l"),		TEXT("clavicle_l"),},
+			{TEXT("LeftArm"),		TEXT("upperarm_l"),		TEXT("hand_l"),},
+
+			{TEXT("RightClavicle"),	TEXT("clavicle_r"),		TEXT("clavicle_r"),},
+			{TEXT("RightArm"),		TEXT("upperarm_r"),		TEXT("hand_r"),},
+
+
+			{TEXT("LeftIndexMetacarpal"),	TEXT("index_metacarpal_l"),		TEXT("index_metacarpal_l"),},
+			{TEXT("LeftIndex"),				TEXT("index_01_l"),				TEXT("index_03_l"),},
+			{TEXT("LeftMiddleMetacarpal"),	TEXT("middle_metacarpal_l"),	TEXT("middle_metacarpal_l"),},
+			{TEXT("LeftMiddle"),			TEXT("middle_01_l"),			TEXT("middle_03_l"),},
+			{TEXT("LeftThumb"),				TEXT("thumb_01_l"),				TEXT("thumb_03_l"),},
+			{TEXT("LeftPinkyMetacarpal"),	TEXT("pinky_metacarpal_l"),		TEXT("pinky_metacarpal_l"),},
+			{TEXT("LeftPinky"),				TEXT("pinky_01_l"),				TEXT("pinky_03_l"),},
+			{TEXT("LeftRingMetacarpal"),	TEXT("ring_metacarpal_l"),		TEXT("ring_metacarpal_l"),},
+			{TEXT("LeftRing"),				TEXT("ring_01_l"),				TEXT("ring_03_l"),},
+
+			{TEXT("RightIndexMetacarpal"),	TEXT("index_metacarpal_r"),		TEXT("index_metacarpal_r"),},
+			{TEXT("RightIndex"),			TEXT("index_01_r"),				TEXT("index_03_r"),},
+			{TEXT("RightMiddleMetacarpal"),	TEXT("middle_metacarpal_r"),	TEXT("middle_metacarpal_r"),},
+			{TEXT("RightMiddle"),			TEXT("middle_01_r"),			TEXT("middle_03_r"),},
+			{TEXT("RightThumb"),			TEXT("thumb_01_r"),				TEXT("thumb_03_r"),},
+			{TEXT("RightPinkyMetacarpal"),	TEXT("pinky_metacarpal_r"),		TEXT("pinky_metacarpal_r"),},
+			{TEXT("RightPinky"),			TEXT("pinky_01_r"),				TEXT("pinky_03_r"),},
+			{TEXT("RightRingMetacarpal"),	TEXT("ring_metacarpal_r"),		TEXT("ring_metacarpal_r"),},
+			{TEXT("RightRing"),				TEXT("ring_01_r"),				TEXT("ring_03_r"),},
+
+			{TEXT("LeftLeg"),	TEXT("thigh_l"),		TEXT("ball_l"),},
+			{TEXT("RightLeg"),	TEXT("thigh_r"),		TEXT("ball_r"),},
+
+		};
+
+		for (auto& t : table) {
+			rigcon.VRMAddRetargetChain(*t.chain, *t.s1, *t.s2);
+		}
+	}
+
+	{
+		auto* rigcon = UIKRigController::GetController(rig_ik);
+
+		int sol_index = 0;
+
+		sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
+		auto *sol = rigcon->GetSolverAtIndex(sol_index);
+
+		{
+			auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+			auto s = sc->GetSolverSettings();
+			s.RootBehavior = EPBIKRootBehavior::Free;
+			s.GlobalPullChainAlpha = 0;
+			sol->SetSolverSettings(&s);
+		}
+
+		sol->SetEnabled(true);
+		{
+			FName boneName = TEXT("pelvis");
+			sol->SetStartBone(boneName);
+			rigcon->SetRetargetRoot(boneName);
+		}
+		{
+			FName boneList[] = {
+				TEXT("pelvis"),
+				TEXT("clavicle_l"),
+				TEXT("clavicle_r"),
+			};
+
+			for (auto& boneName : boneList) {
+				sol->AddSettingsToBone(boneName);
+				auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+				if (sc) {
+					auto settings = sc->GetBoneSettings(boneName);
+					settings.RotationStiffness = 0.95f;
+					sc->SetBoneSettings(boneName, settings);
+				}
+			}
+		}
+		{
+			FName boneList[] = {
+				TEXT("lowerarm_r"),
+				TEXT("lowerarm_l"),
+				TEXT("calf_r"),
+				TEXT("calf_l"),
+			};
+
+			for (auto& boneName : boneList) {
+				sol->AddSettingsToBone(boneName);
+				auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+				if (sc) {
+					auto settings = sc->GetBoneSettings(boneName);
+					settings.X = EPBIKLimitType::Locked;
+					settings.Y = EPBIKLimitType::Locked;
+					settings.bUsePreferredAngles = true;
+					settings.PreferredAngles.Set(0, 0, 90);
+					sc->SetBoneSettings(boneName, settings);
+				}
+			}
+		}
+		{
+			FName boneList[] = {
+				TEXT("foot_r"),
+				TEXT("foot_l"),
+			};
+
+			for (auto& boneName : boneList) {
+				sol->AddSettingsToBone(boneName);
+				auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+				if (sc) {
+					auto settings = sc->GetBoneSettings(boneName);
+					settings.RotationStiffness = 0.85f;
+					sc->SetBoneSettings(boneName, settings);
+				}
+			}
+		}
+
+		{
+			auto goal = rigcon->AddNewGoal(TEXT("RightHandIK"), TEXT("hand_r"));
+			rigcon->SetRetargetChainGoal(TEXT("RightArm"), goal);
+			rigcon->ConnectGoalToSolver(goal, sol_index);
+		}
+		{
+			auto goal = rigcon->AddNewGoal(TEXT("LeftHandIK"), TEXT("hand_l"));
+			rigcon->SetRetargetChainGoal(TEXT("LeftArm"), goal);
+			rigcon->ConnectGoalToSolver(goal, sol_index);
+		}
+		{
+			auto goal = rigcon->AddNewGoal(TEXT("RightFootIK"), TEXT("ball_r"));
+			rigcon->SetRetargetChainGoal(TEXT("RightLeg"), goal);
+			rigcon->ConnectGoalToSolver(goal, sol_index);
+		}
+		{
+			auto goal = rigcon->AddNewGoal(TEXT("LeftFootIK"), TEXT("ball_l"));
+			rigcon->SetRetargetChainGoal(TEXT("LeftLeg"), goal);
+			rigcon->ConnectGoalToSolver(goal, sol_index);
+		}
+	}
+	return rig_ik;
+}
+#endif
+#endif
+
+
 bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 	if (VRMConverter::Options::Get().IsDebugOneBone()) {
@@ -1199,7 +1392,20 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 
 				FSoftObjectPath r(table_asset[ikr_no]);
 				UObject* u = r.TryLoad();
-				if (u == nullptr) continue;
+				if (u == nullptr) {
+
+					if (ikr_no == 0) {
+#if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,6,0)
+#else
+						u = GenerateMannequinIK(vrmAssetList);
+#endif
+#endif
+					}
+					if (u == nullptr) {
+						continue;
+					}
+				}
 
 				FString name = table_name[ikr_no];
 				UIKRetargeter* ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
