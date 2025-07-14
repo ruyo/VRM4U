@@ -22,7 +22,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-#if UE_VERSION_NEWER_THAN_OR_EQUAL(5,6,0)
+#if UE_VERSION_NEWER_THAN(5,6,-1)
 #include "MaterialShared.h"
 #endif
 
