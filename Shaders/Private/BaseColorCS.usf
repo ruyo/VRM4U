@@ -16,6 +16,11 @@ Texture2D<uint2> CustomStencilTexture;
 
 //SamplerState InputSampler;
 
+float UseCustomLightPosition;
+float UseCustomLightColor;
+float3 LightPosition;
+float3 LightColor;
+
 
 float GetLinearDepth(float2 UV, uint2 pixelCoord)
 {
@@ -62,7 +67,7 @@ float3 ReconstructWorldPosition(float2 UV, uint2 pixelCoord)
     ViewPos /= ViewPos.w; // 透視除算
 
     // 4. ビュー空間 -> ワールド空間
-    float4 WorldPos = mul(ViewPos, View.ViewToWorld); // 逆ビュー行列
+    float4 WorldPos = mul(ViewPos, View.ViewToTranslatedWorld); // 逆ビュー行列
     return WorldPos.xyz; // ワールド座標
 }
 
@@ -113,7 +118,14 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
             //OutputTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
             
-            float t = dot(WorldNormal, View.DirectionalLightDirection);
+            float3 LightDirection = View.DirectionalLightDirection;
+            if (UseCustomLightPosition) {
+                float2 UV = ViewSize / float2(width, height);
+
+                LightDirection = normalize(ReconstructWorldPosition(UV, pixelCoord) - LightPosition);
+            }
+            
+            float t = dot(WorldNormal, LightDirection);
             t = saturate(t);
 
             if (t > 0.2) {

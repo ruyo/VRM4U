@@ -67,6 +67,8 @@ class VRM4URENDER_API UVRM4U_RenderSubsystem : public UEngineSubsystem
 
 public:
 
+	TArray< TWeakObjectPtr<class UVrmExtensionRimFilterData> > RimFilterData;
+
 	bool bUsePostRenderBasePass = false;
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
