@@ -2,6 +2,7 @@
 
 
 #include "VRM4U_RenderSubsystem.h"
+#include "VrmExtensionRimFilterData.h"
 #include "RenderGraphBuilder.h"
 #include "RenderGraphResources.h"
 #include "RenderGraphUtils.h"
@@ -91,6 +92,15 @@ void UVRM4U_RenderSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
 	GetRendererModule().RegisterOverlayRenderDelegate(FPostOpaqueRenderDelegate::CreateUObject(this, &UVRM4U_RenderSubsystem::OnOverlay));
 	
 	//GetRendererModule().GetResolvedSceneColorCallbacks().AddUObject(this, &UVRM4U_RenderSubsystem::OnResolvedSceneColor_RenderThread);
+}
+
+void UVRM4U_RenderSubsystem::Deinitialize() {
+
+	{
+		FScopeLock lock(&cs_rim);
+		RimFilterData.Empty();
+	}
+	Super::Deinitialize();
 }
 
 void UVRM4U_RenderSubsystem::OnResolvedSceneColor_RenderThread(FRDGBuilder& GraphBuilder, const FSceneTextures& SceneTextures) {
@@ -348,3 +358,45 @@ void UVRM4U_RenderSubsystem::SetViewExtension(bool bEnable) {
 
 //	SceneViewExtension->
 }
+
+void UVRM4U_RenderSubsystem::AddRimFilterData(class UVrmExtensionRimFilterData* FilterData) {
+	FScopeLock lock(&cs_rim);
+	RimFilterData.AddUnique(FilterData);
+}
+
+void UVRM4U_RenderSubsystem::RemoveRimFilterData(class UVrmExtensionRimFilterData* FilterData) {
+	FScopeLock lock(&cs_rim);
+	RimFilterData.Remove(FilterData);
+}
+
+void UVRM4U_RenderSubsystem::RemoveRimFilterDataByPriority(int Priority) {
+	FScopeLock lock(&cs_rim);
+	if (Priority < 0) {
+		RimFilterData.Empty();
+	}
+	RimFilterData.RemoveAll([&Priority](const TWeakObjectPtr<UVrmExtensionRimFilterData>& Item) {
+		return Item->Priority == Priority;
+		});
+}
+
+TArray<UVrmExtensionRimFilterData::FFilterData> UVRM4U_RenderSubsystem::GenerateFilterData() {
+	FScopeLock lock(&cs_rim);
+
+	RimFilterData.RemoveAll([](const TWeakObjectPtr<UVrmExtensionRimFilterData>& Item) {
+		return !Item.IsValid();
+		});
+
+	RimFilterData.Sort([](const TWeakObjectPtr<UVrmExtensionRimFilterData>& A, const TWeakObjectPtr<UVrmExtensionRimFilterData>& B)
+		{
+			return A->Priority < B->Priority;
+		});
+
+	TArray<UVrmExtensionRimFilterData::FFilterData> f;
+	for (auto& a : RimFilterData) {
+		auto d = a->GetFilterData();
+		f.Add(MoveTemp(d));
+	}
+	return MoveTemp(f);
+}
+
+

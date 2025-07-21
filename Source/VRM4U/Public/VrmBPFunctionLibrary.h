@@ -251,6 +251,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "VRM4U")
 	static bool VRMIsMovieRendering();
 
+	UFUNCTION(BlueprintPure, Category = "VRM4U")
+	static bool VRMIsTemporaryObject(const UObject *obj);
+
 };
 
 

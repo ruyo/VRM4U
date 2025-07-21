@@ -1,4 +1,5 @@
 #include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
 #include "/Engine/Generated/UniformBuffers/View.ush"
 //#include "SceneTexturesCommon.ush"
 DECLARE_UNIFORM_BUFFER(View);
@@ -17,8 +18,10 @@ Texture2D<uint2> CustomStencilTexture;
 //SamplerState InputSampler;
 
 float UseCustomLightPosition;
-float UseCustomLightColor;
 float3 LightPosition;
+float3 LightDirection;
+
+float UseCustomLightColor;
 float3 LightColor;
 
 
@@ -27,7 +30,10 @@ float GetLinearDepth(float2 UV, uint2 pixelCoord)
     
     //float DeviceZ = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
     float DeviceZ = SceneDepthTexture[pixelCoord];
-    return 1.0f / (DeviceZ * View.InvDeviceZToWorldZTransform[2] - View.InvDeviceZToWorldZTransform[3]);
+    //return 1.0f / (DeviceZ * View.InvDeviceZToWorldZTransform[2] - View.InvDeviceZToWorldZTransform[3]);
+
+    
+   	return ConvertFromDeviceZ(DeviceZ);
 
 /*    
     float Depth = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
@@ -41,23 +47,58 @@ float GetLinearDepth(float2 UV, uint2 pixelCoord)
 */
 }
 
-float ToLinearDepth(float DeviceZ)
+float3 ReconstructWorldPosition(float2 ScreenUV, uint2 pixelCoord)
 {
+
+    float SceneDepth = GetLinearDepth(ScreenUV, pixelCoord);
+
+    float2 ScreenPos = float2(ScreenUV.x * 2.0 - 1.0, (1.0 - ScreenUV.y) * 2.0 - 1.0);  // Convert UV to NDC
+
+    float3 WorldPosition = mul(float4(ScreenPos * SceneDepth, SceneDepth, 1.0), View.ScreenToTranslatedWorld).xyz;
+
+    return WorldPosition;
+
     
-    //float DeviceZ = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
-    //float DeviceZ = InputTexture[pixelCoord].x;
-    return 1.0f / (DeviceZ * View.InvDeviceZToWorldZTransform[2] - View.InvDeviceZToWorldZTransform[3]);
-}
+    /*
+    float3 CameraVector = GetCameraVector(ScreenUV);  // UE ビルトイン: スクリーンからカメラ方向ベクター
+    float3 CameraDir = normalize(View.WorldViewOrigin - View.ViewToWorld[2].xyz);  // カメラ方向 (例)
 
+    // 正規化して計算
+    float3 NormCameraVector = normalize(CameraVector);
+    float DotProduct = dot(NormCameraVector, normalize(CameraDir));
 
-float3 ReconstructWorldPosition(float2 UV, uint2 pixelCoord)
-{
+    float3 WorldPos = View.WorldCameraOrigin + NormCameraVector * (SceneDepth / DotProduct);
+
+    return WorldPos;
+    */
+
+    /*
+    float2 ScreenPos = ScreenUV * 2.0f - 1.0f;
+    ScreenPos.y = -ScreenPos.y;  // UE のビューポート Y は反転しているため
+
+    // Step 3: クリップ空間ポジション構築 (最適化版: w 分除算を避ける UE 風)
+    float4 ClipPos = float4(ScreenPos * SceneDepth, SceneDepth, 1.0f);
+
+    // Step 4: ワールド空間へ変換 (View.ScreenToTranslatedWorld を使用)
+    float3 WorldPos = mul(ClipPos, View.ScreenToTranslatedWorld).xyz;    
+    WorldPos = WorldPos + ResolvedView.WorldCameraOrigin;
+
+;
+    
+    return WorldPos;
+    */
+
+    //CalcSceneDepth
+    //	return ConvertFromDeviceZ(Texture2DSampleLevel(SceneTexturesStruct.SceneDepthTexture, SceneTexturesStruct_SceneDepthTextureSampler, ScreenUV, 0).r);
+
+    /*
     // 1. UV座標をクリップ空間に変換
     float2 ClipXY = UV * 2.0 - 1.0; // [0, 1] -> [-1, 1]
     // 深度値はリニア化済み（SceneDepthは通常リニア深度）
     //float ClipZ = Depth; // UnrealのSceneDepthはリニア深度（0=近, 1=遠）
     float ClipZ = GetLinearDepth(UV, pixelCoord);
 
+    
     // 2. クリップ空間の座標を構築
     // w=1としてクリップ空間座標を作成（透視投影の場合）
     float4 ClipPos = float4(ClipXY, ClipZ, 1.0);
@@ -69,6 +110,7 @@ float3 ReconstructWorldPosition(float2 UV, uint2 pixelCoord)
     // 4. ビュー空間 -> ワールド空間
     float4 WorldPos = mul(ViewPos, View.ViewToTranslatedWorld); // 逆ビュー行列
     return WorldPos.xyz; // ワールド座標
+*/
 }
 
 
@@ -118,18 +160,19 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
             //OutputTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
             
-            float3 LightDirection = View.DirectionalLightDirection;
+            float3 LocalLightDirection = View.DirectionalLightDirection;
             if (UseCustomLightPosition) {
                 float2 UV = ViewSize / float2(width, height);
 
-                LightDirection = normalize(ReconstructWorldPosition(UV, pixelCoord) - LightPosition);
+                LocalLightDirection = normalize(ReconstructWorldPosition(UV, pixelCoord) - LightPosition);
             }
+            LocalLightDirection = normalize(LightDirection);
             
-            float t = dot(WorldNormal, LightDirection);
+            float t = dot(WorldNormal, LocalLightDirection);
             t = saturate(t);
 
             if (t > 0.2) {
-                float4 ClipLightDir = mul(float4(-View.DirectionalLightDirection, 0.0), View.RelativeWorldToClip);
+                float4 ClipLightDir = mul(float4(-LocalLightDirection, 0.0), View.RelativeWorldToClip);
 
                 ClipLightDir.xyz = normalize(ClipLightDir.xyz);
 
@@ -142,9 +185,10 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                     }
                 }
                 if (bEdge) {
-                    //OutputTexture[pixelCoord].x = 10; //            t * 10;
-                    //OutputTexture[pixelCoord].yz = 0; //            t * 10;
-                    OutputTexture[pixelCoord].xyz = max(OutputTexture[pixelCoord].xyz, saturate(View.DirectionalLightColor.xyz) * 10.0);
+
+                    float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
+                    
+                    OutputTexture[pixelCoord].xyz = max(OutputTexture[pixelCoord].xyz, saturate(col));
                 }
                 
                 
@@ -155,6 +199,11 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
         }
     }
 
+    {
+        //float2 UV = ViewSize / float2(width, height);
+
+        //OutputTexture[pixelCoord].xyz = saturate(ReconstructWorldPosition(UV, pixelCoord));
+    }
     
 #endif
 }

@@ -6,6 +6,7 @@
 #include "Subsystems/EngineSubsystem.h"
 #include "Misc/EngineVersionComparison.h"
 #include "VrmSceneViewExtension.h"
+#include "VrmExtensionRimFilterData.h"
 
 #if WITH_EDITOR
 #include "UnrealEdMisc.h"
@@ -67,11 +68,26 @@ class VRM4URENDER_API UVRM4U_RenderSubsystem : public UEngineSubsystem
 
 public:
 
+	//// rim filter
+	FCriticalSection cs_rim;
+
 	TArray< TWeakObjectPtr<class UVrmExtensionRimFilterData> > RimFilterData;
 
-	bool bUsePostRenderBasePass = false;
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void AddRimFilterData(class UVrmExtensionRimFilterData *FilterData);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void RemoveRimFilterData(class UVrmExtensionRimFilterData* FilterData);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	void RemoveRimFilterDataByPriority(int Priotiry = -1);
+
+	TArray<struct UVrmExtensionRimFilterData::FFilterData> GenerateFilterData();
+
+	////
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	void RenderPre(FRDGBuilder& GraphBuilder);
 	void RenderPost(FRDGBuilder& GraphBuilder);

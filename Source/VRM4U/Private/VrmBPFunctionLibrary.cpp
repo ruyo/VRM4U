@@ -1892,4 +1892,12 @@ bool UVrmBPFunctionLibrary::VRMIsMovieRendering() {
 	return false;
 }
 
+bool UVrmBPFunctionLibrary::VRMIsTemporaryObject(const UObject *obj) {
+	if (obj == nullptr) return true;
+
+	if (obj->HasAnyFlags(EObjectFlags::RF_Transient)) {
+		return true;
+	}
+	return false;
+}
 
