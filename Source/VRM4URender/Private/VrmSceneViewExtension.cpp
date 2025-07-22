@@ -71,6 +71,9 @@ class FMyComputeShader : public FGlobalShader
 		SHADER_PARAMETER(FVector3f, LightDirection)
 		SHADER_PARAMETER(FVector3f, LightColor)
 
+		SHADER_PARAMETER(float, SampleScreenScale)
+		SHADER_PARAMETER(float, SampleScale)
+
 		//RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -304,6 +307,9 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 
 		Parameters->UseCustomLightColor = d.bUseCustomLighColor;
 		Parameters->LightColor = FVector3f(d.LightColor);
+
+		Parameters->SampleScreenScale = d.SampleScreenScale;
+		Parameters->SampleScale = d.SampleScale;
 
 		TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 		FComputeShaderUtils::AddPass(
