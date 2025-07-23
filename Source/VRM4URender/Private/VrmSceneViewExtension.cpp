@@ -258,6 +258,9 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 	for (int dataIndex = 0; dataIndex < data.Num(); ++dataIndex){
 		const auto& d = data[dataIndex];
 
+		if (RenderTargets[0].GetTexture() == nullptr) continue;
+		if (RenderTargets[1].GetTexture() == nullptr) continue;
+
 		// RenderTargets ‚Ì0”Ô–Ú‚ðŽæ“¾
 		// 0 SceneColor
 		// 1 A normal
