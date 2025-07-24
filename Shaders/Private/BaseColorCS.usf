@@ -2,9 +2,10 @@
 #include "/Engine/Private/Common.ush"
 #include "/Engine/Generated/UniformBuffers/View.ush"
 //#include "SceneTexturesCommon.ush"
-DECLARE_UNIFORM_BUFFER(View);
+//DECLARE_UNIFORM_BUFFER(View);
 
-RWTexture2D<float4> OutputTexture : register(u0); // Render Targetへの書き込み用
+RWTexture2D<float4> SceneColorTexture : register(u0); // Render Targetへの書き込み用
+RWTexture2D<float4> BaseColorTexture : register(u0); // Render Targetへの書き込み用
 
 Texture2D NormalTexture;
 Texture2D<float> SceneDepthTexture;
@@ -142,7 +143,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
 #if FEATURE_LEVEL >= FEATURE_LEVEL_SM6
     uint width, height;
-    OutputTexture.GetDimensions(width, height);
+    SceneColorTexture.GetDimensions(width, height);
 
     
     float2 ViewSize = View.ViewSizeAndInvSize.xy;
@@ -154,9 +155,9 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     //if (color.x < 0.5)  color.x = 1;
     //if (pixelCoord.x == pixelCoord.y) color = 0;
     //color.xyz = 0;
-    //OutputTexture[pixelCoord] = color;
+    //SceneColorTexture[pixelCoord] = color;
 
-    //OutputTexture[pixelCoord] = InputTexture[pixelCoord].xxxw;// / 10.f;
+    //SceneColorTexture[pixelCoord] = InputTexture[pixelCoord].xxxw;// / 10.f;
 
     {
         float2 UV = ViewSize / float2(width, height);
@@ -170,12 +171,12 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
         float3 color = lerp(float3(0, 0, 1), float3(0, 1, 0), t); // 青→緑
         color = lerp(color, float3(1, 0, 0), t); // 緑→赤
         
-        //OutputTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
-        //OutputTexture[pixelCoord] = float4(LinearDepth / 1000.0, 0.0, 0.0, 1.0);
+        //SceneColorTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
+        //SceneColorTexture[pixelCoord] = float4(LinearDepth / 1000.0, 0.0, 0.0, 1.0);
 
     }
     //    CustomStencilTexture
-    //OutputTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
+    //SceneColorTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
 
     if (CustomStencilTexture[pixelCoord].y >= 1) {
         if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r) {
@@ -184,7 +185,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             
             float3 PackedNormal = NormalTexture[pixelCoord].xyz;
             float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
-            //OutputTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
+            //SceneColorTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
             
             float3 LocalLightDirection = View.DirectionalLightDirection;
             if (UseCustomLightPosition) {
@@ -207,12 +208,14 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
                 ClipLightDir.xyz = normalize(ClipLightDir.xyz);
 
-                float SampleRange = float(height) / SampleScreenScale;
+                float SampleRange = float(height) * SampleScreenScale;
                 
                 bool bEdge = false;
                 
+                float LocalSampleScale = max(SampleScale, 1.0);
+                
                 // Stencilのエッジを検出
-                for (float i = 0; i < SampleRange; i += SampleScale) {
+                for (float i = 0; i < SampleRange; i += LocalSampleScale) {
                     int2 target = int2(ClipLightDir.xy * float2(i,i)) + pixelCoord;
                     target = clamp(target, int2(0,0), int2(width-1, height-1));
 
@@ -225,12 +228,12 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                     // エッジ
                     float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
                     
-                    OutputTexture[pixelCoord].xyz = max(OutputTexture[pixelCoord].xyz, saturate(col));
+                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, saturate(col));
                 }
                 
                 
                 //for (int i = 0; i < 100; ++i) {
-                //    OutputTexture[pixelCoord + int2((ClipLightDir.xy * float2(i,i)))] = 10;
+                //    SceneColorTexture[pixelCoord + int2((ClipLightDir.xy * float2(i,i)))] = 10;
                 //}
             }
         }
@@ -239,7 +242,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     {
         //float2 UV = ViewSize / float2(width, height);
 
-        //OutputTexture[pixelCoord].xyz = saturate(ReconstructWorldPosition(UV, pixelCoord));
+        //SceneColorTexture[pixelCoord].xyz = saturate(ReconstructWorldPosition(UV, pixelCoord));
     }
     
 #endif
