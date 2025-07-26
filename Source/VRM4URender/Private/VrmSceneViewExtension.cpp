@@ -10,6 +10,7 @@
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 #include "DataDrivenShaderPlatformInfo.h"
+#include "SystemTextures.h"
 #endif
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
