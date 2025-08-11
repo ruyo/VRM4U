@@ -1191,6 +1191,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 							if (tex) {
 								LocalTextureSet(dm, TEXT("gltf_tex_diffuse"), tex);
 								LocalTextureSet(dm, TEXT("mtoon_tex_ShadeTexture"), tex);
+								LocalTextureSet(dm, TEXT("mtoon_tex_Shade"), tex);
 							}
 						}
 					}
