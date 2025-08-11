@@ -743,14 +743,12 @@ UObject* VRM4U_StaticDuplicateObject(UObject const* SourceObject, UObject* DestO
 
 template<typename T1>
 static void copyVector(VRM::vec4 &v, const T1& t) {
-	v[0] = t[0].GetFloat();
-	v[1] = t[1].GetFloat();
-	v[2] = t[2].GetFloat();
-	if (t.Size() > 3) {
-		v[3] = t[3].GetFloat();
-	} else {
-		v[3] = 1.f;
-	}
+	v[3] = 1.f;
+
+	if (t.Size() > 0) v[0] = t[0].GetFloat();
+	if (t.Size() > 1) v[1] = t[1].GetFloat();
+	if (t.Size() > 2) v[2] = t[2].GetFloat();
+	if (t.Size() > 3) v[3] = t[3].GetFloat();
 }
 
 int VRMConverter::GetThumbnailTextureIndex() const {
