@@ -14,8 +14,8 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 //#include "SceneTexturesCommon.ush"
 //DECLARE_UNIFORM_BUFFER(View);
 
-RWTexture2D<float4> SceneColorTexture : register(u0); // Render Targetへの書き込み用
-RWTexture2D<float4> BaseColorTexture : register(u0); // Render Targetへの書き込み用
+RWTexture2D<float4> SceneColorTexture;
+RWTexture2D<float4> BaseColorTexture;
 
 Texture2D NormalTexture;
 Texture2D<float> SceneDepthTexture;
@@ -167,8 +167,6 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     //color.xyz = 0;
     //SceneColorTexture[pixelCoord] = color;
 
-    //SceneColorTexture[pixelCoord] = InputTexture[pixelCoord].xxxw;// / 10.f;
-
     {
         float2 UV = ViewSize / float2(width, height);
         
@@ -224,6 +222,30 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 
                 float LocalSampleScale = max(SampleScale, 1.0);
                 
+                float EdgeColorScale = 1.0f;
+                {
+                    float fade = 0.01f;
+                    float2 OutArea = float2(width, height) * fade;
+                    
+                    // エッジサーチ先の座標
+                    //float2 checkEnd = float2(pixelCoord) + SampleRange;
+                    float2 checkEnd = (ClipLightDir.xy * float2(SampleRange,SampleRange)) + pixelCoord;
+
+                    // 左上のはみ出し
+                    float2 out1 = abs( min(float2(0,0), checkEnd - OutArea));
+
+                    // 右下のはみ出し
+                    float2 out2 = abs(max(float2(width, height), checkEnd + OutArea));
+                    
+                    // はみ出し 最大
+                    float2 out3 = max(out1, out2-float2(width, height));
+                    
+                    out3.x = saturate(max(out3.x, out3.y));
+           
+                    //EdgeColorScale = 1.f - out3.x;
+                    
+                }
+                
                 // Stencilのエッジを検出
                 for (float i = 0; i < SampleRange; i += LocalSampleScale) {
                     int2 target = int2(ClipLightDir.xy * float2(i,i)) + pixelCoord;
@@ -236,9 +258,9 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 }
                 if (bEdge) {
                     // エッジ
-                    float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
+                    float3 col = saturate( UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz ) ;
                     
-                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, saturate(col));
+                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * EdgeColorScale);
                 }
                 
                 

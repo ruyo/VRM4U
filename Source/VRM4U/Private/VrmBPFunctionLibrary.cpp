@@ -1901,3 +1901,19 @@ bool UVrmBPFunctionLibrary::VRMIsTemporaryObject(const UObject *obj) {
 	return false;
 }
 
+bool UVrmBPFunctionLibrary::VRMIsEditorPreviewObject(const UObject* obj) {
+	if (obj == nullptr) return true;
+
+	const UWorld* World = obj->GetWorld();
+
+	if (World == nullptr) return true;
+
+	if (World->WorldType == EWorldType::EditorPreview)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+

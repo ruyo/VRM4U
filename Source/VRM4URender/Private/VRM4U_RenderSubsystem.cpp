@@ -394,6 +394,7 @@ TArray<UVrmExtensionRimFilterData::FFilterData> UVRM4U_RenderSubsystem::Generate
 	TArray<UVrmExtensionRimFilterData::FFilterData> f;
 	for (auto& a : RimFilterData) {
 		auto d = a->GetFilterData();
+		if (d.bUseFilter == false) continue;
 		f.Add(MoveTemp(d));
 	}
 	return MoveTemp(f);
