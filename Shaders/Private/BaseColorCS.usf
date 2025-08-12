@@ -1,14 +1,5 @@
 #include "/Engine/Public/Platform.ush"
 
-#if VULKAN_PROFILE || VULKAN_PROFILE_SM6 || VULKAN_PROFILE_SM5
-
-[numthreads(8, 8, 1)]
-void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
-{
-}
-
-#else
-
 #include "/Engine/Private/Common.ush"
 #include "/Engine/Generated/UniformBuffers/View.ush"
 //#include "SceneTexturesCommon.ush"
@@ -279,6 +270,4 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     
 #endif
 }
-
-#endif
 

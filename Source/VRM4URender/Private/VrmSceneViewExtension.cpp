@@ -101,16 +101,6 @@ IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf
 
 static bool LocalCSEnable()
 {
-
-	if (GDynamicRHI != nullptr && GDynamicRHI->GetInterfaceType() == ERHIInterfaceType::Vulkan) {
-		IConsoleVariable* BindlessVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Vulkan.Bindless"));
-		if (BindlessVar) {
-			if (BindlessVar->GetInt() != 0) {
-				return false;
-			}
-		}
-	}
-
 	if (GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM6) {
 		return true;
 	}
