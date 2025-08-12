@@ -25,6 +25,7 @@ float3 LightDirection;
 
 float UseCustomLightColor;
 float3 LightColor;
+float LightScale;
 
 float SampleScreenScale;
 float SampleScale;
@@ -249,9 +250,9 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 }
                 if (bEdge) {
                     // エッジ
-                    float3 col = saturate( UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz ) ;
+                    float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
                     
-                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * EdgeColorScale);
+                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale);
                 }
                 
                 
