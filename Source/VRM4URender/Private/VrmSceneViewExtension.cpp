@@ -36,7 +36,7 @@
 #include "RenderGraphBuilder.h"
 #include "ProfilingDebugging/CpuProfilerTrace.h"
 #include "Stats/Stats.h"
-
+#include "DynamicRHI.h"
 
 DECLARE_GPU_STAT(VRM4U);
 
@@ -99,8 +99,17 @@ IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf
 #endif
 
 
-static bool CurrentShaderModelSM6()
+static bool LocalCSEnable()
 {
+
+	if (GDynamicRHI != nullptr && GDynamicRHI->GetInterfaceType() == ERHIInterfaceType::Vulkan) {
+		IConsoleVariable* BindlessVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Vulkan.Bindless"));
+		if (BindlessVar) {
+			if (BindlessVar->GetInt() != 0) {
+				return false;
+			}
+		}
+	}
 
 	if (GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM6) {
 		return true;
@@ -375,7 +384,7 @@ FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister
 
 void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
 
-	if (CurrentShaderModelSM6() == false) return;
+	if (LocalCSEnable() == false) return;
 
 	const auto FeatureLevel = InView.GetFeatureLevel();
 	if (FeatureLevel <= ERHIFeatureLevel::SM5) return;
