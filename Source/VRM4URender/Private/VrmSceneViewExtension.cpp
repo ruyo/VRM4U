@@ -4,7 +4,6 @@
 #include "VrmExtensionRimFilterData.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
-#include "Runtime/Renderer/Private/CustomDepthRendering.h"
 
 #include "VRM4U_RenderSubsystem.h"
 
