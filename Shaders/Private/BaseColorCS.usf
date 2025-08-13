@@ -203,6 +203,11 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             float t = dot(WorldNormal, LocalLightDirection);
             t = saturate(t);
 
+            // for unlit (no normal)
+            if (dot(PackedNormal, PackedNormal) == 0.f) {
+                t = 1;
+            }
+
             if (t > 0.2) {
                 float4 ClipLightDir = mul(float4(-LocalLightDirection, 0.0), View.RelativeWorldToClip);
 
