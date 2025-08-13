@@ -1091,11 +1091,11 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 			{
 				UMaterialInstanceConstant* dm = nullptr;
 				{
-					const FString origname = (FString(TEXT("M_")) + NormalizeFileName(aiMat.GetName().C_Str()));
+					const FString origname = (FString(TEXT("MI_")) + NormalizeFileName(aiMat.GetName().C_Str()));
 					FString name = origname;
 
 					if (MatNameList.Find(origname)) {
-						name += FString::Printf(TEXT("_%03d"), MatNameList[name]);// TEXT("_2");
+						name += FString::Printf(TEXT("_%03d"), MatNameList[name]);
 					}
 					MatNameList.FindOrAdd(origname)++;
 
