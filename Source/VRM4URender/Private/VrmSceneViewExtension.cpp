@@ -1,6 +1,7 @@
 // VRM4U Copyright (c) 2021-2024 Haruyoshi Yamamoto. This software is released under the MIT License.
 
 #include "VrmSceneViewExtension.h"
+#include "VrmExtensionRimFilterData.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
 
@@ -9,6 +10,7 @@
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 #include "DataDrivenShaderPlatformInfo.h"
+#include "SystemTextures.h"
 #endif
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
@@ -34,7 +36,7 @@
 #include "RenderGraphBuilder.h"
 #include "ProfilingDebugging/CpuProfilerTrace.h"
 #include "Stats/Stats.h"
-
+#include "DynamicRHI.h"
 
 DECLARE_GPU_STAT(VRM4U);
 
@@ -46,7 +48,8 @@ class FMyComputeShader : public FGlobalShader
 	SHADER_USE_PARAMETER_STRUCT(FMyComputeShader, FGlobalShader);
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SceneColorTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, BaseColorTexture)
 
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D, NormalTexture)
 
@@ -63,6 +66,21 @@ class FMyComputeShader : public FGlobalShader
 		//SHADER_PARAMETER_SAMPLER(SamplerState, ColorSampler)
 
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
+
+		SHADER_PARAMETER(float, UseCustomLightPosition)
+		SHADER_PARAMETER(float, UseCustomLightColor)
+		SHADER_PARAMETER(FVector3f, LightPosition)
+		SHADER_PARAMETER(FVector3f, LightDirection)
+		SHADER_PARAMETER(FVector3f, LightColor)
+		SHADER_PARAMETER(float, LightScale)
+		SHADER_PARAMETER(float, RimEdgeFade)
+
+		SHADER_PARAMETER(float, UseBinaryEdge)
+		SHADER_PARAMETER(float, RimEdgeBinaryRange)
+
+		SHADER_PARAMETER(float, SampleScreenScale)
+		SHADER_PARAMETER(float, SampleScale)
+
 		//RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -75,19 +93,27 @@ public:
 
 /*
 BEGIN_SHADER_PARAMETER_STRUCT(FMyComputeShaderParameters, )
-	SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutputTexture)
+	SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, SceneColorTexture)
 	//RENDER_TARGET_BINDING_SLOTS()
 END_SHADER_PARAMETER_STRUCT()
 */
 
-#if	UE_VERSION_OLDER_THAN(5,4,0)
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf", "MainCS", SF_Compute);
 #endif
 
 
-static bool CurrentShaderModelSM6()
+static bool LocalCSEnable()
 {
+
+	static const auto CVarCustomDepth = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.CustomDepth"));
+	const int32 EnabledWithStencil = 3;// CustomDepthMode::EnabledWithStencil ではダメ。
+	if (CVarCustomDepth) {
+		if (CVarCustomDepth->GetValueOnAnyThread() != EnabledWithStencil) {
+			return false;
+		}
+	}
 
 	if (GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM6) {
 		return true;
@@ -95,78 +121,13 @@ static bool CurrentShaderModelSM6()
 	return false;
 }
 
-
-FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
-}
-
-void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
-
-
-	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
-
-	if (s == nullptr) return;
-	if (s->bUsePostRenderBasePass == false) return;
-
-	if (CurrentShaderModelSM6() == false) return;
-
-	const auto FeatureLevel = InView.GetFeatureLevel();
-	if (FeatureLevel <= ERHIFeatureLevel::SM5) return;
-
-	{
-		bool bActive = false;
-
-		//bool bCapture = InView.bIsSceneCapture;
-
-		auto t = InView.Family->Scene->GetWorld()->WorldType;
-		switch (t) {
-		case EWorldType::Editor:
-		case EWorldType::Game:
-		case EWorldType::PIE:
-			bActive = true;
-			break;
-		}
-
-		if (bActive == false) {
-			return;
-		}
-	}
-
-	//check(InView.bIsViewInfo);
-	//auto ViewInfo = static_cast<const FViewInfo*>(&InView);
-
+static void LocalCopyFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters>& SceneTextures) {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 #else
 	FScreenPassViewInfo ViewInfo(InView);
 #endif
 
-	//decltype(auto) View = InView;
-	//check(View.bIsViewInfo);
-	//const FSceneTextures& st = static_cast<const FViewInfo&>(View).GetSceneTextures();
-
-
-	// GBuffer の BaseColor を取得（例: GBufferA に格納されていると仮定）
-	//FRDGTextureRef GBufferBaseColorTexture = SceneTextures.GBufferA;
-	//FRDGTextureRef GBufferBaseColorTexture = GraphBuilder.RegisterExternalTexture(
-	//	InView.Scene->SceneTexturesUniformBuffer->GetRDGTexture("GBufferATexture"), // 仮の取得方法
-	//	TEXT("GBufferBaseColor")
-	//);
-	//PassTextures.Depth = SceneTextures.Depth;
-	//PassTextures.Color = SceneTextures.Color.Target;
-	//PassTextures.GBufferA = (*SceneTextures.UniformBuffer)->GBufferATexture;
-	//PassTextures.GBufferB = (*SceneTextures.UniformBuffer)->GBufferBTexture;
-	//PassTextures.GBufferC = (*SceneTextures.UniformBuffer)->GBufferCTexture;
-	//PassTextures.GBufferE = (*SceneTextures.UniformBuffer)->GBufferETexture;
-	//PassTextures.DBufferTextures = DBufferTextures;
-
-	//FRDGTextureRef GBufferBaseColorTexture = (*SceneTextures.UniformBuffer)->GBufferATexture;
-
-	//FScreenPassTexture ScreenPassTex(SceneTextures->GetParameters()->GBufferATexture);
-	//RDG_EVENT_SCOPE(GraphBuilder, "Naga_PostRenderBasePassDeferred %dx%d", ScreenPassTex.ViewRect.Width(), ScreenPassTex.ViewRect.Height());
-
-//	FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(ScreenPassTex.Texture);
-
-
-		// copy枚数
+	// copy枚数
 	const int copyNum = 4;
 
 	FRDGTextureDesc CopyDesc[copyNum] = {};
@@ -213,7 +174,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 						//SourceTexture,
 						CopyTextureDepth[i - 1],
 						CopyTextureDepth[i],
-						FIntPoint(0, 0), CopyDesc[i-1].Extent,
+						FIntPoint(0, 0), CopyDesc[i - 1].Extent,
 						FIntPoint(0, 0), CopyDesc[i].Extent
 					);
 				}
@@ -239,8 +200,9 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 		for (int i = 0; i < copyNum; ++i) {
 			CopyDesc[i] = SourceTexture->Desc;
 			if (i == 0) {
-			}else{
-				CopyDesc[i].Extent = CopyDesc[i-1].Extent / 2;
+			}
+			else {
+				CopyDesc[i].Extent = CopyDesc[i - 1].Extent / 2;
 			}
 			CopyDesc[i].Flags |= TexCreate_RenderTargetable | TexCreate_UAV;
 
@@ -256,7 +218,8 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					SourceTexture,
 					CopyTexture[i]
 				);
-			} else {
+			}
+			else {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
 #elif UE_VERSION_OLDER_THAN(5,5,0)
 				AddDrawTexturePass(
@@ -266,7 +229,7 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					CopyTexture[i - 1],
 					CopyTexture[i],
 					FIntPoint(0, 0), CopyDesc[0].Extent,
-					FIntPoint(0, 0), CopyDesc[i-1].Extent
+					FIntPoint(0, 0), CopyDesc[i - 1].Extent
 				);
 #else
 				AddDrawTexturePass(
@@ -275,15 +238,15 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 					//SourceTexture,
 					CopyTexture[i - 1],
 					CopyTexture[i],
-					FIntPoint(0,0), CopyDesc[i-1].Extent,
-					FIntPoint(0,0), CopyDesc[i].Extent
-					);
+					FIntPoint(0, 0), CopyDesc[i - 1].Extent,
+					FIntPoint(0, 0), CopyDesc[i].Extent
+				);
 #endif
-//				AddCopyTexturePass(
-//					GraphBuilder,
-//					CopyTexture[i-1],
-//					CopyTexture[i]
-//				);
+				//				AddCopyTexturePass(
+				//					GraphBuilder,
+				//					CopyTexture[i-1],
+				//					CopyTexture[i]
+				//				);
 			}
 		}
 
@@ -294,99 +257,206 @@ void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder
 		//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
 	}
 
-#if	UE_VERSION_OLDER_THAN(5,4,0)
+}
+
+
+static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> &SceneTextures) {
+
+#if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 
-	//FRHIRenderPassInfo RPInfo(RenderTargets[0].GetTexture()->GetRHI(), ERenderTargetActions::Load_Store);
-	//RPInfo.ColorRenderTargets[0].Action = false;
+	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
+	if (s == nullptr) return;
 
-	// RenderTargets の0番目を取得
-	// 0 SceneColor
-	// 1 A normal
-	// 2 B MRS
-	// 3 C basecolor
-	// 4 D subsurface
-	const FRenderTargetBinding& FirstTarget = RenderTargets[0];
-	//if (!FirstTarget.IsValid())
-	//{
-	//	return; // ターゲットが無効な場合スキップ
-	//}
+	auto data = s->GenerateFilterData();
 
-	// FRDGTexture を取得
-	FRDGTextureRef TargetTexture = FirstTarget.GetTexture();
-	if (!TargetTexture)
-	{
-		return; // テクスチャが取得できない場合スキップ
+	for (int dataIndex = 0; dataIndex < data.Num(); ++dataIndex){
+		const auto& d = data[dataIndex];
+
+		if (RenderTargets[0].GetTexture() == nullptr) continue;
+		if (RenderTargets[1].GetTexture() == nullptr) continue;
+		if (RenderTargets[2].GetTexture() == nullptr) continue;
+		if (RenderTargets[3].GetTexture() == nullptr) continue;
+
+		// RenderTargets
+		// 0 SceneColor
+		// 1 A normal
+		// 2 B MRS
+		// 3 C basecolor
+		// 4 D subsurface
+
+
+		const FRDGSystemTextures& SystemTextures = FRDGSystemTextures::Get(GraphBuilder);
+		//const FCustomDepthTextures& CustomDepthTextures = SceneTextures->CustomDepth;
+		//bool bCustomDepthProduced = HasBeenProduced(CustomDepthTextures.Depth);
+
+		FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
+
+		{
+			// SceneColorTexture
+			const FRenderTargetBinding& FirstTarget = RenderTargets[0];
+			FRDGTextureRef TargetTexture = FirstTarget.GetTexture();
+			FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(TargetTexture);
+			Parameters->SceneColorTexture = GBufferUAV;
+		}
+
+		{
+			// BaseColorTexture
+			//const FRenderTargetBinding& FirstTarget = RenderTargets[3];
+			//FRDGTextureRef TargetTexture = FirstTarget.GetTexture();
+			//FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(TargetTexture);
+			//Parameters->BaseColorTexture = GBufferUAV;
+		}
+
+		//Parameters->NormalTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->GBufferATexture);
+		Parameters->NormalTexture = GraphBuilder.CreateSRV(RenderTargets[1].GetTexture());
+
+		Parameters->SceneDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
+
+		Parameters->CustomDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->CustomDepthTexture);
+		//Parameters->CustomDepthTexture = SceneTextures->GetParameters()->CustomDepthTexture;
+		Parameters->CustomStencilTexture = (SceneTextures->GetParameters()->CustomStencilTexture);
+		//Parameters->CustomStencilTexture = bCustomDepthProduced ? CustomDepthTextures.Stencil : SystemTextures.StencilDummySRV;
+		//Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
+		//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->SceneDepthTexture;
+		//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->GBufferBTexture;
+		//check(DepthTexture);
+		//Parameters->DepthSampler = TStaticSamplerState<SF_Point>::GetRHI();
+
+		Parameters->View = InView.ViewUniformBuffer;
+		//Parameters->SceneTextures = SceneTextures;
+		//Parameters->RenderTargets[0] = Output.GetRenderTargetBinding();
+		//PassParameters->SceneColorTexture = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(SceneColorTexture));
+
+		Parameters->UseCustomLightPosition = d.bUseCustomLighPosition;
+		Parameters->LightPosition = FVector3f(d.LightPosition);
+		Parameters->LightDirection = FVector3f(d.LightDirection);
+
+		Parameters->UseCustomLightColor = d.bUseCustomLighColor;
+		Parameters->LightColor = FVector3f(d.LightColor);
+		Parameters->LightScale = d.LightScale;
+		Parameters->RimEdgeFade = d.RimEdgeFade;
+
+		Parameters->UseBinaryEdge = d.bUseBinaryEdge;
+		Parameters->RimEdgeBinaryRange = d.RimEdgeBinaryRange;
+
+		Parameters->SampleScreenScale = d.SampleScreenScale;
+		Parameters->SampleScale = d.SampleScale;
+
+		int Width = RenderTargets[0].GetTexture()->Desc.Extent.X;
+		int Height = RenderTargets[0].GetTexture()->Desc.Extent.Y;
+
+		TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		FComputeShaderUtils::AddPass(
+			GraphBuilder,
+			RDG_EVENT_NAME("VRM4U_CustomGBufferWrite %d", dataIndex),
+			ComputeShader,
+			Parameters,
+			FIntVector(Width / 8, Height / 8, 1)
+		);
+		/*
+		//FRDGBuilder GraphBuilder(FRHICommandListExecutor::GetImmediateCommandList());
+
+		//RenderTargets.
+
+		// Render TargetをRDGリソースに変換
+		FRDGTextureRef SceneColorTexture = GraphBuilder.RegisterExternalTexture(CreateRenderTarget(RenderTarget->GameThread_GetRenderTargetResource(), TEXT("SceneColorTexture")));
+		FRDGTextureUAVRef OutputUAV = GraphBuilder.CreateUAV(SceneColorTexture);
+
+		// パラメータを設定
+		FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
+		Parameters->SceneColorTexture = OutputUAV;
+
+		// Shaderを追加してディスパッチ
+		TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+		FComputeShaderUtils::AddPass(
+			GraphBuilder,
+			RDG_EVENT_NAME("MyComputeShader"),
+			ComputeShader,
+			Parameters,
+			FIntVector(RenderTarget->SizeX / 8, RenderTarget->SizeY / 8, 1) // スレッドグループ数
+		);
+
+		GraphBuilder.Execute();
+		*/
 	}
 
-	// UAV を作成
-	FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(TargetTexture);
+#endif
 
 
-	const FRDGSystemTextures& SystemTextures = FRDGSystemTextures::Get(GraphBuilder);
-	//const FCustomDepthTextures& CustomDepthTextures = SceneTextures->CustomDepth;
-	//bool bCustomDepthProduced = HasBeenProduced(CustomDepthTextures.Depth);
+}
 
-	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
-	Parameters->OutputTexture = GBufferUAV;
+///////////////////////
 
-	//Parameters->NormalTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->GBufferATexture);
-	Parameters->NormalTexture = GraphBuilder.CreateSRV(RenderTargets[1].GetTexture());
+FVrmSceneViewExtension::FVrmSceneViewExtension(const FAutoRegister& AutoRegister) : FSceneViewExtensionBase(AutoRegister) {
+}
 
-	Parameters->SceneDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->SceneDepthTexture);
+void FVrmSceneViewExtension::PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures) {
 
-	//
-	Parameters->CustomDepthTexture = GraphBuilder.CreateSRV(SceneTextures->GetParameters()->CustomDepthTexture);
-	//Parameters->CustomDepthTexture = SceneTextures->GetParameters()->CustomDepthTexture;
-	Parameters->CustomStencilTexture = (SceneTextures->GetParameters()->CustomStencilTexture);
-	//Parameters->CustomStencilTexture = bCustomDepthProduced ? CustomDepthTextures.Stencil : SystemTextures.StencilDummySRV;
-	//Parameters->InputTexture = GraphBuilder.CreateSRV(CopyTexture[1]);
-	//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->SceneDepthTexture;
-	//Parameters->SceneDepthTexture = SceneTextures->GetParameters()->GBufferBTexture;
-	//check(DepthTexture);
-	//Parameters->DepthSampler = TStaticSamplerState<SF_Point>::GetRHI();
+	if (LocalCSEnable() == false) return;
 
-	Parameters->View = InView.ViewUniformBuffer;
-	//Parameters->SceneTextures = SceneTextures;
-	//Parameters->RenderTargets[0] = Output.GetRenderTargetBinding();
-	//PassParameters->OutputTexture = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(OutputTexture));
+	const auto FeatureLevel = InView.GetFeatureLevel();
+	if (FeatureLevel <= ERHIFeatureLevel::SM5) return;
 
-	//FRDGTextureSRVRef InputSRV = GraphBuilder.CreateSRV(CopyTexture[0]);
-//Parameters->RenderTargets = RenderTargets;
+	{
+		bool bActive = false;
 
-	TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	FComputeShaderUtils::AddPass(
-		GraphBuilder,
-		RDG_EVENT_NAME("VRM4U_CustomGBufferWrite"),
-		ComputeShader,
-		Parameters,
-		FIntVector(TargetTexture->Desc.Extent.X / 8, TargetTexture->Desc.Extent.Y / 8, 1)
-	);
-	/*
-	//FRDGBuilder GraphBuilder(FRHICommandListExecutor::GetImmediateCommandList());
+		//bool bCapture = InView.bIsSceneCapture;
 
-	//RenderTargets.
+		auto t = InView.Family->Scene->GetWorld()->WorldType;
+		switch (t) {
+		case EWorldType::Editor:
+		case EWorldType::Game:
+		case EWorldType::PIE:
+			bActive = true;
+			break;
+		}
 
-	// Render TargetをRDGリソースに変換
-	FRDGTextureRef OutputTexture = GraphBuilder.RegisterExternalTexture(CreateRenderTarget(RenderTarget->GameThread_GetRenderTargetResource(), TEXT("OutputTexture")));
-	FRDGTextureUAVRef OutputUAV = GraphBuilder.CreateUAV(OutputTexture);
+		if (bActive == false) {
+			return;
+		}
+	}
 
-	// パラメータを設定
-	FMyComputeShader::FParameters* Parameters = GraphBuilder.AllocParameters<FMyComputeShader::FParameters>();
-	Parameters->OutputTexture = OutputUAV;
+	//check(InView.bIsViewInfo);
+	//auto ViewInfo = static_cast<const FViewInfo*>(&InView);
 
-	// Shaderを追加してディスパッチ
-	TShaderMapRef<FMyComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	FComputeShaderUtils::AddPass(
-		GraphBuilder,
-		RDG_EVENT_NAME("MyComputeShader"),
-		ComputeShader,
-		Parameters,
-		FIntVector(RenderTarget->SizeX / 8, RenderTarget->SizeY / 8, 1) // スレッドグループ数
-	);
 
-	GraphBuilder.Execute();
-	*/
+	//decltype(auto) View = InView;
+	//check(View.bIsViewInfo);
+	//const FSceneTextures& st = static_cast<const FViewInfo&>(View).GetSceneTextures();
+
+
+	// GBuffer の BaseColor を取得（例: GBufferA に格納されていると仮定）
+	//FRDGTextureRef GBufferBaseColorTexture = SceneTextures.GBufferA;
+	//FRDGTextureRef GBufferBaseColorTexture = GraphBuilder.RegisterExternalTexture(
+	//	InView.Scene->SceneTexturesUniformBuffer->GetRDGTexture("GBufferATexture"), // 仮の取得方法
+	//	TEXT("GBufferBaseColor")
+	//);
+	//PassTextures.Depth = SceneTextures.Depth;
+	//PassTextures.Color = SceneTextures.Color.Target;
+	//PassTextures.GBufferA = (*SceneTextures.UniformBuffer)->GBufferATexture;
+	//PassTextures.GBufferB = (*SceneTextures.UniformBuffer)->GBufferBTexture;
+	//PassTextures.GBufferC = (*SceneTextures.UniformBuffer)->GBufferCTexture;
+	//PassTextures.GBufferE = (*SceneTextures.UniformBuffer)->GBufferETexture;
+	//PassTextures.DBufferTextures = DBufferTextures;
+
+	//FRDGTextureRef GBufferBaseColorTexture = (*SceneTextures.UniformBuffer)->GBufferATexture;
+
+	//FScreenPassTexture ScreenPassTex(SceneTextures->GetParameters()->GBufferATexture);
+	//RDG_EVENT_SCOPE(GraphBuilder, "Naga_PostRenderBasePassDeferred %dx%d", ScreenPassTex.ViewRect.Width(), ScreenPassTex.ViewRect.Height());
+
+//	FRDGTextureUAVRef GBufferUAV = GraphBuilder.CreateUAV(ScreenPassTex.Texture);
+
+
+	///// filter
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
+
+
+	bool bUseRimFilter = false;
+	{
+		LocalRimFilter(GraphBuilder, InView, RenderTargets, SceneTextures);
+	}
 
 #endif
 

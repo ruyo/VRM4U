@@ -29,12 +29,5 @@ void AVrmSceneViewExtensionSettings::Tick(float DeltaTime)
 
 void AVrmSceneViewExtensionSettings::OnConstruction(const FTransform& Transform) {
 	Super::OnConstruction(Transform);
-
-	//UVRM4U_RenderSubsystem* s = UWorld::GetSubsystem<UVRM4U_RenderSubsystem>(GetWorld());
-	UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
-	if (s == nullptr) return;
-
-	s->bUsePostRenderBasePass = bUseExtension;
-
 }
 
