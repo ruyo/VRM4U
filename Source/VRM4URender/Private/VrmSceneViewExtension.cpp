@@ -4,6 +4,7 @@
 #include "VrmExtensionRimFilterData.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#include "Runtime/Renderer/Private/CustomDepthRendering.h"
 
 #include "VRM4U_RenderSubsystem.h"
 
@@ -106,6 +107,15 @@ IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf
 
 static bool LocalCSEnable()
 {
+
+	static const auto CVarCustomDepth = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.CustomDepth"));
+	const int32 EnabledWithStencil = 3;// CustomDepthMode::EnabledWithStencil ‚Å‚Íƒ_ƒB
+	if (CVarCustomDepth) {
+		if (CVarCustomDepth->GetValueOnAnyThread() != EnabledWithStencil) {
+			return false;
+		}
+	}
+
 	if (GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM6) {
 		return true;
 	}
