@@ -23,6 +23,10 @@ class VRM4URENDER_API UVrmExtensionRimFilterData : public UObject
 		bool bUseCustomLighColor = false;
 		FLinearColor LightColor;
 		float LightScale = 100.f;
+		float RimEdgeFade = 1.f;
+
+		bool bUseBinaryEdge = false;
+		float RimEdgeBinaryRange = 0.2f;
 
 		float SampleScreenScale = 0.25f;
 		float SampleScale = 1.5;
@@ -55,7 +59,17 @@ public:
 	FVector LightDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
-	float LightScale;
+	float LightScale = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
+	float RimEdgeFade = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
+	bool bUseBinaryEdge = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
+	float RimEdgeBinaryRange = 0.2f;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
 	bool bUseCustomLighColor = false;
@@ -92,6 +106,10 @@ public:
 		d.bUseCustomLighColor = bUseCustomLighColor;
 		d.LightColor = LightColor;
 		d.LightScale = LightScale;
+		d.RimEdgeFade = RimEdgeFade;
+
+		d.bUseBinaryEdge = bUseBinaryEdge;
+		d.RimEdgeBinaryRange = RimEdgeBinaryRange;
 
 		d.SampleScreenScale = SampleScreenScale;
 		d.SampleScale = SampleScale;

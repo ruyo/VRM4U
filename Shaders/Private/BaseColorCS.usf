@@ -26,6 +26,10 @@ float3 LightDirection;
 float UseCustomLightColor;
 float3 LightColor;
 float LightScale;
+float RimEdgeFade;
+
+float UseBinaryEdge;
+float RimEdgeBinaryRange;
 
 float SampleScreenScale;
 float SampleScale;
@@ -185,8 +189,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             
             float3 PackedNormal = NormalTexture[pixelCoord].xyz;
             float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
-            //SceneColorTexture[pixelCoord].xyz = WorldNormal; //                1; //        frac(LinearDepth / 5000.f);
-            
+
             float3 LocalLightDirection = View.DirectionalLightDirection;
             if (UseCustomLightPosition) {
 
@@ -200,15 +203,27 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 //if (dot(camv, LocalLightDirection) < 0) return;
             }
             
-            float t = dot(WorldNormal, LocalLightDirection);
-            t = saturate(t);
+            float t = 1.f;
 
-            // for unlit (no normal)
             if (dot(PackedNormal, PackedNormal) == 0.f) {
-                t = 1;
+                // for unlit (no normal)
+                // always 1
+                
+            } else {
+                t = dot(WorldNormal, LocalLightDirection);
+                t = saturate(t);
+
+                if (UseBinaryEdge) {
+                    // エッジを2値にする
+                    t = (t >= RimEdgeBinaryRange) ? 1.f : 0.f;
+                } else {
+                    // エッジ フェード
+                    t = pow(t, RimEdgeFade);
+                }
             }
 
-            if (t > 0.2) {
+
+            if (t > 0.f) {
                 float4 ClipLightDir = mul(float4(-LocalLightDirection, 0.0), View.RelativeWorldToClip);
 
                 ClipLightDir.xyz = normalize(ClipLightDir.xyz);
@@ -257,7 +272,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                     // エッジ
                     float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
                     
-                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale);
+                    SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale * t);
                 }
                 
                 

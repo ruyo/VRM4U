@@ -72,7 +72,11 @@ class FMyComputeShader : public FGlobalShader
 		SHADER_PARAMETER(FVector3f, LightPosition)
 		SHADER_PARAMETER(FVector3f, LightDirection)
 		SHADER_PARAMETER(FVector3f, LightColor)
-		SHADER_PARAMETER(float,		LightScale)
+		SHADER_PARAMETER(float, LightScale)
+		SHADER_PARAMETER(float, RimEdgeFade)
+
+		SHADER_PARAMETER(float, UseBinaryEdge)
+		SHADER_PARAMETER(float, RimEdgeBinaryRange)
 
 		SHADER_PARAMETER(float, SampleScreenScale)
 		SHADER_PARAMETER(float, SampleScale)
@@ -322,6 +326,10 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 		Parameters->UseCustomLightColor = d.bUseCustomLighColor;
 		Parameters->LightColor = FVector3f(d.LightColor);
 		Parameters->LightScale = d.LightScale;
+		Parameters->RimEdgeFade = d.RimEdgeFade;
+
+		Parameters->UseBinaryEdge = d.bUseBinaryEdge;
+		Parameters->RimEdgeBinaryRange = d.RimEdgeBinaryRange;
 
 		Parameters->SampleScreenScale = d.SampleScreenScale;
 		Parameters->SampleScale = d.SampleScale;
