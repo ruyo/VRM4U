@@ -483,7 +483,7 @@ namespace {
 			int count = 0;
 			for (auto &t : tableParam) {
 				++count;
-				if (t.value < 0) {
+				if (t.value < 0 || t.value >= vrmAssetList->Textures.Num()) {
 					continue;
 				}
 				LocalTextureSet(dm, *t.key, vrmAssetList->Textures[t.value]);
@@ -503,7 +503,7 @@ namespace {
 			// gltf default texture
 			{
 				auto n = TextureTypeToIndex[aiTextureType_NORMALS];
-				if (n >= 0) {
+				if (0 <= n && n < vrmAssetList->Textures.Num()) {
 					vrmAssetList->Textures[n]->SRGB = false;
 					vrmAssetList->Textures[n]->CompressionSettings = TC_Normalmap;
 					vrmAssetList->Textures[n]->UpdateResource();
@@ -512,7 +512,7 @@ namespace {
 			}
 			{
 				auto n = TextureTypeToIndex[aiTextureType_EMISSIVE];
-				if (n >= 0) {
+				if (0 <= n && n < vrmAssetList->Textures.Num()) {
 					LocalTextureSet(dm, TEXT("mtoon_tex_Emissive"), vrmAssetList->Textures[n]);
 				}
 			}
