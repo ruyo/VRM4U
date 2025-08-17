@@ -41,6 +41,9 @@ class UPackage;
 
 
 class VRM4ULOADER_API VRMConverter {
+
+	bool InitJSON(const uint8* pData, size_t pFileDataSize);
+
 public:
 
 	VrmJson jsonData;
