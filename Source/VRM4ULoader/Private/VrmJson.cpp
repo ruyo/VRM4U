@@ -5,6 +5,7 @@
 bool VrmJson::init(const uint8_t* pData, size_t size) {
 	bEnable = false;
 
+	/*
 	if (size < 4 || pData == nullptr) {
 		return false;
 	}
@@ -47,6 +48,8 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 	if (c_end - c_start <=1) {
 		return false;
 	}
+
+
 	std::vector<char> v;
 	v.resize(c_end - c_start);
 	memcpy(&v[0], pData + c_start, c_end - c_start);
@@ -55,6 +58,18 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 	doc.Parse(&v[0]);
 
 	bEnable = true;
+	*/
+
+	std::vector<char> v;
+	v.resize(size);
+	memcpy(&v[0], pData, size);
+	v.push_back(0);
+
+	doc.Parse(&v[0]);
+
+	bEnable = true;
+
+
 	return true;
 }
 

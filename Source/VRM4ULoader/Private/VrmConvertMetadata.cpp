@@ -2,6 +2,7 @@
 
 #include "VrmConvertMetadata.h"
 #include "VrmConvert.h"
+#include "VRM4ULoaderLog.h"
 
 
 #include "VrmAssetListObject.h"
@@ -28,9 +29,65 @@
 
 
 bool VRMConverter::Init(const uint8* pFileData, size_t dataSize, const aiScene *pScene) {
-	jsonData.init(pFileData, dataSize);
 	aiData = pScene;
+	InitJSON(pFileData, dataSize);
 	return true;
+}
+
+bool VRMConverter::InitJSON(const uint8* pFileData, size_t dataSize) {
+
+	// little endian
+	// skip size check
+	auto readData = [](const uint8* data, size_t offset) {
+		return static_cast<uint32_t>(data[offset]) |
+			(static_cast<uint32_t>(data[offset + 1]) << 8) |
+			(static_cast<uint32_t>(data[offset + 2]) << 16) |
+			(static_cast<uint32_t>(data[offset + 3]) << 24);
+		};
+
+	if (dataSize < 20 || pFileData[0] != 'g' || pFileData[1] != 'l' || pFileData[2] != 'T' || pFileData[3] != 'F') {
+		return false;
+	}
+	const uint32_t glTFversion = readData(pFileData, 4);
+	const uint32_t total_length = readData(pFileData, 8);
+	if (total_length != static_cast<uint32_t>(dataSize)) {
+		return false;
+	}
+
+
+	uint32_t jsonSize = 0;
+	if (glTFversion == 1) {
+		// glTF 1.0 GLB VRM“I‚É‚Í•s—v‚¾‚ª”O‚Ì‚½‚ß
+		const uint32_t content_length = readData(pFileData, 12);
+		const uint32_t content_format = readData(pFileData, 16);
+		if (content_format != 0) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Content format is not JSON (glTF 1.0)"));
+			return false;
+		}
+		if (20 + content_length > dataSize) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Content length exceeds file size"));
+			return false;
+		}
+		jsonSize = content_length;
+
+	} else if (glTFversion == 2) {
+		const uint32_t chunk_length = readData(pFileData, 12);
+		if (pFileData[16] != 'J' || pFileData[17] != 'S' || pFileData[18] != 'O' || pFileData[19] != 'N') {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("First chunk is not JSON"));
+			return false;
+		}
+		if (20 + chunk_length > dataSize) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Chunk length exceeds file size"));
+			return false;
+		}
+		jsonSize = chunk_length;
+	}
+	else {
+		UE_LOG(LogVRM4ULoader, Warning, TEXT("glbVersion error"));
+		return false;
+	}
+
+	return jsonData.init(pFileData + 20, jsonSize);
 }
 
 
