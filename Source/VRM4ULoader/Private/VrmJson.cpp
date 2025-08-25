@@ -1,6 +1,8 @@
 // VRM4U Copyright (c) 2021-2024 Haruyoshi Yamamoto. This software is released under the MIT License.
 
 #include "VrmJson.h"
+#include "VrmConvert.h"
+
 
 bool VrmJson::init(const uint8_t* pData, size_t size) {
 	bEnable = false;
@@ -75,52 +77,12 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 
 bool VRMIsVRM10(const uint8_t* pData, size_t size) {
 
-	if (size < 4 || pData == nullptr) {
-		return false;
-	}
+	VRMConverter j;
+	j.Init(pData, size, nullptr);
+	RAPIDJSON_NAMESPACE::Document &doc = j.jsonData.doc
+		;
+	//doc.Parse(&v[0]);
 
-	int c = 0;
-	size_t c_start = 0;
-	{
-		std::vector<char> str = { 'J','S','O','N' };
-
-		for (; c_start < size - str.size(); ++c_start) {
-			bool bFound = false;
-
-			for (int i = 0; i < 4; ++i) {
-				if (str[i] != pData[c_start + i]) {
-					break;
-				}
-				bFound = true;
-			}
-			if (bFound) {
-				c_start += 4;
-				break;
-			}
-		}
-	}
-
-	size_t c_end = c_start;
-	for (; c_end < size; ++c_end) {
-		if (pData[c_end] == '{') {
-			c++;
-		}
-		if (pData[c_end] == '}') {
-			c--;
-		}
-		if (c == 0) {
-			++c_end;
-			break;
-		}
-	}
-
-	std::vector<char> v;
-	v.resize(c_end - c_start);
-	memcpy(&v[0], pData + c_start, c_end - c_start);
-	v.push_back(0);
-
-	RAPIDJSON_NAMESPACE::Document doc;
-	doc.Parse(&v[0]);
 
 	if (doc.HasMember("extensions")) {
 		if (doc["extensions"].HasMember("VRMC_vrm")) {
