@@ -268,7 +268,10 @@ extern "C" {
             int colliderGroupNum = 0;
             VRMColliderGroup *colliderGroups = nullptr;
 
-            VRMHumanoid humanoidBone[55];
+            enum HumanoidBone{
+                MAX_BONE_NUM = 55,
+            };
+            VRMHumanoid humanoidBone[HumanoidBone::MAX_BONE_NUM];
 
             int blendShapeGroupNum = 0;
             VRMBlendShapeGroup *blendShapeGroup = nullptr;
