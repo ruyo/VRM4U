@@ -354,20 +354,21 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 		}
 	}
 
-	auto GetDataJSON = [](const RAPIDJSON_NAMESPACE::Value& root, std::initializer_list<const char*> path) -> std::optional<const RAPIDJSON_NAMESPACE::Value*> {
+	//auto GetDataJSON = [](const RAPIDJSON_NAMESPACE::Value& root, std::initializer_list<const char*> path) -> std::optional<const RAPIDJSON_NAMESPACE::Value*> {
+	auto GetDataJSON = [](const RAPIDJSON_NAMESPACE::Value& root, std::initializer_list<const char*> path) -> std::pair<bool, const RAPIDJSON_NAMESPACE::Value*> {
 		const RAPIDJSON_NAMESPACE::Value* current = &root;
 
 		for (const char* key : path) {
 			if (current->IsObject() == false) {
-				return std::nullopt;
+				return { false, nullptr };
 			}
 			auto itr = current->FindMember(key);
 			if (itr == current->MemberEnd()) {
-				return std::nullopt;
+				return { false, nullptr };
 			}
 			current = &itr->value;
 		}
-		return current;
+		return { true, current };
 	};
 
 	// tmp shape...
@@ -382,8 +383,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 			ParamTable.Add("_OutlineColor", "mtoon_OutColor");
 
 			auto groupp = GetDataJSON(jsonData.doc, {"extensions", "VRM", "blendShapeMaster", "blendShapeGroups"});
-			if (groupp) {
-				const auto &group = **groupp;
+			if (groupp.second) {
+				const auto &group = *(groupp.second);
 				for (int i = 0; i < (int)group.Size(); ++i) {
 					if (MetaObject->BlendShapeGroup.IsValidIndex(i) == false) break;
 
@@ -423,8 +424,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
 		auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_springBone", "springs"});
-		if (pp) {
-			const auto& jsonSpring = **pp;
+		if (pp.second) {
+			const auto& jsonSpring = *pp.second;
 
 			auto& sMeta = MetaObject->VRM1SpringBoneMeta.Springs;
 			sMeta.SetNum(jsonSpring.Size());
@@ -483,7 +484,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 					}
 				}
 				if (jsonCol["shape"].HasMember("sphere")) {
-					if (GetDataJSON(jsonCol, { "shape", "sphere", "offset" }) && GetDataJSON(jsonCol, { "shape", "sphere", "radius" })) {
+					if (GetDataJSON(jsonCol, { "shape", "sphere", "offset" }).second && GetDataJSON(jsonCol, { "shape", "sphere", "radius" }).second) {
 						cMeta.offset.Set(
 							jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
 							jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
@@ -494,7 +495,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 				}
 
 				if (jsonCol["shape"].HasMember("capsule")) {
-					if (GetDataJSON(jsonCol, { "shape", "capsule", "offset" }) && GetDataJSON(jsonCol, { "shape", "capsule", "radius" }) && GetDataJSON(jsonCol, { "shape", "capsule", "tail" })) {
+					if (GetDataJSON(jsonCol, { "shape", "capsule", "offset" }).second && GetDataJSON(jsonCol, { "shape", "capsule", "radius" }).second && GetDataJSON(jsonCol, { "shape", "capsule", "tail" }).second) {
 						cMeta.offset.Set(
 							jsonCol["shape"]["capsule"]["offset"][0].GetFloat(),
 							jsonCol["shape"]["capsule"]["offset"][1].GetFloat(),
@@ -580,8 +581,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 			auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_node_constraint", "constraint" });
 
-			if (!pp) continue;
-			auto& constraint = **pp;
+			if (!pp.second) continue;
+			auto& constraint = *pp.second;
 
 			if (constraint.HasMember("roll")) {
 				FVRMConstraintRoll c;
@@ -658,8 +659,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 				auto ppBone = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "humanoid", "humanBones" });
 
-				if (ppBone) {
-					auto& humanBone = **ppBone;
+				if (ppBone.second) {
+					auto& humanBone = *ppBone.second;
 					auto& origBone = jsonData.doc["nodes"];
 
 					for (auto& g : humanBone.GetObject()) {
@@ -681,8 +682,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 			{
 				auto ppPreset = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "expressions", "preset" });
 
-				if (ppPreset) {
-					auto& p = **ppPreset;
+				if (ppPreset.second) {
+					auto& p = *ppPreset.second;
 					for (auto& m : p.GetObject()) {
 						FVRMAnimationExpressionPreset meta;
 						meta.expressionName = m.name.GetString();
@@ -695,8 +696,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 			}
 			{
 				auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "lookAt", "node" });
-				if (pp) {
-					auto& at = **pp;
+				if (pp.second) {
+					auto& at = *pp.second;
 					if (at.IsInt()) {
 						vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at.GetInt();
 					}
@@ -711,8 +712,8 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
 		auto ppMeta = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "meta" });
 
-		if (ppMeta) {
-			auto& meta = **ppMeta;
+		if (ppMeta.second) {
+			auto& meta = *ppMeta.second;
 			for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
 
 				FString key = UTF8_TO_TCHAR((*m).name.GetString());
