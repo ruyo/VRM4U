@@ -483,26 +483,29 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 					}
 				}
 				if (jsonCol["shape"].HasMember("sphere")) {
-					cMeta.offset.Set(
-						jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
-						jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
-						jsonCol["shape"]["sphere"]["offset"][2].GetFloat());
-					cMeta.radius = jsonCol["shape"]["sphere"]["radius"].GetFloat();
-					cMeta.shapeType = TEXT("sphere");
-
+					if (GetDataJSON(jsonCol, { "shape", "sphere", "offset" }) && GetDataJSON(jsonCol, { "shape", "sphere", "radius" })) {
+						cMeta.offset.Set(
+							jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
+							jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
+							jsonCol["shape"]["sphere"]["offset"][2].GetFloat());
+						cMeta.radius = jsonCol["shape"]["sphere"]["radius"].GetFloat();
+						cMeta.shapeType = TEXT("sphere");
+					}
 				}
 
 				if (jsonCol["shape"].HasMember("capsule")) {
-					cMeta.offset.Set(
-						jsonCol["shape"]["capsule"]["offset"][0].GetFloat(),
-						jsonCol["shape"]["capsule"]["offset"][1].GetFloat(),
-						jsonCol["shape"]["capsule"]["offset"][2].GetFloat());
-					cMeta.radius = jsonCol["shape"]["capsule"]["radius"].GetFloat();
-					cMeta.tail.Set(
-						jsonCol["shape"]["capsule"]["tail"][0].GetFloat(),
-						jsonCol["shape"]["capsule"]["tail"][1].GetFloat(),
-						jsonCol["shape"]["capsule"]["tail"][2].GetFloat());
-					cMeta.shapeType = TEXT("capsule");
+					if (GetDataJSON(jsonCol, { "shape", "capsule", "offset" }) && GetDataJSON(jsonCol, { "shape", "capsule", "radius" }) && GetDataJSON(jsonCol, { "shape", "capsule", "tail" })) {
+						cMeta.offset.Set(
+							jsonCol["shape"]["capsule"]["offset"][0].GetFloat(),
+							jsonCol["shape"]["capsule"]["offset"][1].GetFloat(),
+							jsonCol["shape"]["capsule"]["offset"][2].GetFloat());
+						cMeta.radius = jsonCol["shape"]["capsule"]["radius"].GetFloat();
+						cMeta.tail.Set(
+							jsonCol["shape"]["capsule"]["tail"][0].GetFloat(),
+							jsonCol["shape"]["capsule"]["tail"][1].GetFloat(),
+							jsonCol["shape"]["capsule"]["tail"][2].GetFloat());
+						cMeta.shapeType = TEXT("capsule");
+					}
 				}
 			}
 
@@ -574,12 +577,12 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 		// VRM10
 		auto& nodes = jsonData.doc["nodes"];
 		for (auto& node : nodes.GetArray()) {
-			if (node.HasMember("extensions") == false) continue;
-			if (node["extensions"].HasMember("VRMC_node_constraint") == false) continue;
-			if (node["extensions"]["VRMC_node_constraint"].HasMember("constraint") == false) continue;
 
+			auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_node_constraint", "constraint" });
 
-			auto& constraint = node["extensions"]["VRMC_node_constraint"]["constraint"];
+			if (!pp) continue;
+			auto& constraint = **pp;
+
 			if (constraint.HasMember("roll")) {
 				FVRMConstraintRoll c;
 
@@ -652,42 +655,52 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	if (VRMConverter::Options::Get().IsVRMAModel()) {
 		if (pData && dataSize) {
 			{
-				auto& humanBone = jsonData.doc["extensions"]["VRMC_vrm_animation"]["humanoid"]["humanBones"];
-				auto& origBone = jsonData.doc["nodes"];
 
-				for (auto& g : humanBone.GetObject()) {
-					int nodeNo = g.value["node"].GetInt();
+				auto ppBone = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "humanoid", "humanBones" });
 
-					if (FString(g.name.GetString()) == "") {
-						continue;
-					}
+				if (ppBone) {
+					auto& humanBone = **ppBone;
+					auto& origBone = jsonData.doc["nodes"];
 
-					if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
-						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
-					}
-					else {
-						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+					for (auto& g : humanBone.GetObject()) {
+						int nodeNo = g.value["node"].GetInt();
+
+						if (FString(g.name.GetString()) == "") {
+							continue;
+						}
+
+						if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
+							MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
+						}
+						else {
+							MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+						}
 					}
 				}
 			}
 			{
-				auto& ex = jsonData.doc["extensions"]["VRMC_vrm_animation"]["expressions"];
-				if (ex.HasMember("preset")) {
-					auto &p = ex["preset"];
-					for (auto &m : p.GetObject()) {
+				auto ppPreset = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "expressions", "preset" });
+
+				if (ppPreset) {
+					auto& p = **ppPreset;
+					for (auto& m : p.GetObject()) {
 						FVRMAnimationExpressionPreset meta;
 						meta.expressionName = m.name.GetString();
 						meta.expressionNode = m.value["node"].GetInt();
 						meta.expressionNodeName = jsonData.doc["nodes"].GetArray()[meta.expressionNode]["name"].GetString();
 
 						vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset.Add(meta);
-
 					}
 				}
 			}
 			{
-				auto& at = jsonData.doc["extensions"]["VRMC_vrm_animation"]["lookAt"];
-				vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at["node"].GetInt();
+				auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "lookAt", "node" });
+				if (pp) {
+					auto& at = **pp;
+					if (at.IsInt()) {
+						vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at.GetInt();
+					}
+				}
 			}
 		}
 	}
@@ -696,50 +709,54 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	// license
 		// license
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
-		auto& meta = jsonData.doc["extensions"]["VRMC_vrm"]["meta"];
-		for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
+		auto ppMeta = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "meta" });
 
-			FString key = UTF8_TO_TCHAR((*m).name.GetString());
+		if (ppMeta) {
+			auto& meta = **ppMeta;
+			for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
 
-			if (key.Find("allow") == 0) {
-				FLicenseBoolDataPair p;
-				p.key = key;
-				p.value = (*m).value.GetBool();
-				lic1->LicenseBool.Add(p);
-			} else if (key == "thumbnailImage") {
-				if (vrmAssetList) {
-					int t = (*m).value.GetInt();
-					if (t >= 0 && t < vrmAssetList->Textures.Num()) {
-						lic1->thumbnail = vrmAssetList->Textures[t];
+				FString key = UTF8_TO_TCHAR((*m).name.GetString());
+
+				if (key.Find("allow") == 0) {
+					FLicenseBoolDataPair p;
+					p.key = key;
+					p.value = (*m).value.GetBool();
+					lic1->LicenseBool.Add(p);
+				} else if (key == "thumbnailImage") {
+					if (vrmAssetList) {
+						int t = (*m).value.GetInt();
+						if (t >= 0 && t < vrmAssetList->Textures.Num()) {
+							lic1->thumbnail = vrmAssetList->Textures[t];
 #if WITH_EDITORONLY_DATA
-						vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
+							vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
 #endif
-					}
-				}
-			}else{
-				if ((*m).value.IsArray()) {
-					int ind = 0;
-					bool bFound = false;
-					for (auto& a : lic1->LicenseStringArray) {
-						if (a.key != key) {
-							++ind;
-							continue;
 						}
-						bFound = true;
-						break;
-					}
-					if (bFound == false) {
-						ind = lic1->LicenseStringArray.AddDefaulted();
-						lic1->LicenseStringArray[ind].key = key;
-					}
-					for (auto& a : (*m).value.GetArray()) {
-						lic1->LicenseStringArray[ind].value.Add(UTF8_TO_TCHAR(a.GetString()));
 					}
 				} else {
-					FLicenseStringDataPair p;
-					p.key = key;
-					p.value = UTF8_TO_TCHAR((*m).value.GetString());
-					lic1->LicenseString.Add(p);
+					if ((*m).value.IsArray()) {
+						int ind = 0;
+						bool bFound = false;
+						for (auto& a : lic1->LicenseStringArray) {
+							if (a.key != key) {
+								++ind;
+								continue;
+							}
+							bFound = true;
+							break;
+						}
+						if (bFound == false) {
+							ind = lic1->LicenseStringArray.AddDefaulted();
+							lic1->LicenseStringArray[ind].key = key;
+						}
+						for (auto& a : (*m).value.GetArray()) {
+							lic1->LicenseStringArray[ind].value.Add(UTF8_TO_TCHAR(a.GetString()));
+						}
+					} else {
+						FLicenseStringDataPair p;
+						p.key = key;
+						p.value = UTF8_TO_TCHAR((*m).value.GetString());
+						lic1->LicenseString.Add(p);
+					}
 				}
 			}
 		}
