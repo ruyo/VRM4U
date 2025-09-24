@@ -37,20 +37,10 @@ if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
 )
-call %BUILD_SCRIPT% 5.5 Android Development VRM4U_5_5_%V_DATE%_android.zip
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
 
 
 ::5_4
 call %BUILD_SCRIPT% 5.4 Win64 Shipping VRM4U_5_4_%V_DATE%.zip
-if not %errorlevel% == 0 (
-    echo [ERROR] :P
-    goto err
-)
-call %BUILD_SCRIPT% 5.4 Android Development VRM4U_5_4_%V_DATE%_android.zip
 if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
