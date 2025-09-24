@@ -35,7 +35,7 @@ class VRM4U_API UVrmRuntimeSettings : public UObject
 
 	/** Default material set for runtimeload */
 	UPROPERTY(config, EditAnywhere, Category = Settings, meta = (
-		AllowedClasses = "Object",
+		AllowedClasses = "/Script/CoreUObject.Object",
 		ExactClass = false
 		))
 	FSoftObjectPath AssetListObject;

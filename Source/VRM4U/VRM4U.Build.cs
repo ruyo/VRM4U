@@ -71,17 +71,20 @@ public class VRM4U : ModuleRules
 			PrivateDependencyModuleNames.Add("UnrealEd");
 			PrivateDependencyModuleNames.Add("LevelEditor");
 
-			PublicDependencyModuleNames.Add("LevelSequence");
-			PublicDependencyModuleNames.Add("LevelSequenceEditor");
-			PublicDependencyModuleNames.Add("Sequencer");
+			PrivateDependencyModuleNames.Add("LevelSequence");
+			PrivateDependencyModuleNames.Add("LevelSequenceEditor");
+			PrivateDependencyModuleNames.Add("Sequencer");
 
 			BuildVersion Version2;
 			if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version2))
 			{
 				if (Version2.MajorVersion == 5)
 				{
-					PublicDependencyModuleNames.Add("MovieRenderPipelineEditor");
-					PublicDependencyModuleNames.Add("ControlRigDeveloper");
+					PrivateDependencyModuleNames.Add("MovieRenderPipelineCore");
+					PrivateDependencyModuleNames.Add("MovieRenderPipelineEditor");
+
+					PrivateDependencyModuleNames.Add("ControlRigDeveloper");
+
 				}
 			}
 		}
@@ -105,7 +108,7 @@ public class VRM4U : ModuleRules
 					PrivateDependencyModuleNames.Add("IKRigEditor");
 				}
 
-				PublicDependencyModuleNames.Add("InterchangeCore");
+				PrivateDependencyModuleNames.Add("InterchangeCore");
 			}
 		}
 
