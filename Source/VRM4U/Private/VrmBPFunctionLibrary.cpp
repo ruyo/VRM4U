@@ -962,6 +962,29 @@ void UVrmBPFunctionLibrary::VRMChangeMaterialStaticSwitch(UMaterialInstanceConst
 #endif
 }
 
+void UVrmBPFunctionLibrary::VRMGetMaterialStaticSwitch(UMaterialInstance* material, FName paramName, bool& bHasParam, bool& bEnable) {
+
+	bHasParam = false;
+	bEnable = false;
+	if (material == nullptr) return;
+
+#if WITH_EDITORONLY_DATA
+	if (GIsEditor == false) {
+		return;
+	}
+
+	bool Value = false;
+	FGuid ExpressionGuid;
+	if (material->GetStaticSwitchParameterValue(paramName, Value, ExpressionGuid))
+	{
+		bHasParam = true;
+		bEnable = Value;
+		return;
+	}
+	return;
+#endif
+}
+
 
 
 UObject* UVrmBPFunctionLibrary::VRMDuplicateAsset(UObject *src, FString name, UObject *thisOwner) {

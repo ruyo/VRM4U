@@ -121,6 +121,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	static void VRMChangeMaterialStaticSwitch(UMaterialInstanceConstant *material, FName paramName, bool bEnable);
 
+	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (DevelopmentOnly))
+	static void VRMGetMaterialStaticSwitch(UMaterialInstance* material, FName paramName, bool &bHasParam, bool &bEnable);
+
 	// mat end
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
