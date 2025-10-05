@@ -184,8 +184,8 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
     if (CustomStencilTexture[pixelCoord].y >= 1) {
         if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r) {
-            float2 UV = ViewSize / float2(width, height);
-
+            //float2 UV = ViewSize / float2(width, height);
+            float2 UV = View.BufferSizeAndInvSize.zw;
             
             float3 PackedNormal = NormalTexture[pixelCoord].xyz;
             float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
@@ -228,7 +228,14 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
                 ClipLightDir.xyz = normalize(ClipLightDir.xyz);
 
-                float SampleRange = float(height) * SampleScreenScale;
+                //float SampleRange = float(height) * SampleScreenScale;
+                //float SampleRange = View.BufferSizeAndInvSize.y * SampleScreenScale;
+                float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
+                
+                //float2 UnscaledMin = View.UnscaledViewRect.Min.xy;
+                //float2 UnscaledMax = View.UnscaledViewRect.Max.xy;
+                //float2 UnscaledSize = UnscaledMax - UnscaledMin;  // フル幅/高さ (pixels)
+                //float SampleRange = UnscaledSize.y * SampleScreenScale;
                 
                 bool bEdge = false;
                 
