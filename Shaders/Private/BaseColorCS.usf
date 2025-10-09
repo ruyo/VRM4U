@@ -163,12 +163,13 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     //color.xyz = 0;
     //SceneColorTexture[pixelCoord] = color;
 
+    float LinearDepth = 1;
     {
         float2 UV = ViewSize / float2(width, height);
         
         float Depth = SceneDepthTexture[pixelCoord]; //SceneDepthTexture.SampleLevel(DepthSampler, UV, 0);
         
-        float LinearDepth = GetLinearDepth(UV, pixelCoord);
+        LinearDepth = GetLinearDepth(UV, pixelCoord);
 
         float t = saturate(LinearDepth / 5000.f);
         
@@ -231,6 +232,8 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 //float SampleRange = float(height) * SampleScreenScale;
                 //float SampleRange = View.BufferSizeAndInvSize.y * SampleScreenScale;
                 float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
+
+                SampleRange = SampleRange / LinearDepth * 10.f;
                 
                 //float2 UnscaledMin = View.UnscaledViewRect.Min.xy;
                 //float2 UnscaledMax = View.UnscaledViewRect.Max.xy;
