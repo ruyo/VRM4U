@@ -31,6 +31,8 @@ class VRM4URENDER_API UVrmExtensionRimFilterData : public UObject
 		float SampleScreenScale = 0.25f;
 		float SampleScale = 1.5;
 
+		int CustomStencilMask = 0xFFFF;
+
 	};
 
 public:	
@@ -84,6 +86,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
 	float SampleScale = 1.0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VRM4U")
+	int CustomStencilMask = 0xFFFF;
 
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
@@ -113,6 +117,8 @@ public:
 
 		d.SampleScreenScale = SampleScreenScale;
 		d.SampleScale = SampleScale;
+
+		d.CustomStencilMask = CustomStencilMask;
 
 		return d;
 	}
