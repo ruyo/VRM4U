@@ -805,6 +805,12 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 			RemoveAssetList(out);
 			return false;
 		}
+		{
+			// Œãˆ—BUE5.7‚Å‚ÍCreateMeshDescription ‚ðŒÄ‚Ô‚½‚ß•K—v
+			if (out->SkeletalMesh) {
+				out->SkeletalMesh->PostLoad();
+			}
+		}
 	}
 	out->VrmMetaObject->SkeletalMesh = out->SkeletalMesh;
 
