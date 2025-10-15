@@ -538,6 +538,10 @@ namespace {
 							}
 						}
 						{
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+							// morph search出来ないのでスキップ
+#else
+
 							// Poseで登録しようとする名前と 同じMorphがある場合はスキップ
 							auto& MorphList = sk->GetMorphTargets();
 							auto* ind = MorphList.FindByPredicate([&SmartPoseName](const TObjectPtr<UMorphTarget > morph) {
@@ -551,6 +555,7 @@ namespace {
 							if (ind) {
 								bSameName = true;
 							}
+#endif
 						}
 
 						{
