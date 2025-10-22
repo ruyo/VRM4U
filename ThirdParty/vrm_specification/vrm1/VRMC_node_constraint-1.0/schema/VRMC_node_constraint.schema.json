@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "VRMC_node_constraint extension",
+  "type": "object",
+  "description": "glTF extension that defines constraints.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "specVersion": {
+      "type": "string",
+      "description": "Specification version of VRMC_node_constraint"
+    },
+    "constraint": {
+      "$ref": "VRMC_node_constraint.constraint.schema.json"
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "specVersion", "constraint" ]
+}

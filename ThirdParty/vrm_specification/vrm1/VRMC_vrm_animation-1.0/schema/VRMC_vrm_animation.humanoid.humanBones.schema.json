@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "HumanBones",
+  "type": "object",
+  "description": "An object which maps humanoid bones to nodes.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "hips": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "spine": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "chest": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "upperChest": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "neck": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "head": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "jaw": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftUpperLeg": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftLowerLeg": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftFoot": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftToes": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightUpperLeg": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightLowerLeg": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightFoot": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightToes": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftShoulder": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftUpperArm": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftLowerArm": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftHand": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightShoulder": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightUpperArm": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightLowerArm": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightHand": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftThumbMetacarpal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftThumbProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftThumbDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftIndexProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftIndexIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftIndexDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftMiddleProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftMiddleIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftMiddleDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftRingProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftRingIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftRingDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftLittleProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftLittleIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "leftLittleDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightThumbMetacarpal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightThumbProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightThumbDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightIndexProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightIndexIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightIndexDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightMiddleProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightMiddleIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightMiddleDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightRingProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightRingIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightRingDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightLittleProximal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightLittleIntermediate": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    },
+    "rightLittleDistal": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.humanBone.schema.json"
+    }
+  },
+  "required": [ "hips", "spine", "head", "leftUpperLeg", "leftLowerLeg", "leftFoot", "rightUpperLeg", "rightLowerLeg", "rightFoot", "leftUpperArm", "leftLowerArm", "leftHand", "rightUpperArm", "rightLowerArm", "rightHand" ]
+}

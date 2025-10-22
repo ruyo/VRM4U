@@ -1,0 +1,77 @@
+{
+  "title": "Expressions",
+  "type": "object",
+  "description": "Definition of expressions",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "preset": {
+      "type": "object",
+      "description": "Preset expressions",
+      "properties": {
+        "happy": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "angry": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "sad": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "relaxed": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "surprised": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "aa": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "ih": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "ou": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "ee": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "oh": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "blink": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "blinkLeft": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "blinkRight": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "lookUp": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "lookDown": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "lookLeft": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "lookRight": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        },
+        "neutral": {
+          "$ref": "VRMC_vrm.expressions.expression.schema.json"
+        }
+      }
+    },
+    "custom": {
+      "type": "object",
+      "description": "Custom expressions",
+      "additionalProperties": {
+        "$ref": "VRMC_vrm.expressions.expression.schema.json"
+      }
+    },
+    "extensions": { },
+    "extras": { }
+  }
+}

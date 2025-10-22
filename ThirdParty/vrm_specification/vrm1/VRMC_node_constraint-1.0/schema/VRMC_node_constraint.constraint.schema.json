@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Constraint",
+  "type": "object",
+  "description": "Contains roll, aim, or rotation",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "roll": {
+      "$ref": "VRMC_node_constraint.rollConstraint.schema.json"
+    },
+    "aim": {
+      "$ref": "VRMC_node_constraint.aimConstraint.schema.json"
+    },
+    "rotation": {
+      "$ref": "VRMC_node_constraint.rotationConstraint.schema.json"
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "oneOf": [
+    { "required": [ "roll" ] },
+    { "required": [ "aim" ] },
+    { "required": [ "rotation" ] }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "title": "VRMCSpringBoneExtendedCollider",
+  "type": "object",
+  "description": "An extended collider for VRMC_springBone.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "specVersion": {
+      "type": "string",
+      "description": "Specification version of VRMC_springBone_extended_collider."
+    },
+    "shape": {
+      "allOf": [ { "$ref": "VRMC_springBone_extended_collider.shape.schema.json" } ],
+      "description": "The shape of the collider."
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "specVersion" ]
+}

@@ -1,0 +1,133 @@
+{
+  "title": "Meta",
+  "type": "object",
+  "description": "",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the model",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "description": "The version of the model"
+    },
+    "authors": {
+      "type": "array",
+      "description": "Authors of the model",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "copyrightInformation": {
+      "type": "string",
+      "description": "An information that describes the copyright of the model"
+    },
+    "contactInformation": {
+      "type": "string",
+      "description": "An information that describes the contact information of the author"
+    },
+    "references": {
+      "type": "array",
+      "description": "References / original works of the model",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "thirdPartyLicenses": {
+      "type": "string",
+      "description": "Third party licenses of the model, if required. You can use line breaks"
+    },
+    "thumbnailImage": {
+      "allOf": [{ "$ref": "glTFid.schema.json" }],
+      "description": "The index to the thumbnail image of the model in gltf.images"
+    },
+    "licenseUrl": {
+      "type": "string",
+      "description": "A URL towards the license document this model refers to"
+    },
+    "avatarPermission": {
+      "title": "AvatarPermissionType",
+      "type": "string",
+      "enum": [
+        "onlyAuthor",
+        "onlySeparatelyLicensedPerson",
+        "everyone"
+      ],
+      "default": "onlyAuthor",
+      "description": "A person who can perform as an avatar with this model"
+    },
+    "allowExcessivelyViolentUsage": {
+      "type": "boolean",
+      "default": false,
+      "description": "A flag that permits to use this model in excessively violent contents"
+    },
+    "allowExcessivelySexualUsage": {
+      "type": "boolean",
+      "default": false,
+      "description": "A flag that permits to use this model in excessively sexual contents"
+    },
+    "commercialUsage": {
+      "title": "CommercialUsageType",
+      "type": "string",
+      "enum": [
+        "personalNonProfit",
+        "personalProfit",
+        "corporation"
+      ],
+      "default": "personalNonProfit",
+      "description": "An option that permits to use this model in commercial products"
+    },
+    "allowPoliticalOrReligiousUsage": {
+      "type": "boolean",
+      "default": false,
+      "description": "A flag that permits to use this model in political or religious contents"
+    },
+    "allowAntisocialOrHateUsage": {
+      "type": "boolean",
+      "default": false,
+      "description": "A flag that permits to use this model in contents contain anti-social activities or hate speeches"
+    },
+    "creditNotation": {
+      "title": "CreditNotationType",
+      "type": "string",
+      "enum": [
+        "required",
+        "unnecessary"
+      ],
+      "default": "required",
+      "description": "An option that forces or abandons to display the credit of this model"
+    },
+    "allowRedistribution": {
+      "type": "boolean",
+      "default": false,
+      "description": "A flag that permits to redistribute this model"
+    },
+    "modification": {
+      "title": "ModificationType",
+      "type": "string",
+      "enum": [
+        "prohibited",
+        "allowModification",
+        "allowModificationRedistribution"
+      ],
+      "default": "prohibited",
+      "description": "An option that controls the condition to modify this model"
+    },
+    "otherLicenseUrl": {
+      "type": "string",
+      "description": "Describe the URL links of other license"
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "name",
+    "authors",
+    "licenseUrl"
+  ]
+}

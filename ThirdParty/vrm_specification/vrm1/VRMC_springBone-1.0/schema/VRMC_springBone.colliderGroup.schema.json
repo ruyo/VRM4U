@@ -1,0 +1,25 @@
+{
+    "title": "ColliderGroup",
+    "type": "object",
+    "description": "collider group definition for SpringBone",
+    "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the ColliderGroup"
+        },
+        "colliders": {
+            "type": "array",
+            "items": {
+                "$ref": "glTFid.schema.json"
+            },
+            "description": "An array of colliders.",
+            "minItems": 1
+        },
+        "extensions": { },
+        "extras": { }
+    },
+    "required": [
+        "colliders"
+    ]
+}

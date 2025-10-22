@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "HumanBone",
+  "type": "object",
+  "description": "Represents a single bone of a Humanoid.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "node": {
+      "allOf": [{ "$ref": "glTFid.schema.json" }],
+      "description": "Represents a single glTF node mapped to this humanBone."
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "node" ]
+}

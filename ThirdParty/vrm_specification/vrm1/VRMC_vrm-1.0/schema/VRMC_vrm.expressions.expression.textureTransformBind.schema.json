@@ -1,0 +1,43 @@
+{
+  "title": "TextureTransformBind",
+  "type": "object",
+  "description": "Texture transform value associated with a expression",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "material": {
+      "allOf": [ { "$ref": "glTFid.schema.json" } ],
+      "description": "target material"
+    },
+    "scale": {
+      "type": "array",
+      "description": "uv scaling for TEXCOORD_0",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "default": [
+        1,
+        1
+      ]
+    },
+    "offset": {
+      "type": "array",
+      "description": "uv offset for TEXCOORD_0",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "default": [
+        0,
+        0
+      ]
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "material"
+  ]
+}

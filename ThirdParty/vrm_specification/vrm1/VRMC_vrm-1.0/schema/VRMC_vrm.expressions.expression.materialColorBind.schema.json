@@ -1,0 +1,40 @@
+{
+  "title": "MaterialColorBind",
+  "type": "object",
+  "description": "Material color value associated with a expression",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "material": {
+      "allOf": [ { "$ref": "glTFid.schema.json" } ],
+      "description": "target material"
+    },
+    "type": {
+      "title": "MaterialColorType",
+      "type": "string",
+      "enum": [
+        "color",
+        "emissionColor",
+        "shadeColor",
+        "matcapColor",
+        "rimColor",
+        "outlineColor"
+      ]
+    },
+    "targetValue": {
+      "type": "array",
+      "description": "target color",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "material",
+    "type",
+    "targetValue"
+  ]
+}
