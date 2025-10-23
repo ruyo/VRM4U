@@ -488,6 +488,30 @@ namespace {
 #endif
 }
 
+bool ULoaderBPFunctionLibrary::IsValidVRM(FString filepath) {
+
+	UE_LOG(LogVRM4ULoader, Log, TEXT("IsValidVRM: OrigFileName=%s"), *filepath);
+
+	std::string file;
+#if PLATFORM_WINDOWS
+	file = utf_16_to_shift_jis(*filepath);
+#else
+	file = TCHAR_TO_UTF8(*filepath);
+#endif
+
+	UE_LOG(LogVRM4ULoader, Log, TEXT("IsValidVRM: std::stringFileName=%hs"), file.c_str());
+
+	TArray<uint8> Res;
+	if (FFileHelper::LoadFileToArray(Res, *filepath)) {
+		UE_LOG(LogVRM4ULoader, Log, TEXT("IsValidVRM: filesize=%d"), Res.Num());
+
+		extern bool VRMIsValid(const uint8_t * pData, size_t size);
+			
+		return VRMIsValid(Res.GetData(), Res.Num());
+	}
+	return false;
+}
+
 void ULoaderBPFunctionLibrary::GetVRMMeta(FString filepath, UVrmLicenseObject*& a, UVrm1LicenseObject*& b) {
 
 	UE_LOG(LogVRM4ULoader, Log, TEXT("GetVRMMeta:OrigFileName=%s"), *filepath);

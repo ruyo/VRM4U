@@ -13,6 +13,12 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/error/en.h"
 
+bool VRMIsValid(const uint8_t* pData, size_t size) {
+	VRMConverter j;
+	return j.Init(pData, size, nullptr);
+}
+
+
 bool VRMIsVRM10(RAPIDJSON_NAMESPACE::Document &doc) {
 	if (doc.HasMember("extensions")) {
 		if (doc["extensions"].HasMember("VRMC_vrm")) {
@@ -27,7 +33,9 @@ bool VRMIsVRM10(RAPIDJSON_NAMESPACE::Document &doc) {
 
 bool VRMIsVRM10(const uint8_t* pData, size_t size) {
 	VRMConverter j;
-	j.Init(pData, size, nullptr);
+	if (j.Init(pData, size, nullptr) == false) {
+		return false;
+	}
 	RAPIDJSON_NAMESPACE::Document& doc = j.jsonData.doc;
 	//doc.Parse(&v[0]);
 
@@ -54,7 +62,7 @@ std::string ReadTextFileFromThirdparty(const FString& RelativePath)
 	// ファイルの存在確認
 	if (!FPaths::FileExists(TextFilePath))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("File not found: %s"), *TextFilePath);
+		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: no file: %s"), *TextFilePath);
 		return ret;
 	}
 
@@ -64,11 +72,11 @@ std::string ReadTextFileFromThirdparty(const FString& RelativePath)
 	//if (FFileHelper::LoadFileToString(FileContent, *ThirdpartyPath))
 	if (FFileHelper::LoadFileToArray(data, *TextFilePath))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Successfully read file: %s"), *TextFilePath);
+		UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: read: %s"), *TextFilePath);
 		return std::string(reinterpret_cast<const char*>(data.GetData()), data.Num());
 	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to read file: %s"), *TextFilePath);
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: failed: %s"), *TextFilePath);
 		return ret;
 	}
 }
@@ -95,7 +103,7 @@ public:
 
 		TArray<uint8> FileContent;
 		if (!FFileHelper::LoadFileToArray(FileContent, *FilePath)) {
-			UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
+			UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
 			return nullptr;
 		}
 
@@ -136,16 +144,18 @@ bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const s
 	// parse
 	RAPIDJSON_NAMESPACE::Document schemaDoc;
 	if (schemaDoc.Parse(schemaStr.c_str()).HasParseError()) {
-		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: validation failed at: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(jsonDoc.GetParseError())));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: validation failed at: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(jsonDoc.GetParseError())));
 		//std::cerr << "Schema parse error: " << RAPIDJSON_NAMESPACE::GetParseError_En(schemaDoc.GetParseError())
 		//	<< " at offset " << schemaDoc.GetErrorOffset() << std::endl;
 		return false;
 	}
 
 	// ext check
+	// なしなら通過
 	if (!jsonDoc.HasMember("extensions") || !jsonDoc["extensions"].HasMember(fileExt.c_str())) {
 		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: no extensions/%s"), UTF8_TO_TCHAR(fileExt.c_str()));
-		return false;
+		// ここは成功扱い
+		return true;
 	}
 
 	FileSchemaProvider provider(std::string(TCHAR_TO_UTF8(*(GetPluginThirdpartyPath() / UTF8_TO_TCHAR(path.c_str())))));
@@ -155,8 +165,8 @@ bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const s
 	if (!vrmExtension.Accept(validator)) {
 		RAPIDJSON_NAMESPACE::StringBuffer sb;
 		validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
-		UE_LOG(LogTemp, Warning, TEXT("Schema validation failed at: %s"), UTF8_TO_TCHAR(sb.GetString()));
-		UE_LOG(LogTemp, Warning, TEXT("nvalid keyword: %s"), UTF8_TO_TCHAR(validator.GetInvalidSchemaKeyword()));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: Schema validation failed at: %s"), UTF8_TO_TCHAR(sb.GetString()));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: nvalid keyword: %s"), UTF8_TO_TCHAR(validator.GetInvalidSchemaKeyword()));
 		return false;
 	}
 
@@ -181,7 +191,7 @@ bool validateSchemaVRM0_internal(RAPIDJSON_NAMESPACE::Document &jsonDoc, const s
 	// parse
 	RAPIDJSON_NAMESPACE::Document schemaDoc;
 	if (schemaDoc.Parse(schemaStr.c_str()).HasParseError()) {
-		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: validation failed at: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(jsonDoc.GetParseError())));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: validation failed at: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(jsonDoc.GetParseError())));
 		//std::cerr << "Schema parse error: " << RAPIDJSON_NAMESPACE::GetParseError_En(schemaDoc.GetParseError())
 		//	<< " at offset " << schemaDoc.GetErrorOffset() << std::endl;
 		return false;
@@ -189,7 +199,7 @@ bool validateSchemaVRM0_internal(RAPIDJSON_NAMESPACE::Document &jsonDoc, const s
 
 	// ext
 	if (!jsonDoc.HasMember("extensions") || !jsonDoc["extensions"].HasMember("VRM")) {
-		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: no extensions/vrm"));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: no extensions/vrm"));
 		//std::cerr << "Missing VRMC_vrm extension in JSON" << std::endl;
 		return false;
 	}
@@ -202,8 +212,8 @@ bool validateSchemaVRM0_internal(RAPIDJSON_NAMESPACE::Document &jsonDoc, const s
 		// エラー詳細を出力
 		RAPIDJSON_NAMESPACE::StringBuffer sb;
 		validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
-		UE_LOG(LogTemp, Warning, TEXT("Schema validation failed at: %s"), UTF8_TO_TCHAR(sb.GetString()));
-		UE_LOG(LogTemp, Warning, TEXT("nvalid keyword: %s"), UTF8_TO_TCHAR(validator.GetInvalidSchemaKeyword()));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: Schema validation failed at: %s"), UTF8_TO_TCHAR(sb.GetString()));
+		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: nvalid keyword: %s"), UTF8_TO_TCHAR(validator.GetInvalidSchemaKeyword()));
 		return false;
 	}
 
@@ -226,7 +236,7 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 
 
 	if (doc.Parse(&v[0]).HasParseError()) {
-		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: validation failed at: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(doc.GetParseError())));
+		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: parse error: %s"), UTF8_TO_TCHAR(RAPIDJSON_NAMESPACE::GetParseError_En(doc.GetParseError())));
 		//std::cerr << "Schema parse error: " << RAPIDJSON_NAMESPACE::GetParseError_En(schemaDoc.GetParseError())
 		//	<< " at offset " << schemaDoc.GetErrorOffset() << std::endl;
 		return false;
@@ -242,17 +252,19 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 				// vrm1 ok
 			} else {
 				// error
+				UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM1 validation failed"));
+				return false;
 			}
 		}else{
 			if (validateSchemaVRM0(doc)) {
 				// vrm0 ok
 			} else {
 				// error
+				UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM0 validation failed"));
+				return false;
 			}
 		}
 	}
-
-	
 
 	bEnable = true;
 

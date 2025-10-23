@@ -194,6 +194,10 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		return nullptr;
 	}
 
+	if (ULoaderBPFunctionLibrary::IsValidVRM(fullFileName) == false) {
+		return nullptr;
+	}
+
 	static UVrmImportUI* ImportUI = nullptr;
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 	TAssetPtr<UObject> refPointerToLic;

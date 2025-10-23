@@ -126,6 +126,7 @@ public:
 		bool IsGenerateIKBone() const;
 		bool IsGenerateRigIK() const;
 
+		bool IsDebugIgnoreVRMValidation() const;
 		bool IsDebugOneBone() const;
 		bool IsDebugNoMesh() const;
 		bool IsDebugNoMaterial() const;

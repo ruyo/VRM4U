@@ -360,6 +360,16 @@ int VRMConverter::Options::GetBoneWeightInfluenceNum() const {
 #endif
 }
 
+bool VRMConverter::Options::IsDebugIgnoreVRMValidation() const {
+	bool ret = false;
+#if WITH_EDITOR
+	if (ImportOption == nullptr) return ret;
+
+	return ImportOption->bIgnoreVRMValidation;
+#else
+	return ret;
+#endif
+}
 
 bool VRMConverter::Options::IsDebugOneBone() const {
 	bool ret = false;
