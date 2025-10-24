@@ -108,7 +108,7 @@ public:
 		if (FPaths::FileExists(FilePath)) {
 			FFileHelper::LoadFileToArray(FileContent, *FilePath);
 		}
-		if (FileContent.IsEmpty()){
+		if (FileContent.Num() == 0){
 			if (FilePath.Contains(TEXT("/glTF"))) {
 				UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
 			} else {
