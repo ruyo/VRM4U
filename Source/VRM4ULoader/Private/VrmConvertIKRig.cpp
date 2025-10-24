@@ -929,7 +929,6 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 		TArray<FString> AddedChainList;
 
 		TArray<TT> table = {
-			{TEXT("Pelvis"),		TEXT("pelvis"),				TEXT("pelvis"),},
 			{TEXT("Spine"),		TEXT("spine_01"),				TEXT("spine_05"),},
 			{TEXT("Neck"),		TEXT("neck_01"),				TEXT("neck_02"),},
 			{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
