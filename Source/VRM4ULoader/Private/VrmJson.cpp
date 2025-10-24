@@ -15,7 +15,10 @@
 
 bool VRMIsValid(const uint8_t* pData, size_t size) {
 	VRMConverter j;
-	return j.Init(pData, size, nullptr);
+	if (j.Init(pData, size, nullptr)) {
+		return j.ValidateSchema();
+	}
+	return false;
 }
 
 
@@ -102,8 +105,15 @@ public:
 		}
 
 		TArray<uint8> FileContent;
-		if (!FFileHelper::LoadFileToArray(FileContent, *FilePath)) {
-			UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
+		if (FPaths::FileExists(FilePath)) {
+			FFileHelper::LoadFileToArray(FileContent, *FilePath);
+		}
+		if (FileContent.IsEmpty()){
+			if (FilePath.Contains(TEXT("/glTF"))) {
+				UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
+			} else {
+				UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: Failed to load schema: %s"), *FilePath);
+			}
 			return nullptr;
 		}
 
@@ -138,6 +148,15 @@ private:
 
 // VRM1
 bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const std::string& path, const std::string& fileExt) {
+
+	// ext check
+	// extÇ»ÇµÇ»ÇÁí âﬂ
+	if (!jsonDoc.HasMember("extensions") || !jsonDoc["extensions"].HasMember(fileExt.c_str())) {
+		UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: no extensions/%s"), UTF8_TO_TCHAR(fileExt.c_str()));
+		// Ç±Ç±ÇÕê¨å˜àµÇ¢
+		return true;
+	}
+
 	std::string filename = fileExt + ".schema.json";
 	std::string schemaStr = ReadTextFileFromThirdparty(FString(UTF8_TO_TCHAR((path + "/" + filename).c_str())));
 
@@ -148,14 +167,6 @@ bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const s
 		//std::cerr << "Schema parse error: " << RAPIDJSON_NAMESPACE::GetParseError_En(schemaDoc.GetParseError())
 		//	<< " at offset " << schemaDoc.GetErrorOffset() << std::endl;
 		return false;
-	}
-
-	// ext check
-	// Ç»ÇµÇ»ÇÁí âﬂ
-	if (!jsonDoc.HasMember("extensions") || !jsonDoc["extensions"].HasMember(fileExt.c_str())) {
-		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: no extensions/%s"), UTF8_TO_TCHAR(fileExt.c_str()));
-		// Ç±Ç±ÇÕê¨å˜àµÇ¢
-		return true;
 	}
 
 	FileSchemaProvider provider(std::string(TCHAR_TO_UTF8(*(GetPluginThirdpartyPath() / UTF8_TO_TCHAR(path.c_str())))));
@@ -170,6 +181,7 @@ bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const s
 		return false;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: valid %s"), UTF8_TO_TCHAR(fileExt.c_str()));
 	return true;
 }
 bool validateSchemaVRM1(RAPIDJSON_NAMESPACE::Document& jsonDoc) {
@@ -178,6 +190,7 @@ bool validateSchemaVRM1(RAPIDJSON_NAMESPACE::Document& jsonDoc) {
 	ret &= validateSchemaVRM1_internal(jsonDoc, "vrm_specification/vrm1/VRMC_vrm-1.0/schema", "VRMC_vrm");
 	ret &= validateSchemaVRM1_internal(jsonDoc, "vrm_specification/vrm1/VRMC_springBone-1.0/schema", "VRMC_springBone");
 	ret &= validateSchemaVRM1_internal(jsonDoc, "vrm_specification/vrm1/VRMC_node_constraint-1.0/schema", "VRMC_node_constraint");
+	ret &= validateSchemaVRM1_internal(jsonDoc, "vrm_specification/vrm1/VRMC_vrm_animation-1.0/schema", "VRMC_vrm_animation");
 
 	return ret;
 }
@@ -217,6 +230,7 @@ bool validateSchemaVRM0_internal(RAPIDJSON_NAMESPACE::Document &jsonDoc, const s
 		return false;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: valid /%s"), UTF8_TO_TCHAR(filename.c_str()));
 	return true;
 }
 bool validateSchemaVRM0(RAPIDJSON_NAMESPACE::Document& jsonDoc) {
@@ -225,6 +239,36 @@ bool validateSchemaVRM0(RAPIDJSON_NAMESPACE::Document& jsonDoc) {
 }
 
 
+bool VrmJson::validateSchema() {
+	bEnable = false;
+
+	std::vector<char> s;
+	//std::string ss = ReadTextFileFromThirdparty(TEXT("vrm_specification/vrm0/schema/vrm.schema.json"));
+	//std::string ss = ReadTextFileFromThirdparty(TEXT("vrm_specification/vrm1/VRMC_vrm-1.0/schema/VRMC_vrm.schema.json"));
+
+	if (VRMIsVRM10(doc)) {
+		if (validateSchemaVRM1(doc)) {
+			// vrm1 ok
+			bEnable = true;
+		} else {
+			// error
+			UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM1 validation failed"));
+		}
+	} else {
+		if (validateSchemaVRM0(doc)) {
+			bEnable = true;
+			// vrm0 ok
+		} else {
+			// error
+			UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM0 validation failed"));
+		}
+	}
+
+	if (bEnable == false) {
+		doc.Clear();
+	}
+	return bEnable;
+}
 
 bool VrmJson::init(const uint8_t* pData, size_t size) {
 	bEnable = false;
@@ -240,30 +284,6 @@ bool VrmJson::init(const uint8_t* pData, size_t size) {
 		//std::cerr << "Schema parse error: " << RAPIDJSON_NAMESPACE::GetParseError_En(schemaDoc.GetParseError())
 		//	<< " at offset " << schemaDoc.GetErrorOffset() << std::endl;
 		return false;
-	}
-
-	{
-		std::vector<char> s;
-		//std::string ss = ReadTextFileFromThirdparty(TEXT("vrm_specification/vrm0/schema/vrm.schema.json"));
-		//std::string ss = ReadTextFileFromThirdparty(TEXT("vrm_specification/vrm1/VRMC_vrm-1.0/schema/VRMC_vrm.schema.json"));
-
-		if (VRMIsVRM10(doc)) {
-			if (validateSchemaVRM1(doc)) {
-				// vrm1 ok
-			} else {
-				// error
-				UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM1 validation failed"));
-				return false;
-			}
-		}else{
-			if (validateSchemaVRM0(doc)) {
-				// vrm0 ok
-			} else {
-				// error
-				UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: VRM0 validation failed"));
-				return false;
-			}
-		}
 	}
 
 	bEnable = true;

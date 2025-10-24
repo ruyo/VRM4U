@@ -194,8 +194,10 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		return nullptr;
 	}
 
-	if (ULoaderBPFunctionLibrary::IsValidVRM(fullFileName) == false) {
-		return nullptr;
+	if (VRMConverter::Options::Get().IsDebugIgnoreVRMValidation() == false) {
+		if (ULoaderBPFunctionLibrary::IsValidVRM4UFile(fullFileName) == false) {
+			return nullptr;
+		}
 	}
 
 	static UVrmImportUI* ImportUI = nullptr;

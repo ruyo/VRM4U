@@ -27,6 +27,9 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/vrm/vrmmeta.h>
 
+bool VRMConverter::ValidateSchema() {
+	return jsonData.validateSchema();
+}
 
 bool VRMConverter::Init(const uint8* pFileData, size_t dataSize, const aiScene *pScene) {
 	aiData = pScene;

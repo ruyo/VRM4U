@@ -488,9 +488,15 @@ namespace {
 #endif
 }
 
-bool ULoaderBPFunctionLibrary::IsValidVRM(FString filepath) {
+bool ULoaderBPFunctionLibrary::IsValidVRM4UFile(FString filepath) {
 
 	UE_LOG(LogVRM4ULoader, Log, TEXT("IsValidVRM: OrigFileName=%s"), *filepath);
+
+	const FString ext = FPaths::GetExtension(filepath);
+	if (ext.Compare(TEXT("vrm"), ESearchCase::IgnoreCase) && ext.Compare(TEXT("vrma"), ESearchCase::IgnoreCase)) {
+		// vrm, vrmaˆÈŠO‚Í‘f’Ê‚µ
+		return true;
+	}
 
 	std::string file;
 #if PLATFORM_WINDOWS
