@@ -1,0 +1,22 @@
+{
+    "title": "Collider",
+    "type": "object",
+    "description": "collider definition for SpringBone",
+    "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+    "properties": {
+        "node": {
+            "allOf": [ { "$ref": "glTFid.schema.json" } ],
+            "description": "The node index."
+        },
+        "shape": {
+            "allOf": [ { "$ref": "VRMC_springBone.shape.schema.json" } ],
+            "description": ""
+        },
+        "extensions": { },
+        "extras": { }
+    },
+    "required": [
+        "node",
+        "shape"
+    ]
+}

@@ -1,0 +1,39 @@
+{
+  "title": "VRMCSpringBone",
+  "type": "object",
+  "description": "SpringBone makes objects such as costumes and hair swaying",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "specVersion": {
+      "type": "string",
+      "description": "Specification version of VRMC_springBone"
+    },
+    "colliders": {
+      "type": "array",
+      "description": "An array of colliders.",
+      "items": {
+        "$ref": "VRMC_springBone.collider.schema.json"
+      },
+      "minItems": 1
+    },
+    "colliderGroups": {
+      "type": "array",
+      "description": "An array of colliderGroups.",
+      "items": {
+        "$ref": "VRMC_springBone.colliderGroup.schema.json"
+      },
+      "minItems": 1
+    },
+    "springs": {
+      "type": "array",
+      "description": "An array of springs.",
+      "items": {
+        "$ref": "VRMC_springBone.spring.schema.json"
+      },
+      "minItems": 1
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "specVersion" ]
+}

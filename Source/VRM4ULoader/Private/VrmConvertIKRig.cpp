@@ -871,11 +871,19 @@ public:
 #else
 static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) {
 
-	FSoftObjectPath r(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
-	UObject* u = r.TryLoad();
-	if (u == nullptr) {
-		FSoftObjectPath r2(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+	TArray<FString> MannyAssetNameList;
+	MannyAssetNameList.Add(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
+	MannyAssetNameList.Add(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+	MannyAssetNameList.Add(TEXT("/Game/Characters/UE5_Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"));
+	MannyAssetNameList.Add(TEXT("/Game/Characters/UE5_Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+
+	UObject* u = nullptr;
+	for (auto manny : MannyAssetNameList) {
+		FSoftObjectPath r2(manny);
 		u = r2.TryLoad();
+		if (u != nullptr) {
+			break;
+		}
 	}
 
 	if (u == nullptr) return nullptr;
@@ -890,7 +898,16 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 	if (sk == nullptr) return nullptr;
 
 	FString name = FString(TEXT("IK_")) + TEXT("Default") + TEXT("_Mannequin");
-	UIKRigDefinition* rig_ik = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
+
+	UIKRigDefinition* rig_ik = nullptr;
+	{
+		// 生成済なら返す
+		FSoftObjectPath r2(name);
+		rig_ik = Cast <UIKRigDefinition>(r2.TryLoad());
+		if (rig_ik) return rig_ik;
+	}
+
+	rig_ik = VRM4U_NewObject<UIKRigDefinition>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
 	{
 		SimpleRigController rigcon = SimpleRigController(rig_ik);
@@ -912,7 +929,6 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 		TArray<FString> AddedChainList;
 
 		TArray<TT> table = {
-			{TEXT("Pelvis"),		TEXT("pelvis"),				TEXT("pelvis"),},
 			{TEXT("Spine"),		TEXT("spine_01"),				TEXT("spine_05"),},
 			{TEXT("Neck"),		TEXT("neck_01"),				TEXT("neck_02"),},
 			{TEXT("Head"),		TEXT("head"),				TEXT("head"),},
@@ -1371,43 +1387,60 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #if	UE_VERSION_OLDER_THAN(5,2,0)
 #else
 		{
-			FString table_name[3] = {
-				FString(TEXT("RTG_")) + vrmAssetList->BaseFileName,
-				FString(TEXT("RTG_UE4_")) + vrmAssetList->BaseFileName,
-				FString(TEXT("RTG_UEFN_")) + vrmAssetList->BaseFileName,
-			};
-			FString table_asset[3] = {
-				TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"),
-				TEXT("/Game/Characters/Mannequin_UE4/Rigs/IK_UE4_Mannequin.IK_UE4_Mannequin"),
-				TEXT("/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin"),
+			struct RTGdata{
+				FString NewAssetName;
+				TArray<FString> BaseIKRigName;
+				int ModelType;
 			};
 
-			for (int ikr_no=0; ikr_no<3; ikr_no++){
+			RTGdata rtgDataTable[3];
 
-				int ikr_to_ik[3] = {
-					0, // mannequin
-					0, // mannequin
-					1  // uefn mannequin
-				};
+			rtgDataTable[0].NewAssetName = FString(TEXT("RTG_")) + vrmAssetList->BaseFileName;
+			rtgDataTable[1].NewAssetName = FString(TEXT("RTG_UE4_")) + vrmAssetList->BaseFileName;
+			rtgDataTable[2].NewAssetName = FString(TEXT("RTG_UEFN_")) + vrmAssetList->BaseFileName;
+			
+			rtgDataTable[0].BaseIKRigName.Add(TEXT("/Game/Characters/Mannequins/Rigs/IK_Mannequin.IK_Mannequin"));
+			rtgDataTable[0].BaseIKRigName.Add(TEXT("/Game/Characters/UE5_Mannequins/Rigs/IK_UE5_Mannequin_Retarget.IK_UE5_Mannequin_Retarget"));
+			rtgDataTable[1].BaseIKRigName.Add(TEXT("/Game/Characters/Mannequin_UE4/Rigs/IK_UE4_Mannequin.IK_UE4_Mannequin"));
+			rtgDataTable[1].BaseIKRigName.Add(TEXT("/Game/Characters/UE4_Mannequin/Rigs/IK_UE4_Mannequin_Retarget.IK_UE4_Mannequin_Retarget"));
+			rtgDataTable[2].BaseIKRigName.Add(TEXT("/Game/Characters/UEFN_Mannequin/Rigs/IK_UEFN_Mannequin.IK_UEFN_Mannequin"));
 
-				FSoftObjectPath r(table_asset[ikr_no]);
-				UObject* u = r.TryLoad();
-				if (u == nullptr) {
+			rtgDataTable[0].ModelType = 0;	// mannnequin
+			rtgDataTable[1].ModelType = 0;	// mannnequin
+			rtgDataTable[2].ModelType = 1;	// UEFN mannnequin
 
+			for (int ikr_no = 0; ikr_no < 3; ikr_no++) {
+
+				RTGdata& rtgData = rtgDataTable[ikr_no];
+
+				auto *vrm_ikrig = table_rig_ik[rtgData.ModelType];
+
+				UObject* uobjectIK = nullptr;
+
+				for (auto rigName : rtgData.BaseIKRigName) {
+					FSoftObjectPath r(rigName);
+					uobjectIK = r.TryLoad();
+					if (uobjectIK) {
+						break;
+					}
+				}
+				if (uobjectIK == nullptr) {
 					if (ikr_no == 0) {
 #if WITH_EDITOR
 #if UE_VERSION_OLDER_THAN(5,6,0)
 #else
-						u = GenerateMannequinIK(vrmAssetList);
+						uobjectIK = GenerateMannequinIK(vrmAssetList);
 #endif
 #endif
-					}
-					if (u == nullptr) {
-						continue;
 					}
 				}
 
-				FString name = table_name[ikr_no];
+				if (uobjectIK == nullptr) {
+					// ベースのIKRigが無ければスキップ
+					continue;
+				}
+
+				FString name = rtgData.NewAssetName;
 				UIKRetargeter* ikr = VRM4U_NewObject<UIKRetargeter>(vrmAssetList->Package, *name, RF_Public | RF_Standalone);
 
 #if WITH_EDITOR
@@ -1420,14 +1453,13 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 				if (Options::Get().IsVRMAModel() || Options::Get().IsBVHModel()) {
 					SourceOrTargetVRM = ERetargetSourceOrTarget::Source;
 					SourceOrTargetMannequin = ERetargetSourceOrTarget::Target;
-
 				}
 
 				SimpleRetargeterController c = SimpleRetargeterController(ikr);
-				c.SetIKRig(SourceOrTargetVRM, table_rig_ik[ikr_to_ik[ikr_no]]);
+				c.SetIKRig(SourceOrTargetVRM, vrm_ikrig);
 
-				if (u) {
-					auto r2 = Cast<UIKRigDefinition>(u);
+				if (uobjectIK) {
+					auto r2 = Cast<UIKRigDefinition>(uobjectIK);
 					if (r2) {
 						c.SetIKRig(SourceOrTargetMannequin, r2);
 					}
@@ -1480,9 +1512,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						const TArray<FTransform>& RefPose = RefSkeleton.GetRefBonePose();
 #if WITH_EDITOR
 #if	UE_VERSION_OLDER_THAN(5,6,0)
-						const FName RetargetRootBoneName = table_rig_ik[ikr_to_ik[ikr_no]]->GetRetargetRoot();
+						const FName RetargetRootBoneName = vrm_ikrig->GetRetargetRoot();
 #else
-						auto rigc = UIKRigController::GetController(table_rig_ik[ikr_to_ik[ikr_no]]);
+						auto rigc = UIKRigController::GetController(vrm_ikrig);
 						const FName RetargetRootBoneName = rigc->GetRetargetRoot();
 #endif
 #else

@@ -537,6 +537,26 @@ namespace {
 								targetNo = GetCurves().Num();
 							}
 						}
+						{
+#if	UE_VERSION_OLDER_THAN(5,0,0)
+							// morph search出来ないのでスキップ
+#else
+
+							// Poseで登録しようとする名前と 同じMorphがある場合はスキップ
+							auto& MorphList = sk->GetMorphTargets();
+							auto* ind = MorphList.FindByPredicate([&SmartPoseName](const TObjectPtr<UMorphTarget > morph) {
+#if UE_VERSION_OLDER_THAN(5,3,0)
+								if (morph->GetName().Compare(SmartPoseName.DisplayName.ToString())) return false;
+#else
+								if (morph->GetName().Compare(SmartPoseName.ToString())) return false;
+#endif
+								return true;
+								});
+							if (ind) {
+								bSameName = true;
+							}
+#endif
+						}
 
 						{
 							// DisplayName check

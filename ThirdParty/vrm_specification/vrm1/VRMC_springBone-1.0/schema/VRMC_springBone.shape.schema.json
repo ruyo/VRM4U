@@ -1,0 +1,68 @@
+{
+  "title": "ColliderShape",
+  "type": "object",
+  "description": "Shape of collider. Have one of sphere and capsule",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "sphere": {
+      "type": "object",
+      "title": "ColliderShapeSphere",
+      "properties": {
+        "offset": {
+          "type": "array",
+          "description": "The sphere center. vector3",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "radius": {
+          "type": "number",
+          "description": "The sphere radius",
+          "default": 0.0,
+          "minimum": 0.0
+        }
+      }
+    },
+    "capsule": {
+      "type": "object",
+      "title": "ColliderShapeCapsule",
+      "properties": {
+        "offset": {
+          "type": "array",
+          "description": "The capsule head. vector3",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "radius": {
+          "type": "number",
+          "description": "The capsule radius",
+          "default": 0.0,
+          "minimum": 0.0
+        },
+        "tail": {
+          "type": "array",
+          "description": "The capsule tail. vector3",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "oneOf": [
+    { "required": [ "sphere" ] },
+    { "required": [ "capsule" ] }
+  ]
+}

@@ -71,6 +71,9 @@ public class VRM4ULoader : ModuleRules
 			}
 			);
 
+		RuntimeDependencies.Add(Path.Combine(ThirdPartyPath, "vrm_specification", "vrm0", "schema", "*"));
+		RuntimeDependencies.Add(Path.Combine(ThirdPartyPath, "vrm_specification", "vrm1", "*", "schema", "*"));
+
 		if (Target.bBuildEditor == true)
 		{
 			PrivateDependencyModuleNames.Add("UnrealEd");

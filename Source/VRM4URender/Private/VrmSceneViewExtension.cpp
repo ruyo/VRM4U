@@ -81,6 +81,8 @@ class FMyComputeShader : public FGlobalShader
 		SHADER_PARAMETER(float, SampleScreenScale)
 		SHADER_PARAMETER(float, SampleScale)
 
+		SHADER_PARAMETER(int, CustomStencilMask)
+
 		//RENDER_TARGET_BINDING_SLOTS()
 	END_SHADER_PARAMETER_STRUCT()
 
@@ -342,6 +344,8 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 
 		Parameters->SampleScreenScale = d.SampleScreenScale;
 		Parameters->SampleScale = d.SampleScale;
+
+		Parameters->CustomStencilMask = d.CustomStencilMask;
 
 		int Width = RenderTargets[0].GetTexture()->Desc.Extent.X;
 		int Height = RenderTargets[0].GetTexture()->Desc.Extent.Y;

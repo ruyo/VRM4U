@@ -458,6 +458,9 @@ public:
 	bool bSkipNoMeshBone = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bIgnoreVRMValidation = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugOneBone = false;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugNoMesh = false;

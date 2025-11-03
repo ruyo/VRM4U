@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Humanoid",
+  "type": "object",
+  "description": "An object which describes about humanoid bones.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "humanBones": {
+      "$ref": "VRMC_vrm_animation.humanoid.humanBones.schema.json"
+    }
+  },
+  "required": [ "humanBones" ]
+}

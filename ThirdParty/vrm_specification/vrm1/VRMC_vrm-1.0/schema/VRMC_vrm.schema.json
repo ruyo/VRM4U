@@ -1,0 +1,43 @@
+{
+  "title": "VRMCVrm",
+  "type": "object",
+  "description": "",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "specVersion": {
+      "type": "string",
+      "description": "Specification version of VRMC_vrm"
+    },
+    "meta": {
+      "title": "Meta",
+      "type": "object",
+      "description": "Meta informations of the VRM model",
+      "$ref": "VRMC_vrm.meta.schema.json"
+    },
+    "humanoid": {
+      "$ref": "VRMC_vrm.humanoid.schema.json"
+    },
+    "firstPerson": {
+      "title": "FirstPerson",
+      "type": "object",
+      "description": "First-person perspective settings",
+      "$ref": "VRMC_vrm.firstPerson.schema.json"
+    },
+    "lookAt": {
+      "title": "LookAt",
+      "type": "object",
+      "description": "Eye gaze control",
+      "$ref": "VRMC_vrm.lookAt.schema.json"
+    },
+    "expressions": {
+      "$ref": "VRMC_vrm.expressions.schema.json"
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "specVersion",
+    "meta",
+    "humanoid"
+  ]
+}

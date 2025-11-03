@@ -553,6 +553,7 @@ namespace VRM1Spring {
 				}
 
 				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
+				if (parentBoneIndex < 0) continue;
 				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(parentBoneIndex);
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 					continue;
@@ -643,6 +644,10 @@ namespace VRM1Spring {
 				}
 
 				int parentBoneIndex = RefSkeleton.GetParentIndex(j1.boneNo);
+				if (parentBoneIndex < 0) {
+					continue;
+				}
+
 				if (springBoneNoList.Find(parentBoneIndex) < 0) {
 					// 親が揺れ骨ではない。通常骨から参照
 

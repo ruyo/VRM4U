@@ -1,0 +1,105 @@
+{
+  "title": "ExtendedColliderShape",
+  "type": "object",
+  "description": "The shape of the collider. One of sphere, capsule, or plane is defined.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "sphere": {
+      "type": "object",
+      "title": "ExtendedColliderShapeSphere",
+      "properties": {
+        "offset": {
+          "type": "array",
+          "description": "The offset of the sphere from the origin in the local space.",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "radius": {
+          "type": "number",
+          "description": "The radius of the sphere.",
+          "default": 0.0,
+          "minimum": 0.0
+        },
+        "inside": {
+          "type": "boolean",
+          "description": "If true, the collider prevents spring bones from going outside of the sphere instead.",
+          "default": false
+        }
+      }
+    },
+    "capsule": {
+      "type": "object",
+      "title": "ExtendedColliderShapeCapsule",
+      "properties": {
+        "offset": {
+          "type": "array",
+          "description": "The offset of the capsule head from the origin in the local space.",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "radius": {
+          "type": "number",
+          "description": "The radius of the capsule.",
+          "default": 0.0,
+          "minimum": 0.0
+        },
+        "tail": {
+          "type": "array",
+          "description": "The offset of the capsule tail from the origin in the local space.",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "inside": {
+          "type": "boolean",
+          "description": "If true, the collider prevents spring bones from going outside of the capsule instead.",
+          "default": false
+        }
+      }
+    },
+    "plane": {
+      "type": "object",
+      "title": "ExtendedColliderShapePlane",
+      "properties": {
+        "offset": {
+          "type": "array",
+          "description": "The offset of the plane from the origin in the local space.",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 0.0],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "normal": {
+          "type": "array",
+          "description": "The normal of the plane in the local space. Must be normalized.",
+          "items": {
+            "type": "number"
+          },
+          "default": [0.0, 0.0, 1.0],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "oneOf": [
+    { "required": [ "sphere" ] },
+    { "required": [ "capsule" ] },
+    { "required": [ "plane" ] }
+  ]
+}

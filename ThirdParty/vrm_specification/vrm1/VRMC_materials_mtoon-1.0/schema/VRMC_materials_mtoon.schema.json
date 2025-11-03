@@ -1,0 +1,176 @@
+{
+  "title": "VRMC_materials_mtoon",
+  "type": "object",
+  "description": "",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "specVersion": {
+      "type": "string",
+      "description": "Specification version of VRMC_materials_mtoon"
+    },
+    "transparentWithZWrite": {
+      "type": "boolean",
+      "default": "false",
+      "description": "enable depth buffer when `alphaMode` is `BLEND`"
+    },
+    "renderQueueOffsetNumber": {
+      "type": "integer",
+      "description": "",
+      "default": 0,
+      "minimum": -9,
+      "maximum": 9
+    },
+    "shadeColorFactor": {
+      "type": "array",
+      "description": "",
+      "items": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "default": [ 1.0, 1.0, 1.0 ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "shadeMultiplyTexture": {
+      "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+      "description": ""
+    },
+    "shadingShiftFactor": {
+      "type": "number",
+      "description": "Lighting",
+      "default": 0.0
+    },
+    "shadingShiftTexture": {
+      "allOf": [ { "$ref": "mtoon.shadingShiftTexture.schema.json" } ]
+    },
+    "shadingToonyFactor": {
+      "type": "number",
+      "description": "",
+      "default": 0.9,
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "giEqualizationFactor": {
+      "type": "number",
+      "description": "",
+      "default": 0.9,
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "matcapFactor": {
+      "type": "array",
+      "description": "",
+      "items": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "default": [ 1.0, 1.0, 1.0 ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "matcapTexture": {
+      "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+      "description": "MatCap"
+    },
+    "parametricRimColorFactor": {
+      "type": "array",
+      "description": "Rim",
+      "items": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "default": [ 0.0, 0.0, 0.0 ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "rimMultiplyTexture": {
+      "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+      "description": ""
+    },
+    "rimLightingMixFactor": {
+      "type": "number",
+      "description": "",
+      "default": 1.0,
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "parametricRimFresnelPowerFactor": {
+      "type": "number",
+      "description": "",
+      "default": 5.0,
+      "minimum": 0.0
+    },
+    "parametricRimLiftFactor": {
+      "type": "number",
+      "description": "",
+      "default": 0.0
+    },
+    "outlineWidthMode": {
+      "title": "OutlineWidthMode",
+      "type": "string",
+      "enum": [
+        "none",
+        "worldCoordinates",
+        "screenCoordinates"
+      ],
+      "default": "none",
+      "description": "Outline"
+    },
+    "outlineWidthFactor": {
+      "type": "number",
+      "description": "",
+      "default": 0.0,
+      "minimum": 0.0
+    },
+    "outlineWidthMultiplyTexture": {
+      "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+      "description": ""
+    },
+    "outlineColorFactor": {
+      "type": "array",
+      "description": "",
+      "items": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "default": [ 0.0, 0.0, 0.0 ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "outlineLightingMixFactor": {
+      "type": "number",
+      "description": "",
+      "default": 1.0,
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "uvAnimationMaskTexture": {
+      "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+      "description": ""
+    },
+    "uvAnimationScrollXSpeedFactor": {
+      "type": "number",
+      "default": 0,
+      "description": ""
+    },
+    "uvAnimationScrollYSpeedFactor": {
+      "type": "number",
+      "default": 0,
+      "description": ""
+    },
+    "uvAnimationRotationSpeedFactor": {
+      "type": "number",
+      "default": 0,
+      "description": ""
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "specVersion"
+  ]
+}

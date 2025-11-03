@@ -90,7 +90,7 @@ public:
 	bool bForceOriginalBoneName = false;
 
 		/** Duplicate mesh and renamed humanoid bone */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="Generate renamed humanoid mesh"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName= "Generate renamed humanoid mesh"))
 	bool bGenerateHumanoidRenamedMesh = false;
 
 	/** Add IK Bone */
@@ -102,7 +102,7 @@ public:
 	bool bGenerateRigIK = true;
 
 	/** Remove Physics asset */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="No physics asset"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "No physics asset"))
 	bool bSkipPhysics = false;
 
 	/** Remove Retargeter asset */
@@ -110,7 +110,7 @@ public:
 	bool bSkipRetargeter = false;
 
 	/** Remove MorphTarget */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="No MorphTarget"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "No MorphTarget"))
 	bool bSkipMorphTarget = false;
 
 	/** Use MorphTarget Normal */
@@ -157,7 +157,7 @@ public:
 	bool bMipmapGenerateMode = false;
 
 	/** Merge material using same parameter */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="[Optimize] Merge material"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Optimize] Merge material"))
 	bool bMergeMaterial = true;
 
 	/** Merge primitives using same material */
@@ -165,7 +165,7 @@ public:
 	bool bMergePrimitive = false;
 
 	/** Use optimized MaterialInstance */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="[Optimize] use opt material"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Optimize] use opt material"))
 	bool bOptimizeMaterial = true;
 
 	/** Remove unused vertex */
@@ -191,8 +191,12 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="Delete bone without mesh"))
 	bool bSkipNoMeshBone = false;
 
+	/** for DEBUG. Ignore Validation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Debug] Ignore VRM Validataion"))
+	bool bIgnoreVRMValidation = false;
+
 	/** for DEBUG. Import root bone only */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName="[Debug] One bone only"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "[Debug] One bone only"))
 	bool bDebugOneBone = false;
 
 	/** for DEBUG. No mesh. Bone only */
