@@ -1,0 +1,43 @@
+{
+  "title": "LookAt",
+  "type": "object",
+  "description": "Eye gaze control",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "offsetFromHeadBone": {
+      "type": "array",
+      "description": "The origin of LookAt. Position offset from the head bone",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "type": {
+      "title": "LookAtType",
+      "type": "string",
+      "enum": [
+        "bone",
+        "expression"
+      ]
+    },
+    "rangeMapHorizontalInner": {
+      "description": "Horizontal inward movement. The left eye moves right. The right eye moves left.",
+      "$ref": "VRMC_vrm.lookAt.rangeMap.schema.json"
+    },
+    "rangeMapHorizontalOuter": {
+      "description": "Horizontal outward movement. The left eye moves left. The right eye moves right.",
+      "$ref": "VRMC_vrm.lookAt.rangeMap.schema.json"
+    },
+    "rangeMapVerticalDown": {
+      "description": "Vertical downward movement. Both eyes move upwards",
+      "$ref": "VRMC_vrm.lookAt.rangeMap.schema.json"
+    },
+    "rangeMapVerticalUp": {
+      "description": "Vertical upward movement. Both eyes move downwards",
+      "$ref": "VRMC_vrm.lookAt.rangeMap.schema.json"
+    },
+    "extensions": { },
+    "extras": { }
+  }
+}

@@ -68,6 +68,7 @@ public:
 	static bool NormalizeBoneName(const aiScene *mScenePtr);
 
 	bool Init(const uint8* pFileData, size_t dataSize, const aiScene*);
+	bool ValidateSchema();
 
 	bool ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList);
 	bool ConvertModel(UVrmAssetListObject *vrmAssetList);
@@ -126,6 +127,7 @@ public:
 		bool IsGenerateIKBone() const;
 		bool IsGenerateRigIK() const;
 
+		bool IsDebugIgnoreVRMValidation() const;
 		bool IsDebugOneBone() const;
 		bool IsDebugNoMesh() const;
 		bool IsDebugNoMaterial() const;

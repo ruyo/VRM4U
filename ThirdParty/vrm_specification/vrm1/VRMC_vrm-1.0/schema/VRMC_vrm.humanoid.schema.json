@@ -1,0 +1,14 @@
+{
+  "title": "Humanoid",
+  "type": "object",
+  "description": "Correspondence between nodes and human bones",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "humanBones": {
+      "$ref": "VRMC_vrm.humanoid.humanBones.schema.json"
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "humanBones" ]
+}

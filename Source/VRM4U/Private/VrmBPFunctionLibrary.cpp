@@ -1027,6 +1027,11 @@ bool UVrmBPFunctionLibrary::VRMGetAssetsByPackageName(FName PackageName, TArray<
 	return AssetRegistry.GetAssetsByPackageName(PackageName, OutAssetData, bIncludeOnlyOnDiskAssets);
 }
 
+void UVrmBPFunctionLibrary::VRMSetIsDirty(UObject* obj) {
+	if (obj == nullptr) return;
+	obj->MarkPackageDirty();
+}
+
 UTextureRenderTarget2D* UVrmBPFunctionLibrary::VRMCreateRenderTarget2D(UObject* WorldContextObject, int32 Width, int32 Height, ETextureRenderTargetFormat Format, FLinearColor ClearColor)
 {
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);

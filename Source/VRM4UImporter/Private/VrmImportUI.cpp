@@ -93,6 +93,8 @@ const FImportOptionData* UVrmImportUI::GenerateOptionData() {
 
 	c(bSkipNoMeshBone);
 
+	c(bIgnoreVRMValidation);
+
 	c(bDebugOneBone);
 
 	c(bDebugNoMesh);

@@ -1,0 +1,38 @@
+{
+    "title": "Spring",
+    "type": "object",
+    "description": "A bone group of VRMCSpringBone.",
+    "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the Spring"
+        },
+        "joints": {
+            "type": "array",
+            "description": "Joints of the spring. Except for the first element, a previous joint of the array must be an ancestor of the joint.",
+            "items": {
+                "$ref": "VRMC_springBone.joint.schema.json"
+            },
+            "minItems": 1
+        },
+        "colliderGroups": {
+            "type": "array",
+            "description": "Indices of ColliderGroups that detect collision with this spring.",
+            "items": {
+                "$ref": "glTFid.schema.json",
+                "description": "Index in colliderGroups."
+            },
+            "minItems": 1
+        },
+        "center": {
+            "allOf": [ { "$ref": "glTFid.schema.json" } ],
+            "description": "An index of node which is used as a root of center space."
+        },
+        "extensions": { },
+        "extras": { }
+    },
+    "required": [
+        "joints"
+    ]
+}

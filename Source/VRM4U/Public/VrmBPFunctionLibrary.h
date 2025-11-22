@@ -138,6 +138,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	static bool VRMGetAssetsByPackageName(FName PackageName, TArray<FAssetData>& OutAssetData, bool bIncludeOnlyOnDiskAssets = false);
 
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	static void VRMSetIsDirty(UObject *obj);
+
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
 	static UTextureRenderTarget2D* VRMCreateRenderTarget2D(UObject* WorldContextObject, int32 Width = 256, int32 Height = 256, ETextureRenderTargetFormat Format = RTF_RGBA16f, FLinearColor ClearColor = FLinearColor::Black);
 

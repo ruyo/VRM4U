@@ -1,0 +1,13 @@
+{
+    "title": "vrm.blendshape",
+    "description": "BlendShapeAvatar of UniVRM",
+    "type": "object",
+    "properties": {
+        "blendShapeGroups": {
+            "type": "array",
+            "items": {
+                "$ref": "vrm.blendshape.group.schema.json"
+            }
+        }
+    }
+}

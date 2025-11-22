@@ -1,0 +1,27 @@
+{
+  "title": "MorphTargetBind",
+  "type": "object",
+  "description": "Morph target value associated with a expression",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "node": {
+      "allOf": [{ "$ref": "glTFid.schema.json" }],
+      "description": "The index of the node that attached to target mesh."
+    },
+    "index": {
+      "allOf": [{ "$ref": "glTFid.schema.json" }],
+      "description": "The index of the morph target in the mesh."
+    },
+    "weight": {
+      "type": "number",
+      "description": "The weight value of target morph target."
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [
+    "node",
+    "index",
+    "weight"
+  ]
+}

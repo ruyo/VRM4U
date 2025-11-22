@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "title": "Shading Shift Texture Info",
+    "type": "object",
+    "allOf": [ { "$ref": "textureInfo.schema.json" } ],
+    "properties": {
+        "index": { },
+        "texCoord": { },
+        "scale": {
+            "type": "number",
+            "description": "The scalar multiplier applied to the texture.",
+            "default": 1.0
+        },
+        "extensions": { },
+        "extras": { }
+    }
+}

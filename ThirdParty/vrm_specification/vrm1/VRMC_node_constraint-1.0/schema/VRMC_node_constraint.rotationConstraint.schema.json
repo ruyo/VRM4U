@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Rotation Constraint",
+  "type": "object",
+  "description": "A constraint that links the rotation with a source.",
+  "allOf": [ { "$ref": "glTFChildOfRootProperty.schema.json" } ],
+  "properties": {
+    "source": {
+      "allOf": [ { "$ref": "glTFid.schema.json" } ],
+      "description": "The index of the node constrains the node."
+    },
+    "weight": {
+      "type": "number",
+      "description": "The weight of the constraint.",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 1.0
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "source" ]
+}
