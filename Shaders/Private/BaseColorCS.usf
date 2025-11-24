@@ -36,26 +36,16 @@ float SampleScale;
 
 int CustomStencilMask;
 
+float GetLinearDepth_raw(uint2 pixelCoord)
+{
+    float DeviceZ = SceneDepthTexture[pixelCoord];
+   	return ConvertFromDeviceZ(DeviceZ);
+}
+
 float GetLinearDepth(float2 UV, uint2 pixelCoord)
 {
-    
-    //float DeviceZ = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
     float DeviceZ = SceneDepthTexture[pixelCoord];
-    //return 1.0f / (DeviceZ * View.InvDeviceZToWorldZTransform[2] - View.InvDeviceZToWorldZTransform[3]);
-
-    
    	return ConvertFromDeviceZ(DeviceZ);
-
-/*    
-    float Depth = SceneDepthTexture.SampleLevel(DepthSampler, UV, 0).r;
-
-    float ZNear = View.ViewToClip[3][2] / View.ViewToClip[2][2];
-    float ZFar = View.ViewToClip[3][2] / (View.ViewToClip[2][2] - 1.0);
-
-    // 非リニア深度をリニア深度に変換
-    float LinearDepth = ZFar * ZNear / (ZNear + Depth * (ZFar - ZNear));
-    return LinearDepth;
-*/
 }
 
 float3 LocalGetCameraVector(float2 UV){
@@ -78,92 +68,182 @@ float3 LocalGetCameraVector(float2 UV){
     return WorldDir;
 }
 
-float3 ReconstructWorldPosition(float2 ScreenUV, uint2 pixelCoord)
+
+MaterialFloat2 ViewportUVToSceneTextureUV2(MaterialFloat2 ViewportUV, const uint SceneTextureId)
 {
-
-    float SceneDepth = GetLinearDepth(ScreenUV, pixelCoord);
-
-    float2 ScreenPos = float2(ScreenUV.x * 2.0 - 1.0, (1.0 - ScreenUV.y) * 2.0 - 1.0);  // Convert UV to NDC
-
-    float3 WorldPosition = mul(float4(ScreenPos * SceneDepth, SceneDepth, 1.0), View.ScreenToTranslatedWorld).xyz;
-
-    return WorldPosition;
-
-    
     /*
-    float3 CameraVector = GetCameraVector(ScreenUV);  // UE ビルトイン: スクリーンからカメラ方向ベクター
-    float3 CameraDir = normalize(View.WorldViewOrigin - View.ViewToWorld[2].xyz);  // カメラ方向 (例)
-
-    // 正規化して計算
-    float3 NormCameraVector = normalize(CameraVector);
-    float DotProduct = dot(NormCameraVector, normalize(CameraDir));
-
-    float3 WorldPos = View.WorldCameraOrigin + NormCameraVector * (SceneDepth / DotProduct);
-
-    return WorldPos;
+	if (IsPostProcessInputSceneTexture(SceneTextureId))
+	{
+		switch (SceneTextureId)
+		{
+		case PPI_PostProcessInput0:
+			return ViewportUV * PostProcessInput_0_UVViewportSize + PostProcessInput_0_UVViewportMin;
+		case PPI_PostProcessInput1:
+			return ViewportUV * PostProcessInput_1_UVViewportSize + PostProcessInput_1_UVViewportMin;
+		case PPI_PostProcessInput2:
+			return ViewportUV * PostProcessInput_2_UVViewportSize + PostProcessInput_2_UVViewportMin;
+		case PPI_PostProcessInput3:
+			return ViewportUV * PostProcessInput_3_UVViewportSize + PostProcessInput_3_UVViewportMin;
+		case PPI_PostProcessInput4:
+			return ViewportUV * PostProcessInput_4_UVViewportSize + PostProcessInput_4_UVViewportMin;
+		default:
+			return ViewportUV;
+		}
+	}
     */
 
-    /*
-    float2 ScreenPos = ScreenUV * 2.0f - 1.0f;
-    ScreenPos.y = -ScreenPos.y;  // UE のビューポート Y は反転しているため
-
-    // Step 3: クリップ空間ポジション構築 (最適化版: w 分除算を避ける UE 風)
-    float4 ClipPos = float4(ScreenPos * SceneDepth, SceneDepth, 1.0f);
-
-    // Step 4: ワールド空間へ変換 (View.ScreenToTranslatedWorld を使用)
-    float3 WorldPos = mul(ClipPos, View.ScreenToTranslatedWorld).xyz;    
-    WorldPos = WorldPos + ResolvedView.WorldCameraOrigin;
-
-;
-    
-    return WorldPos;
-    */
-
-    //CalcSceneDepth
-    //	return ConvertFromDeviceZ(Texture2DSampleLevel(SceneTexturesStruct.SceneDepthTexture, SceneTexturesStruct_SceneDepthTextureSampler, ScreenUV, 0).r);
-
-    /*
-    // 1. UV座標をクリップ空間に変換
-    float2 ClipXY = UV * 2.0 - 1.0; // [0, 1] -> [-1, 1]
-    // 深度値はリニア化済み（SceneDepthは通常リニア深度）
-    //float ClipZ = Depth; // UnrealのSceneDepthはリニア深度（0=近, 1=遠）
-    float ClipZ = GetLinearDepth(UV, pixelCoord);
-
-    
-    // 2. クリップ空間の座標を構築
-    // w=1としてクリップ空間座標を作成（透視投影の場合）
-    float4 ClipPos = float4(ClipXY, ClipZ, 1.0);
-
-    // 3. クリップ空間 -> ビュー空間
-    float4 ViewPos = mul(ClipPos, View.ClipToView); // 逆投影行列
-    ViewPos /= ViewPos.w; // 透視除算
-
-    // 4. ビュー空間 -> ワールド空間
-    float4 WorldPos = mul(ViewPos, View.ViewToTranslatedWorld); // 逆ビュー行列
-    return WorldPos.xyz; // ワールド座標
-*/
+	return ViewportUVToBufferUV(ViewportUV);
 }
+
+
+float3 LocalGetWorldPositionFromScreenUV_raw(float2 ScreenUV, uint2 pixelCoord)
+{
+    float2 uv = ViewportUVToSceneTextureUV2((ScreenUV), 1);
+    float3 depth = GetLinearDepth(ScreenUV, pixelCoord);//SceneTextureLookup(uv, 1, false).rgb;
+    float2 screen =  (uv - View.ScreenPositionScaleBias.wz) / View.ScreenPositionScaleBias.xy;
+    return mul(float4(GetScreenPositionForProjectionType(screen, depth.x), depth.x, 1),  DFHackToFloat(PrimaryView.ScreenToWorld)).xyz;
+}
+
+float3 LocalGetWorldPositionFromScreenUV(float2 ScreenUV)
+{
+    return LocalGetWorldPositionFromScreenUV_raw(ScreenUV, ScreenUV * View.ViewSizeAndInvSize.xy);
+}
+
+
 
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
 #if FEATURE_LEVEL >= FEATURE_LEVEL_SM6
+
+    // テクスチャ全体サイズ
     uint width, height;
     SceneColorTexture.GetDimensions(width, height);
 
-    
-    float2 ViewSize = View.ViewSizeAndInvSize.xy;
-    
-    uint2 pixelCoord = DispatchThreadID.xy;
-    
-    //float4 color = float4(float(pixelCoord.x) / width, float(pixelCoord.y) / height, 0.5, 1.0);
-    float4 color = float4(float(pixelCoord.x) / ViewSize.x, float(pixelCoord.y) / ViewSize.y, 0.5, 1.0);
-    //if (color.x < 0.5)  color.x = 1;
-    //if (pixelCoord.x == pixelCoord.y) color = 0;
-    //color.xyz = 0;
-    //SceneColorTexture[pixelCoord] = color;
+    // ビューに表示されているピクセル数：View.ViewSizeAndInvSize.xy
+    const float2 ViewSize = View.ViewSizeAndInvSize.xy;
 
+    // このスレッドで書き込み対象にしている座標
+    const uint2 pixelCoord = DispatchThreadID.xy;
+
+    // ビューに対して 0-1 で示したもの
+    const float2 ScreenUV = float2(pixelCoord.x, pixelCoord.y) / View.ViewSizeAndInvSize.xy;
+
+    // WorldPos
+    const float3 WorldPosition = LocalGetWorldPositionFromScreenUV_raw(ScreenUV, pixelCoord);
+
+    const float LinearDepth = GetLinearDepth(ScreenUV, pixelCoord);
+
+    // 
+    if ((CustomStencilTexture[pixelCoord].y & CustomStencilMask)) {
+    if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r) {
+
+
+        // Normal
+        float3 PackedNormal = NormalTexture[pixelCoord].xyz;
+        float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
+
+        // 光源への方向ベクトル
+        float3 LocalLightDirection = View.DirectionalLightDirection;
+        if (UseCustomLightPosition) {
+            LocalLightDirection = normalize(WorldPosition - LightPosition);
+        }
+        LocalLightDirection = normalize(LightDirection);
+
+            
+        float t = 1.f;
+
+        if (dot(PackedNormal, PackedNormal) == 0.f) {
+            // for unlit (no normal)
+            // always 1
+                
+        } else {
+            t = dot(WorldNormal, LocalLightDirection);
+            t = saturate(t);
+
+            if (UseBinaryEdge) {
+                // エッジを2値にする
+                t = (t >= RimEdgeBinaryRange) ? 1.f : 0.f;
+            } else {
+                // エッジ フェード
+                t = pow(t, RimEdgeFade);
+            }
+        }
+            
+        if (t > 0.f) {
+            float4 ClipLightDir = mul(float4(-LocalLightDirection, 0.0), View.RelativeWorldToClip);
+
+            ClipLightDir.xyz = normalize(ClipLightDir.xyz);
+
+            //float SampleRange = float(height) * SampleScreenScale;
+            //float SampleRange = View.BufferSizeAndInvSize.y * SampleScreenScale;
+            float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
+
+            SampleRange = SampleRange / LinearDepth * 10.f * (3.14159265f/ 2.f / View.FieldOfViewWideAngles.x);
+                
+            //float2 UnscaledMin = View.UnscaledViewRect.Min.xy;
+            //float2 UnscaledMax = View.UnscaledViewRect.Max.xy;
+            //float2 UnscaledSize = UnscaledMax - UnscaledMin;  // フル幅/高さ (pixels)
+            //float SampleRange = UnscaledSize.y * SampleScreenScale;
+                
+            bool bEdge = false;
+                
+            float LocalSampleScale = max(SampleScale, 1.0);
+                
+            float EdgeColorScale = 1.0f;
+            {
+                float fade = 0.01f;
+                float2 OutArea = float2(width, height) * fade;
+                    
+                // エッジサーチ先の座標
+                //float2 checkEnd = float2(pixelCoord) + SampleRange;
+                float2 checkEnd = (ClipLightDir.xy * float2(SampleRange,SampleRange)) + pixelCoord;
+
+                // 左上のはみ出し
+                float2 out1 = abs( min(float2(0,0), checkEnd - OutArea));
+
+                // 右下のはみ出し
+                float2 out2 = abs(max(float2(width, height), checkEnd + OutArea));
+                    
+                // はみ出し 最大
+                float2 out3 = max(out1, out2-float2(width, height));
+                    
+                out3.x = saturate(max(out3.x, out3.y));
+           
+                //EdgeColorScale = 1.f - out3.x;
+                    
+            }
+                
+            // Stencilのエッジを検出
+            for (float i = 0; i < SampleRange; i += LocalSampleScale) {
+                int2 target = int2(ClipLightDir.xy * float2(i,i)) + pixelCoord;
+                target = clamp(target, int2(0,0), int2(width-1, height-1));
+
+                if (CustomStencilTexture[target].y == 0) {
+                    bEdge = true;
+                    break;
+                }
+            }
+            if (bEdge) {
+                // エッジ
+                float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
+                    
+                SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale * t);
+            }
+                
+                
+            //for (int i = 0; i < 100; ++i) {
+            //    SceneColorTexture[pixelCoord + int2((ClipLightDir.xy * float2(i,i)))] = 10;
+            //}
+
+        }// 法線判定 end
+    }} // mask end
+    
+    return;
+    
+  
+    /*
     float LinearDepth = 1;
     {
         float2 UV = ViewSize / float2(width, height);
@@ -180,6 +260,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
         //SceneColorTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
         //SceneColorTexture[pixelCoord] = float4(LinearDepth / 1000.0, 0.0, 0.0, 1.0);
 
+      
     }
     //    CustomStencilTexture
     //SceneColorTexture[pixelCoord].xyz = color; //        frac(LinearDepth / 5000.f);
@@ -199,12 +280,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             }
             LocalLightDirection = normalize(LightDirection);
 
-            {
-                float3 camv = LocalGetCameraVector(UV);
-                
-                //if (dot(camv, LocalLightDirection) < 0) return;
-            }
-            
+       
             float t = 1.f;
 
             if (dot(PackedNormal, PackedNormal) == 0.f) {
@@ -299,6 +375,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
         //SceneColorTexture[pixelCoord].xyz = saturate(ReconstructWorldPosition(UV, pixelCoord));
     }
+*/
     
 #endif
 }
