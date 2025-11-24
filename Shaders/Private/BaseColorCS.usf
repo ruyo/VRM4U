@@ -36,6 +36,11 @@ float SampleScale;
 
 int CustomStencilMask;
 
+// for UE5.2
+#ifndef DFHackToFloat
+#define DFHackToFloat LWCHackToFloat
+#endif
+
 float GetLinearDepth_raw(uint2 pixelCoord)
 {
     float DeviceZ = SceneDepthTexture[pixelCoord];
@@ -95,13 +100,22 @@ MaterialFloat2 ViewportUVToSceneTextureUV2(MaterialFloat2 ViewportUV, const uint
 	return ViewportUVToBufferUV(ViewportUV);
 }
 
+float2 LocalGetScreenPositionForProjectionType(float2 ScreenPosition, float SceneDepth)
+{
+	// For perspective projection matrix, the scene depth is required as part of the clip to view calculations
+	// For orthogonal projection matrix, scene depth should not be used
+	//return select(IsOrthoProjection(), ScreenPosition, ScreenPosition * SceneDepth);
+	return ScreenPosition * SceneDepth;
+}
+
 
 float3 LocalGetWorldPositionFromScreenUV_raw(float2 ScreenUV, uint2 pixelCoord)
 {
     float2 uv = ViewportUVToSceneTextureUV2((ScreenUV), 1);
     float3 depth = GetLinearDepth(ScreenUV, pixelCoord);//SceneTextureLookup(uv, 1, false).rgb;
     float2 screen =  (uv - View.ScreenPositionScaleBias.wz) / View.ScreenPositionScaleBias.xy;
-    return mul(float4(GetScreenPositionForProjectionType(screen, depth.x), depth.x, 1),  DFHackToFloat(PrimaryView.ScreenToWorld)).xyz;
+
+    return mul(float4(LocalGetScreenPositionForProjectionType(screen, depth.x), depth.x, 1),  DFHackToFloat(PrimaryView.ScreenToWorld)).xyz;
 }
 
 float3 LocalGetWorldPositionFromScreenUV(float2 ScreenUV)
