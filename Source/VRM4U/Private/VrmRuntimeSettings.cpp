@@ -9,7 +9,6 @@
 #include "Misc/ConfigCacheIni.h"
 #include "HAL/PlatformFileManager.h"
 #endif
-#endif
 
 #define LOCTEXT_NAMESPACE "VRM4U"
 
