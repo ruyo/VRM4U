@@ -19,6 +19,10 @@ Texture2D<uint2> CustomStencilTexture;
 
 //SamplerState InputSampler;
 
+float3 CameraPosition;
+float3 CameraForwardVector;
+
+
 float UseCustomLightPosition;
 float3 LightPosition;
 float3 LightDirection;
@@ -40,6 +44,14 @@ int CustomStencilMask;
 #ifndef DFHackToFloat
 #define DFHackToFloat LWCHackToFloat
 #endif
+
+#define GROUP_SIZE 8  // スレッドグループサイズ
+//#define FILTER_RADIUS 2  // フィルター範囲 (ハロー)
+
+// 共有メモリ: 色データ用
+//groupshared float4 SharedColorTile[GROUP_SIZE + FILTER_RADIUS * 2][GROUP_SIZE + FILTER_RADIUS * 2];
+// 共有メモリ: Stencilデータ用 (uintで効率化)
+//groupshared uint SharedStencilTile[GROUP_SIZE + FILTER_RADIUS * 2][GROUP_SIZE + FILTER_RADIUS * 2];
 
 float GetLinearDepth_raw(uint2 pixelCoord)
 {
@@ -126,7 +138,7 @@ float3 LocalGetWorldPositionFromScreenUV(float2 ScreenUV)
 
 
 
-[numthreads(8, 8, 1)]
+[numthreads(GROUP_SIZE, GROUP_SIZE, 1)]
 void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 {
 #if FEATURE_LEVEL >= FEATURE_LEVEL_SM6
@@ -167,35 +179,51 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
         }
         LocalLightDirection = normalize(LocalLightDirection);
 
-            
-        float t = 1.f;
 
+        // 法線とライトを考慮してフェード            
+        float NormalWeight = 1.f;
         if (dot(PackedNormal, PackedNormal) == 0.f) {
             // for unlit (no normal)
-            // always 1
+            // 常にrimを出す 1
                 
         } else {
-            t = dot(WorldNormal, LocalLightDirection);
-            t = saturate(t);
+            NormalWeight = dot(WorldNormal, LocalLightDirection);
+            NormalWeight = saturate(NormalWeight);
 
             if (UseBinaryEdge) {
                 // エッジを2値にする
-                t = (t >= RimEdgeBinaryRange) ? 1.f : 0.f;
+                NormalWeight = (NormalWeight >= RimEdgeBinaryRange) ? 1.f : 0.f;
             } else {
                 // エッジ フェード
-                t = pow(t, RimEdgeFade);
+                NormalWeight = pow(NormalWeight, RimEdgeFade);
             }
         }
+        
+        {
+            //SceneColorTexture[pixelCoord].xyz = fmod(abs(WorldPosition), 10) / 10;
+            //return;
+        }
+    
             
-        if (t > 0.f) {
+        {
+            float a = normalize(CameraPosition  - WorldPosition);
+                
+            if (dot(LocalLightDirection, a) <= 0) {
+                    //NormalWeight = 0;
+            }
+        }
+
+        if (NormalWeight > 0.f) {
+            // 平面にて ライトベクトル
             float4 ClipLightDir = mul(float4(-LocalLightDirection, 0.0), View.RelativeWorldToClip);
 
             ClipLightDir.xyz = normalize(ClipLightDir.xyz);
 
             //float SampleRange = float(height) * SampleScreenScale;
             //float SampleRange = View.BufferSizeAndInvSize.y * SampleScreenScale;
-            float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
 
+            // サーチ距離
+            float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
             SampleRange = SampleRange / LinearDepth * 10.f * (3.14159265f/ 2.f / View.FieldOfViewWideAngles.x);
                 
             //float2 UnscaledMin = View.UnscaledViewRect.Min.xy;
@@ -245,7 +273,7 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 // エッジ
                 float3 col = UseCustomLightColor ? LightColor : View.DirectionalLightColor.xyz;
                     
-                SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale * t);
+                SceneColorTexture[pixelCoord].xyz = max(SceneColorTexture[pixelCoord].xyz, col * LightScale * EdgeColorScale * NormalWeight);
             }
                 
                 
