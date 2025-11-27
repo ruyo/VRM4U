@@ -159,11 +159,13 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
         float3 WorldNormal = PackedNormal * 2.0 - 1.0; // [-1, 1]に変換
 
         // 光源への方向ベクトル
-        float3 LocalLightDirection = View.DirectionalLightDirection;
+        //float3 LocalLightDirection = View.DirectionalLightDirection;
+        float3 LocalLightDirection = LightDirection;
+        
         if (UseCustomLightPosition) {
-            LocalLightDirection = normalize(WorldPosition - LightPosition);
+            LocalLightDirection = normalize(LightPosition - WorldPosition);
         }
-        LocalLightDirection = normalize(LightDirection);
+        LocalLightDirection = normalize(LocalLightDirection);
 
             
         float t = 1.f;
