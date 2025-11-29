@@ -7,7 +7,7 @@
 #include "Misc/MessageDialog.h"
 #include "UnrealEdMisc.h"
 #include "Misc/ConfigCacheIni.h"
-#include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformFileManager.h"
 #endif
 
 #define LOCTEXT_NAMESPACE "VRM4U"

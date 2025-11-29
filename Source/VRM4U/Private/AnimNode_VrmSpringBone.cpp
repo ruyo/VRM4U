@@ -35,6 +35,7 @@ SOFTWARE.
 #include "Kismet/KismetSystemLibrary.h"
 #include "SceneInterface.h"
 #include "DrawDebugHelpers.h"
+#include "SceneManagement.h"
 
 #include "VrmMetaObject.h"
 #include "VrmAssetListObject.h"
@@ -388,8 +389,8 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 		TArray<SData> dataList;
 		TArray<int32> boneList;
 
-		for (const auto spr : MetaObjectLocal->VRMSpringMeta) {
-			for (const auto boneName : spr.boneNames) {
+		for (const auto &spr : MetaObjectLocal->VRMSpringMeta) {
+			for (const auto &boneName : spr.boneNames) {
 				int32_t boneIndex = PreviewSkelMeshComp->GetBoneIndex(*boneName);
 				boneList.AddUnique(boneIndex);
 
@@ -405,7 +406,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 					TArray<int32> c;
 					VRMUtil::GetDirectChildBones(VRMGetRefSkeleton( VRMGetSkinnedAsset(PreviewSkelMeshComp) ), boneList[i], c);
 					if (c.Num()) {
-						for (const auto cc : c) {
+						for (const auto &cc : c) {
 							boneList.AddUnique(cc);
 
 							SData s;

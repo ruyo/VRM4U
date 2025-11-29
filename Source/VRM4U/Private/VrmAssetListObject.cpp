@@ -19,7 +19,8 @@ UVrmAssetListObject::UVrmAssetListObject(const FObjectInitializer& ObjectInitial
 void UVrmAssetListObject::CopyMember(UVrmAssetListObject *dst) const {
 	dst->bAssetSave = bAssetSave;
 	dst->bSkipMorphTarget = bSkipMorphTarget;
-
+	
+	dst->MooaToonSet = MooaToonSet; // Mooa VRM
 	dst->MtoonLitSet = MtoonLitSet;
 	dst->MtoonUnlitSet = MtoonUnlitSet;
 	dst->SSSSet = SSSSet;

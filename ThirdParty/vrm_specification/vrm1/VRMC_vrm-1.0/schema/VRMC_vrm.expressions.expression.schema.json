@@ -1,0 +1,72 @@
+{
+  "title": "Expression",
+  "type": "object",
+  "description": "Definition of expression by weighted animation",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "morphTargetBinds": {
+      "type": "array",
+      "description": "Specify a morph target",
+      "items": {
+        "$ref": "VRMC_vrm.expressions.expression.morphTargetBind.schema.json"
+      },
+      "minItems": 1
+    },
+    "materialColorBinds": {
+      "type": "array",
+      "description": "Material color animation references",
+      "items": {
+        "$ref": "VRMC_vrm.expressions.expression.materialColorBind.schema.json"
+      },
+      "minItems": 1
+    },
+    "textureTransformBinds": {
+      "type": "array",
+      "description": "Texture transform animation references",
+      "items": {
+        "$ref": "VRMC_vrm.expressions.expression.textureTransformBind.schema.json"
+      },
+      "minItems": 1
+    },
+    "isBinary": {
+      "type": "boolean",
+      "default": false,
+      "description": "A value greater than 0.5 is 1.0, otherwise 0.0"
+    },
+    "overrideBlink": {
+      "title": "ExpressionOverrideType",
+      "type": "string",
+      "enum": [
+        "none",
+        "block",
+        "blend"
+      ],
+      "default": "none",
+      "description": "Override values of Blink expressions when this Expression is enabled"
+    },
+    "overrideLookAt": {
+      "title": "ExpressionOverrideType",
+      "type": "string",
+      "enum": [
+        "none",
+        "block",
+        "blend"
+      ],
+      "default": "none",
+      "description": "Override values of LookAt expressions when this Expression is enabled"
+    },
+    "overrideMouth": {
+      "title": "ExpressionOverrideType",
+      "type": "string",
+      "enum": [
+        "none",
+        "block",
+        "blend"
+      ],
+      "default": "none",
+      "description": "Override values of Mouth expressions when this Expression is enabled"
+    },
+    "extensions": { },
+    "extras": { }
+  }
+}

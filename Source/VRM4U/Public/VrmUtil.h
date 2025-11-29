@@ -307,7 +307,7 @@ FORCEINLINE  USkeletalMesh *VRMGetSkinnedAsset(const USkinnedMeshComponent* t) {
 UENUM(BlueprintType)
 enum class EVRMImportMaterialType : uint8
 {
-	VRMIMT_Auto				UMETA(DisplayName = "Auto(MToon Unlit)"),
+	VRMIMT_Auto				UMETA(DisplayName = "MooaToon"), // Mooa VRM
 	VRMIMT_MToon			UMETA(DisplayName = "MToon Lit"),
 	VRMIMT_MToonUnlit		UMETA(DisplayName = "MToon Unlit"),
 	VRMIMT_SSS				UMETA(DisplayName = "Subsurface"),
@@ -456,6 +456,9 @@ public:
 	bool bActiveBone = true;
 
 	bool bSkipNoMeshBone = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
+	bool bIgnoreVRMValidation = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bDebugOneBone = false;

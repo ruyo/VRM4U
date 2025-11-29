@@ -2,6 +2,7 @@
 
 #include "VrmConvertMetadata.h"
 #include "VrmConvert.h"
+#include "VRM4ULoaderLog.h"
 
 
 #include "VrmAssetListObject.h"
@@ -26,11 +27,69 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/vrm/vrmmeta.h>
 
+bool VRMConverter::ValidateSchema() {
+	return jsonData.validateSchema();
+}
 
 bool VRMConverter::Init(const uint8* pFileData, size_t dataSize, const aiScene *pScene) {
-	jsonData.init(pFileData, dataSize);
 	aiData = pScene;
-	return true;
+	return InitJSON(pFileData, dataSize);
+}
+
+bool VRMConverter::InitJSON(const uint8* pFileData, size_t dataSize) {
+
+	// little endian
+	// skip size check
+	auto readData = [](const uint8* data, size_t offset) {
+		return static_cast<uint32_t>(data[offset]) |
+			(static_cast<uint32_t>(data[offset + 1]) << 8) |
+			(static_cast<uint32_t>(data[offset + 2]) << 16) |
+			(static_cast<uint32_t>(data[offset + 3]) << 24);
+		};
+
+	if (dataSize < 20 || pFileData[0] != 'g' || pFileData[1] != 'l' || pFileData[2] != 'T' || pFileData[3] != 'F') {
+		return false;
+	}
+	const uint32_t glTFversion = readData(pFileData, 4);
+	const uint32_t total_length = readData(pFileData, 8);
+	if (total_length != static_cast<uint32_t>(dataSize)) {
+		return false;
+	}
+
+
+	uint32_t jsonSize = 0;
+	if (glTFversion == 1) {
+		// glTF 1.0 GLB VRM“I‚É‚Í•s—v‚¾‚ª”O‚Ì‚½‚ß
+		const uint32_t content_length = readData(pFileData, 12);
+		const uint32_t content_format = readData(pFileData, 16);
+		if (content_format != 0) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Content format is not JSON (glTF 1.0)"));
+			return false;
+		}
+		if (20 + content_length > dataSize) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Content length exceeds file size"));
+			return false;
+		}
+		jsonSize = content_length;
+
+	} else if (glTFversion == 2) {
+		const uint32_t chunk_length = readData(pFileData, 12);
+		if (pFileData[16] != 'J' || pFileData[17] != 'S' || pFileData[18] != 'O' || pFileData[19] != 'N') {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("First chunk is not JSON"));
+			return false;
+		}
+		if (20 + chunk_length > dataSize) {
+			UE_LOG(LogVRM4ULoader, Warning, TEXT("Chunk length exceeds file size"));
+			return false;
+		}
+		jsonSize = chunk_length;
+	}
+	else {
+		UE_LOG(LogVRM4ULoader, Warning, TEXT("glbVersion error"));
+		return false;
+	}
+
+	return jsonData.init(pFileData + 20, jsonSize);
 }
 
 
@@ -79,6 +138,24 @@ bool VRMConverter::ConvertVrmFirst(UVrmAssetListObject* vrmAssetList, const uint
 
 
 bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiScene* mScenePtr, const uint8* pData, size_t dataSize) {
+
+	//auto GetDataJSON = [](const RAPIDJSON_NAMESPACE::Value& root, std::initializer_list<const char*> path) -> std::optional<const RAPIDJSON_NAMESPACE::Value*> {
+	auto GetDataJSON = [](const RAPIDJSON_NAMESPACE::Value& root, std::initializer_list<const char*> path) -> std::pair<bool, const RAPIDJSON_NAMESPACE::Value*> {
+		const RAPIDJSON_NAMESPACE::Value* current = &root;
+
+		for (const char* key : path) {
+			if (current->IsObject() == false) {
+				return { false, nullptr };
+			}
+			auto itr = current->FindMember(key);
+			if (itr == current->MemberEnd()) {
+				return { false, nullptr };
+			}
+			current = &itr->value;
+		}
+		return { true, current };
+		};
+
 
 	tmpLicense0 = nullptr;
 	tmpLicense1 = nullptr;
@@ -229,15 +306,21 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 
 				{
 					int tmpNodeID = bind["node"].GetInt(); // adjust offset
-					int tmpMeshID = jsonData.doc["nodes"].GetArray()[tmpNodeID]["mesh"].GetInt();
+					auto& jsonNode = jsonData.doc["nodes"];
 
-					//meshID offset
-					int offset = 0;
-					for (int meshNo = 0; meshNo < tmpMeshID; ++meshNo) {
-						if (jsonData.doc["meshes"].GetArray()[meshNo].HasMember("primitives") == false) continue;
-						//offset += jsonData.doc["meshes"].GetArray()[meshNo]["primitives"].Size() - 1;
+					if (tmpNodeID >= 0 && tmpNodeID < (int)jsonNode.Size()) {
+						if (GetDataJSON(jsonNode.GetArray()[tmpNodeID], { "mesh" }).second){
+							int tmpMeshID = jsonNode.GetArray()[tmpNodeID]["mesh"].GetInt();
+
+							//meshID offset
+							int offset = 0;
+							for (int meshNo = 0; meshNo < tmpMeshID; ++meshNo) {
+								if (jsonData.doc["meshes"].GetArray()[meshNo].HasMember("primitives") == false) continue;
+								//offset += jsonData.doc["meshes"].GetArray()[meshNo]["primitives"].Size() - 1;
+							}
+							targetShape.meshID = tmpMeshID + offset;
+						}
 					}
-					targetShape.meshID = tmpMeshID + offset;
 				}
 
 				if (targetShape.meshID < (int)jsonData.doc["meshes"].Size()) {
@@ -308,140 +391,153 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 			ParamTable.Add("_EmisionColor", "mtoon_EmissionColor");
 			ParamTable.Add("_OutlineColor", "mtoon_OutColor");
 
-			auto& group = jsonData.doc["extensions"]["VRM"]["blendShapeMaster"]["blendShapeGroups"];
-			for (int i = 0; i < (int)group.Size(); ++i) {
-				auto& bind = MetaObject->BlendShapeGroup[i];
+			auto groupp = GetDataJSON(jsonData.doc, {"extensions", "VRM", "blendShapeMaster", "blendShapeGroups"});
+			if (groupp.second) {
+				const auto &group = *(groupp.second);
+				for (int i = 0; i < (int)group.Size(); ++i) {
+					if (MetaObject->BlendShapeGroup.IsValidIndex(i) == false) break;
 
-				auto& shape = group[i];
-				if (shape.HasMember("materialValues") == false) {
-					continue;
-				}
-				for (auto& mat : shape["materialValues"].GetArray()) {
-					FVrmBlendShapeMaterialList mlist;
-					mlist.materialName = mat["materialName"].GetString();
-					mlist.propertyName = mat["propertyName"].GetString();
+					auto& bind = MetaObject->BlendShapeGroup[i];
+					auto& shape = group[i];
 
-					FString *tmp = vrmAssetList->MaterialNameOrigToAsset.Find(NormalizeFileName(mlist.materialName));
-					if (tmp == nullptr) {
-						continue;
+					if (shape.HasMember("materialValues") == false) continue;
+					if (shape["materialValues"].IsArray() == false) continue;
+
+					for (auto& mat : shape["materialValues"].GetArray()) {
+						if (mat.IsObject() == false) continue;
+						if (mat.HasMember("materialName") == false || mat.HasMember("propertyName") == false || mat.HasMember("targetValue") == false) continue;
+
+						FVrmBlendShapeMaterialList mlist;
+						mlist.materialName = mat["materialName"].GetString();
+						mlist.propertyName = mat["propertyName"].GetString();
+
+						FString* tmp = vrmAssetList->MaterialNameOrigToAsset.Find(NormalizeFileName(mlist.materialName));
+						if (tmp == nullptr) {
+							continue;
+						}
+						mlist.materialName = *tmp;
+						if (ParamTable.Find(mlist.propertyName)) {
+							mlist.propertyName = ParamTable[mlist.propertyName];
+						}
+						mlist.color = FLinearColor(
+							mat["targetValue"].GetArray()[0].GetFloat(),
+							mat["targetValue"].GetArray()[1].GetFloat(),
+							mat["targetValue"].GetArray()[2].GetFloat(),
+							mat["targetValue"].GetArray()[3].GetFloat());
+						bind.MaterialList.Add(mlist);
 					}
-					mlist.materialName = *tmp;
-					if (ParamTable.Find(mlist.propertyName)) {
-						mlist.propertyName = ParamTable[mlist.propertyName];
-					}
-					mlist.color = FLinearColor(
-						mat["targetValue"].GetArray()[0].GetFloat(),
-						mat["targetValue"].GetArray()[1].GetFloat(),
-						mat["targetValue"].GetArray()[2].GetFloat(),
-						mat["targetValue"].GetArray()[3].GetFloat());
-					bind.MaterialList.Add(mlist);
 				}
 			}
 		}
 	}
 
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
-		auto& jsonSpring = jsonData.doc["extensions"]["VRMC_springBone"]["springs"];
+		auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_springBone", "springs"});
+		if (pp.second) {
+			const auto& jsonSpring = *pp.second;
 
-		auto& sMeta = MetaObject->VRM1SpringBoneMeta.Springs;
-		sMeta.SetNum(jsonSpring.Size());
-		for (uint32 springNo = 0; springNo < jsonSpring.Size(); ++springNo) {
-			auto& jsonJoints = jsonSpring.GetArray()[springNo]["joints"];
-			auto& dstSpring = sMeta[springNo];
-			dstSpring.joints.SetNum(jsonJoints.Size());
-			for (uint32 jointNo = 0; jointNo < jsonJoints.Size(); ++jointNo) {
-				auto& jj = jsonJoints.GetArray()[jointNo];
+			auto& sMeta = MetaObject->VRM1SpringBoneMeta.Springs;
+			sMeta.SetNum(jsonSpring.Size());
+			for (uint32 springNo = 0; springNo < jsonSpring.Size(); ++springNo) {
+				auto& jsonJoints = jsonSpring.GetArray()[springNo]["joints"];
+				auto& dstSpring = sMeta[springNo];
+				dstSpring.joints.SetNum(jsonJoints.Size());
+				for (uint32 jointNo = 0; jointNo < jsonJoints.Size(); ++jointNo) {
+					auto& jj = jsonJoints.GetArray()[jointNo];
 
-				auto& s = dstSpring.joints[jointNo];
+					auto& s = dstSpring.joints[jointNo];
 
-				s.dragForce = jj["dragForce"].GetFloat();
-				s.gravityPower = jj["gravityPower"].GetFloat();
-				if (jj.HasMember("gravityDir")) {
-					if (jj["gravityDir"].GetArray().Size() == 3) {
-						s.gravityDir.X = jj["gravityDir"][0].GetFloat();
-						s.gravityDir.Y = jj["gravityDir"][1].GetFloat();
-						s.gravityDir.Z = jj["gravityDir"][2].GetFloat();
+					s.dragForce = jj["dragForce"].GetFloat();
+					s.gravityPower = jj["gravityPower"].GetFloat();
+					if (jj.HasMember("gravityDir")) {
+						if (jj["gravityDir"].GetArray().Size() == 3) {
+							s.gravityDir.X = jj["gravityDir"][0].GetFloat();
+							s.gravityDir.Y = jj["gravityDir"][1].GetFloat();
+							s.gravityDir.Z = jj["gravityDir"][2].GetFloat();
+						}
 					}
-				}
-				int node = jj["node"].GetInt();
-				s.boneNo = -1;// node; // reset after bone optimize
+					int node = jj["node"].GetInt();
+					s.boneNo = -1;// node; // reset after bone optimize
 
+					{
+						auto& jsonNode = jsonData.doc["nodes"];
+						if (node >= 0 && node < (int)jsonNode.Size()) {
+							s.boneName = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(jsonNode[node]["name"].GetString()));
+						}
+					}
+
+					s.hitRadius = jj["hitRadius"].GetFloat();
+					s.stiffness = jj["stiffness"].GetFloat();
+
+				}
+				auto& jsonColliderGroups = jsonSpring.GetArray()[springNo]["colliderGroups"];
+
+				dstSpring.colliderGroups.SetNum(jsonColliderGroups.Size());
+				for (uint32 colNo = 0; colNo < jsonColliderGroups.Size(); ++colNo) {
+					dstSpring.colliderGroups[colNo] = jsonColliderGroups[colNo].GetInt();
+				}
+			}
+
+			auto& colMeta = MetaObject->VRM1SpringBoneMeta.Colliders;
+			auto& jsonColliders = jsonData.doc["extensions"]["VRMC_springBone"]["colliders"];
+			colMeta.SetNum(jsonColliders.Size());
+			for (int colNo = 0; colNo < (int)jsonColliders.Size(); ++colNo) {
+				auto& jsonCol = jsonColliders[colNo];
+				auto& cMeta = colMeta[colNo];
+
+				int node = jsonCol["node"].GetInt();
 				{
 					auto& jsonNode = jsonData.doc["nodes"];
 					if (node >= 0 && node < (int)jsonNode.Size()) {
-						s.boneName = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(jsonNode[node]["name"].GetString()));
+						cMeta.boneName = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(jsonNode[node]["name"].GetString()));
+					}
+				}
+				if (jsonCol["shape"].HasMember("sphere")) {
+					if (GetDataJSON(jsonCol, { "shape", "sphere", "offset" }).second && GetDataJSON(jsonCol, { "shape", "sphere", "radius" }).second) {
+						cMeta.offset.Set(
+							jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
+							jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
+							jsonCol["shape"]["sphere"]["offset"][2].GetFloat());
+						cMeta.radius = jsonCol["shape"]["sphere"]["radius"].GetFloat();
+						cMeta.shapeType = TEXT("sphere");
 					}
 				}
 
-				s.hitRadius = jj["hitRadius"].GetFloat();
-				s.stiffness = jj["stiffness"].GetFloat();
-
+				if (jsonCol["shape"].HasMember("capsule")) {
+					if (GetDataJSON(jsonCol, { "shape", "capsule", "offset" }).second && GetDataJSON(jsonCol, { "shape", "capsule", "radius" }).second && GetDataJSON(jsonCol, { "shape", "capsule", "tail" }).second) {
+						cMeta.offset.Set(
+							jsonCol["shape"]["capsule"]["offset"][0].GetFloat(),
+							jsonCol["shape"]["capsule"]["offset"][1].GetFloat(),
+							jsonCol["shape"]["capsule"]["offset"][2].GetFloat());
+						cMeta.radius = jsonCol["shape"]["capsule"]["radius"].GetFloat();
+						cMeta.tail.Set(
+							jsonCol["shape"]["capsule"]["tail"][0].GetFloat(),
+							jsonCol["shape"]["capsule"]["tail"][1].GetFloat(),
+							jsonCol["shape"]["capsule"]["tail"][2].GetFloat());
+						cMeta.shapeType = TEXT("capsule");
+					}
+				}
 			}
-			auto& jsonColliderGroups = jsonSpring.GetArray()[springNo]["colliderGroups"];
 
-			dstSpring.colliderGroups.SetNum(jsonColliderGroups.Size());
-			for (uint32 colNo = 0; colNo < jsonColliderGroups.Size(); ++colNo) {
-				dstSpring.colliderGroups[colNo] = jsonColliderGroups[colNo].GetInt();
-			}
-		}
 
-		auto& colMeta = MetaObject->VRM1SpringBoneMeta.Colliders;
-		auto& jsonColliders = jsonData.doc["extensions"]["VRMC_springBone"]["colliders"];
-		colMeta.SetNum(jsonColliders.Size());
-		for (int colNo = 0; colNo < (int)jsonColliders.Size(); ++colNo) {
-			auto &jsonCol = jsonColliders[colNo];
-			auto& cMeta = colMeta[colNo];
-
-			int node = jsonCol["node"].GetInt();
 			{
-				auto& jsonNode = jsonData.doc["nodes"];
-				if (node >= 0 && node < (int)jsonNode.Size()) {
-					cMeta.boneName = VRMUtil::GetSafeNewName(UTF8_TO_TCHAR(jsonNode[node]["name"].GetString()));
+				auto& cogMeta = MetaObject->VRM1SpringBoneMeta.ColliderGroups;
+				auto& jsonColliderGroups = jsonData.doc["extensions"]["VRMC_springBone"]["colliderGroups"];
+
+				cogMeta.SetNum(jsonColliderGroups.Size());
+				for (int cgNo = 0; cgNo < (int)jsonColliderGroups.Size(); ++cgNo) {
+
+					cogMeta[cgNo].name = jsonColliderGroups[cgNo].GetString();
+					for (int colNo = 0; colNo < (int)jsonColliderGroups[cgNo]["colliders"].Size(); ++colNo) {
+						cogMeta[cgNo].colliders.Add(jsonColliderGroups[cgNo]["colliders"][colNo].GetInt());
+					}
 				}
 			}
-			if (jsonCol["shape"].HasMember("sphere")) {
-				cMeta.offset.Set(
-					jsonCol["shape"]["sphere"]["offset"][0].GetFloat(),
-					jsonCol["shape"]["sphere"]["offset"][1].GetFloat(),
-					jsonCol["shape"]["sphere"]["offset"][2].GetFloat());
-				cMeta.radius = jsonCol["shape"]["sphere"]["radius"].GetFloat();
-				cMeta.shapeType = TEXT("sphere");
 
-			}
+			//sMeta.SetNum(jsonSpring.Size());
 
-			if (jsonCol["shape"].HasMember("capsule")) {
-				cMeta.offset.Set(
-					jsonCol["shape"]["capsule"]["offset"][0].GetFloat(),
-					jsonCol["shape"]["capsule"]["offset"][1].GetFloat(),
-					jsonCol["shape"]["capsule"]["offset"][2].GetFloat());
-				cMeta.radius = jsonCol["shape"]["capsule"]["radius"].GetFloat();
-				cMeta.tail.Set(
-					jsonCol["shape"]["capsule"]["tail"][0].GetFloat(),
-					jsonCol["shape"]["capsule"]["tail"][1].GetFloat(),
-					jsonCol["shape"]["capsule"]["tail"][2].GetFloat());
-				cMeta.shapeType = TEXT("capsule");
-			}
+			//auto& jsonColliderGroups = jsonSpring.GetArray()[springNo]["collidergroups"];
 		}
-
-
-		{
-			auto& cogMeta = MetaObject->VRM1SpringBoneMeta.ColliderGroups;
-			auto& jsonColliderGroups = jsonData.doc["extensions"]["VRMC_springBone"]["colliderGroups"];
-
-			cogMeta.SetNum(jsonColliderGroups.Size());
-			for (int cgNo = 0; cgNo < (int)jsonColliderGroups.Size(); ++cgNo) {
-
-				cogMeta[cgNo].name = jsonColliderGroups[cgNo].GetString();
-				for (int colNo = 0; colNo < (int)jsonColliderGroups[cgNo]["colliders"].Size(); ++colNo) {
-					cogMeta[cgNo].colliders.Add(jsonColliderGroups[cgNo]["colliders"][colNo].GetInt());
-				}
-			}
-		}
-
-		//sMeta.SetNum(jsonSpring.Size());
-
-		//auto& jsonColliderGroups = jsonSpring.GetArray()[springNo]["collidergroups"];
-
 	} else {
 		// spring
 		MetaObject->VRMSpringMeta.SetNum(SceneMeta->springNum);
@@ -491,12 +587,12 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 		// VRM10
 		auto& nodes = jsonData.doc["nodes"];
 		for (auto& node : nodes.GetArray()) {
-			if (node.HasMember("extensions") == false) continue;
-			if (node["extensions"].HasMember("VRMC_node_constraint") == false) continue;
-			if (node["extensions"]["VRMC_node_constraint"].HasMember("constraint") == false) continue;
 
+			auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_node_constraint", "constraint" });
 
-			auto& constraint = node["extensions"]["VRMC_node_constraint"]["constraint"];
+			if (!pp.second) continue;
+			auto& constraint = *pp.second;
+
 			if (constraint.HasMember("roll")) {
 				FVRMConstraintRoll c;
 
@@ -569,42 +665,52 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	if (VRMConverter::Options::Get().IsVRMAModel()) {
 		if (pData && dataSize) {
 			{
-				auto& humanBone = jsonData.doc["extensions"]["VRMC_vrm_animation"]["humanoid"]["humanBones"];
-				auto& origBone = jsonData.doc["nodes"];
 
-				for (auto& g : humanBone.GetObject()) {
-					int nodeNo = g.value["node"].GetInt();
+				auto ppBone = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "humanoid", "humanBones" });
 
-					if (FString(g.name.GetString()) == "") {
-						continue;
-					}
+				if (ppBone.second) {
+					auto& humanBone = *ppBone.second;
+					auto& origBone = jsonData.doc["nodes"];
 
-					if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
-						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
-					}
-					else {
-						MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+					for (auto& g : humanBone.GetObject()) {
+						int nodeNo = g.value["node"].GetInt();
+
+						if (FString(g.name.GetString()) == "") {
+							continue;
+						}
+
+						if (nodeNo >= 0 && nodeNo < (int)origBone.Size()) {
+							MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = UTF8_TO_TCHAR(origBone[nodeNo]["name"].GetString());
+						}
+						else {
+							MetaObject->humanoidBoneTable.Add(UTF8_TO_TCHAR(g.name.GetString())) = "";
+						}
 					}
 				}
 			}
 			{
-				auto& ex = jsonData.doc["extensions"]["VRMC_vrm_animation"]["expressions"];
-				if (ex.HasMember("preset")) {
-					auto &p = ex["preset"];
-					for (auto &m : p.GetObject()) {
+				auto ppPreset = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "expressions", "preset" });
+
+				if (ppPreset.second) {
+					auto& p = *ppPreset.second;
+					for (auto& m : p.GetObject()) {
 						FVRMAnimationExpressionPreset meta;
 						meta.expressionName = m.name.GetString();
 						meta.expressionNode = m.value["node"].GetInt();
 						meta.expressionNodeName = jsonData.doc["nodes"].GetArray()[meta.expressionNode]["name"].GetString();
 
 						vrmAssetList->VrmMetaObject->VRMAnimationMeta.expressionPreset.Add(meta);
-
 					}
 				}
 			}
 			{
-				auto& at = jsonData.doc["extensions"]["VRMC_vrm_animation"]["lookAt"];
-				vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at["node"].GetInt();
+				auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "lookAt", "node" });
+				if (pp.second) {
+					auto& at = *pp.second;
+					if (at.IsInt()) {
+						vrmAssetList->VrmMetaObject->VRMAnimationMeta.lookAt.lookAtNode = at.GetInt();
+					}
+				}
 			}
 		}
 	}
@@ -613,50 +719,54 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 	// license
 		// license
 	if (VRMConverter::Options::Get().IsVRM10Model()) {
-		auto& meta = jsonData.doc["extensions"]["VRMC_vrm"]["meta"];
-		for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
+		auto ppMeta = GetDataJSON(jsonData.doc, { "extensions", "VRMC_vrm_animation", "meta" });
 
-			FString key = UTF8_TO_TCHAR((*m).name.GetString());
+		if (ppMeta.second) {
+			auto& meta = *ppMeta.second;
+			for (auto m = meta.MemberBegin(); m != meta.MemberEnd(); ++m) {
 
-			if (key.Find("allow") == 0) {
-				FLicenseBoolDataPair p;
-				p.key = key;
-				p.value = (*m).value.GetBool();
-				lic1->LicenseBool.Add(p);
-			} else if (key == "thumbnailImage") {
-				if (vrmAssetList) {
-					int t = (*m).value.GetInt();
-					if (t >= 0 && t < vrmAssetList->Textures.Num()) {
-						lic1->thumbnail = vrmAssetList->Textures[t];
+				FString key = UTF8_TO_TCHAR((*m).name.GetString());
+
+				if (key.Find("allow") == 0) {
+					FLicenseBoolDataPair p;
+					p.key = key;
+					p.value = (*m).value.GetBool();
+					lic1->LicenseBool.Add(p);
+				} else if (key == "thumbnailImage") {
+					if (vrmAssetList) {
+						int t = (*m).value.GetInt();
+						if (t >= 0 && t < vrmAssetList->Textures.Num()) {
+							lic1->thumbnail = vrmAssetList->Textures[t];
 #if WITH_EDITORONLY_DATA
-						vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
+							vrmAssetList->SmallThumbnailTexture = lic1->thumbnail;
 #endif
-					}
-				}
-			}else{
-				if ((*m).value.IsArray()) {
-					int ind = 0;
-					bool bFound = false;
-					for (auto& a : lic1->LicenseStringArray) {
-						if (a.key != key) {
-							++ind;
-							continue;
 						}
-						bFound = true;
-						break;
-					}
-					if (bFound == false) {
-						ind = lic1->LicenseStringArray.AddDefaulted();
-						lic1->LicenseStringArray[ind].key = key;
-					}
-					for (auto& a : (*m).value.GetArray()) {
-						lic1->LicenseStringArray[ind].value.Add(UTF8_TO_TCHAR(a.GetString()));
 					}
 				} else {
-					FLicenseStringDataPair p;
-					p.key = key;
-					p.value = UTF8_TO_TCHAR((*m).value.GetString());
-					lic1->LicenseString.Add(p);
+					if ((*m).value.IsArray()) {
+						int ind = 0;
+						bool bFound = false;
+						for (auto& a : lic1->LicenseStringArray) {
+							if (a.key != key) {
+								++ind;
+								continue;
+							}
+							bFound = true;
+							break;
+						}
+						if (bFound == false) {
+							ind = lic1->LicenseStringArray.AddDefaulted();
+							lic1->LicenseStringArray[ind].key = key;
+						}
+						for (auto& a : (*m).value.GetArray()) {
+							lic1->LicenseStringArray[ind].value.Add(UTF8_TO_TCHAR(a.GetString()));
+						}
+					} else {
+						FLicenseStringDataPair p;
+						p.key = key;
+						p.value = UTF8_TO_TCHAR((*m).value.GetString());
+						lic1->LicenseString.Add(p);
+					}
 				}
 			}
 		}

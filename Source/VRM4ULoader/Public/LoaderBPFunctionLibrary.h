@@ -124,6 +124,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (DynamicOutputParam = "RigIK"))
 	static void VRMGenerateIKRetargeterPose(UObject * IKRetargeter, UObject* targetRigIK, UPoseAsset* targetPose);
 
+	static bool IsValidVRM4UFile(FString filepath);
 	static void GetVRMMeta(FString filepath, UVrmLicenseObject*& a, UVrm1LicenseObject*& b);
-
 };

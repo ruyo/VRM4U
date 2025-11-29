@@ -38,6 +38,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InOption")
 	bool bSkipMorphTarget=false;
 
+	// Mooa VRM
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InMaterial")
+	UVrmImportMaterialSet* MooaToonSet;
+	// Mooa End
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InMaterial")
 	UVrmImportMaterialSet* MtoonLitSet;
 

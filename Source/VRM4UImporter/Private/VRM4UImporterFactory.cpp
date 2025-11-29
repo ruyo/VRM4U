@@ -194,6 +194,12 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		return nullptr;
 	}
 
+	if (VRMConverter::Options::Get().IsDebugIgnoreVRMValidation() == false) {
+		if (ULoaderBPFunctionLibrary::IsValidVRM4UFile(fullFileName) == false) {
+			return nullptr;
+		}
+	}
+
 	static UVrmImportUI* ImportUI = nullptr;
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 	TAssetPtr<UObject> refPointerToLic;
@@ -283,7 +289,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 				ImportUI->bSingleUAssetFile = true;
 			}
 #else
-			// 5.2でも動くが、デフォルトをOFFにする
+			// 5.2縺ｧ繧ょ虚縺上′縲√ョ繝輔か繝ｫ繝医ｒOFF縺ｫ縺吶ｋ
 #endif
 
 
@@ -293,8 +299,8 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 			if (GEditor){
 				auto* s = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
 				if (s && ImportUI->Thumbnail) {
-					s->OpenEditorForAsset(ImportUI->Thumbnail);
-					s->CloseAllEditorsForAsset(ImportUI->Thumbnail);
+					s->OpenEditorForAsset((UObject*)ImportUI->Thumbnail);
+					s->CloseAllEditorsForAsset((UObject*)ImportUI->Thumbnail);
 				}
 			}
 #endif

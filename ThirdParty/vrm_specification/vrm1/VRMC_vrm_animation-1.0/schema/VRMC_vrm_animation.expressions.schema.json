@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Expressions",
+  "type": "object",
+  "description": "An object which maps expressions to nodes.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "preset": {
+      "type": "object",
+      "description": "An object that contains definitions of preset expressions.",
+      "properties": {
+        "happy": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "angry": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "sad": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "relaxed": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "surprised": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "aa": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "ih": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "ou": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "ee": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "oh": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "blink": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "blinkLeft": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "blinkRight": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        },
+        "neutral": {
+          "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+        }
+      }
+    },
+    "custom": {
+      "type": "object",
+      "description": "An object that contains definitions of custom expressions.",
+      "additionalProperties": {
+        "$ref": "VRMC_vrm_animation.expressions.expression.schema.json"
+      }
+    },
+    "extensions": { },
+    "extras": { }
+  }
+}

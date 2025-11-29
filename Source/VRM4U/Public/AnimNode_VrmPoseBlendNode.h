@@ -42,7 +42,7 @@ struct VRM4U_API FAnimNode_VrmPoseBlendNode : public FAnimNode_PoseBlendNode
 #endif
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skeleton, meta = (PinHiddenByDefault))
-	bool bRemovePoseCurve = true;
+	bool bRemovePoseCurve = false;
 
 
 	bool bCallInitialized = false;

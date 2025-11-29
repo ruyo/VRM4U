@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "Roll Constraint",
+  "type": "object",
+  "description": "A constraint that transfers a rotation around one axis of a source.",
+  "allOf": [ { "$ref": "glTFChildOfRootProperty.schema.json" } ],
+  "properties": {
+    "source": {
+      "allOf": [ { "$ref": "glTFid.schema.json" } ],
+      "description": "The index of the node constrains the node."
+    },
+    "rollAxis": {
+      "description": "The roll axis of the constraint.",
+      "type": "string",
+      "enum": [ "X", "Y", "Z" ]
+    },
+    "weight": {
+      "type": "number",
+      "description": "The weight of the constraint.",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 1.0
+    },
+    "extensions": { },
+    "extras": { }
+  },
+  "required": [ "source", "rollAxis" ]
+}

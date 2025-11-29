@@ -472,6 +472,10 @@ namespace {
 					LocalTextureSet(dm, TEXT("mtoon_tex_MainTex"), vrmAssetList->Textures[n]);
 					LocalTextureSet(dm, TEXT("gltf_tex_diffuse"), vrmAssetList->Textures[n]);
 					LocalTextureSet(dm, TEXT("mtoon_tex_Shade"), vrmAssetList->Textures[n]);
+					// Mooa VRM
+					LocalTextureSet(dm, TEXT("Base Color Map"), vrmAssetList->Textures[n]);
+					LocalTextureSet(dm, TEXT("Shadow Color Map"), vrmAssetList->Textures[n]);
+					// Mooa End
 				}
 			}
 
@@ -479,7 +483,7 @@ namespace {
 			int count = 0;
 			for (auto &t : tableParam) {
 				++count;
-				if (t.value < 0) {
+				if (t.value < 0 || t.value >= vrmAssetList->Textures.Num()) {
 					continue;
 				}
 				LocalTextureSet(dm, *t.key, vrmAssetList->Textures[t.value]);
@@ -499,7 +503,7 @@ namespace {
 			// gltf default texture
 			{
 				auto n = TextureTypeToIndex[aiTextureType_NORMALS];
-				if (n >= 0) {
+				if (0 <= n && n < vrmAssetList->Textures.Num()) {
 					vrmAssetList->Textures[n]->SRGB = false;
 					vrmAssetList->Textures[n]->CompressionSettings = TC_Normalmap;
 					vrmAssetList->Textures[n]->UpdateResource();
@@ -508,7 +512,7 @@ namespace {
 			}
 			{
 				auto n = TextureTypeToIndex[aiTextureType_EMISSIVE];
-				if (n >= 0) {
+				if (0 <= n && n < vrmAssetList->Textures.Num()) {
 					LocalTextureSet(dm, TEXT("mtoon_tex_Emissive"), vrmAssetList->Textures[n]);
 				}
 			}
@@ -865,7 +869,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 					LocalSetOriginalVrmMaterial(true);
 				}
 
-				if (Options::Get().GetMaterialType() == EVRMImportMaterialType::VRMIMT_Auto) {
+				if (Options::Get().GetMaterialType() == EVRMImportMaterialType::VRMIMT_Auto && false) { // Mooa VRM
 					// default unlit
 					MaterialType = EVRMImportMaterialType::VRMIMT_Unlit;
 
@@ -923,6 +927,11 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 					bMToon = false;
 					break;
 				case EVRMImportMaterialType::VRMIMT_Auto:
+					// Mooa VRM
+					mset = vrmAssetList->MooaToonSet;
+					bMToon = false;
+					break;
+					// Mooa End
 				default:
 					break;
 				}
@@ -1095,11 +1104,11 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 			{
 				UMaterialInstanceConstant* dm = nullptr;
 				{
-					const FString origname = (FString(TEXT("M_")) + NormalizeFileName(aiMat.GetName().C_Str()));
+					const FString origname = (FString(TEXT("MI_")) + NormalizeFileName(aiMat.GetName().C_Str()));
 					FString name = origname;
 
 					if (MatNameList.Find(origname)) {
-						name += FString::Printf(TEXT("_%03d"), MatNameList[name]);// TEXT("_2");
+						name += FString::Printf(TEXT("_%03d"), MatNameList[name]);
 					}
 					MatNameList.FindOrAdd(origname)++;
 
@@ -1195,6 +1204,7 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 							if (tex) {
 								LocalTextureSet(dm, TEXT("gltf_tex_diffuse"), tex);
 								LocalTextureSet(dm, TEXT("mtoon_tex_ShadeTexture"), tex);
+								LocalTextureSet(dm, TEXT("mtoon_tex_Shade"), tex);
 							}
 						}
 					}
@@ -1235,27 +1245,36 @@ bool VRMConverter::ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList) 
 						}
 					} else {
 						// gltf texture
-						TArray<FString> materialParamName;
-						materialParamName.SetNum(AI_TEXTURE_TYPE_MAX);
-						materialParamName[aiTextureType::aiTextureType_DIFFUSE] = TEXT("gltf_tex_diffuse");
-						materialParamName[aiTextureType::aiTextureType_NORMALS] = TEXT("gltf_tex_normal");
-						materialParamName[aiTextureType::aiTextureType_EMISSIVE] = TEXT("gltf_tex_Emission");
+						// Mooa VRM
+						TArray<TArray<FString>> materialParamNames;
+						materialParamNames.SetNum(AI_TEXTURE_TYPE_MAX);
+						materialParamNames[aiTextureType::aiTextureType_DIFFUSE] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map") };
+						materialParamNames[aiTextureType::aiTextureType_NORMALS] = { TEXT("gltf_tex_normal"), TEXT("Normal Map") };
+						materialParamNames[aiTextureType::aiTextureType_AMBIENT_OCCLUSION] = { TEXT("AO Map") };
+						materialParamNames[aiTextureType::aiTextureType_EMISSIVE] = { TEXT("gltf_tex_Emission"), TEXT("Emissive Map") };
 
-						materialParamName[aiTextureType::aiTextureType_BASE_COLOR] = TEXT("gltf_tex_diffuse");
-						materialParamName[aiTextureType::aiTextureType_EMISSION_COLOR] = TEXT("gltf_tex_Emission");
-						materialParamName[aiTextureType::aiTextureType_METALNESS] = TEXT("gltf_tex_metalness");
-						materialParamName[aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS] = TEXT("gltf_tex_roughness");
+						materialParamNames[aiTextureType::aiTextureType_BASE_COLOR] = { TEXT("gltf_tex_diffuse"), TEXT("Base Color Map"), TEXT("Shadow Color Map") };
+						materialParamNames[aiTextureType::aiTextureType_EMISSION_COLOR] = { TEXT("gltf_tex_Emission"), TEXT("Emissive Map") };
+						materialParamNames[aiTextureType::aiTextureType_METALNESS] = { TEXT("gltf_tex_metalness") };
+						materialParamNames[aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS] = { TEXT("gltf_tex_roughness") };
 
 						for (uint32_t t = 0; t < AI_TEXTURE_TYPE_MAX; ++t) {
-							if (materialParamName[t] == "") continue;
-
 							int index = TextureTypeToIndex[t];
 							if (index < 0) continue;
 							if (vrmAssetList->Textures.IsValidIndex(index) == false) continue;
 							if (IsValid(vrmAssetList->Textures[index]) == false) continue;
 
-							LocalTextureSet(dm, *(materialParamName[t]), vrmAssetList->Textures[index]);
+							for (auto MaterialParamName : materialParamNames[t])
+							{
+								if (false) {}
+								else if (t == aiTextureType::aiTextureType_EMISSIVE || t == aiTextureType::aiTextureType_EMISSION_COLOR)
+								{
+									LocalScalarParameterSet(dm, TEXT("Emissive Intensity"), 1.f);
+								}
+								LocalTextureSet(dm, *(MaterialParamName), vrmAssetList->Textures[index]);
+							}
 						}
+						// Mooa End
 					}
 
 					LocalMaterialFinishParam(dm);

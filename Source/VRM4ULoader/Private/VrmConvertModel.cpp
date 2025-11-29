@@ -1864,7 +1864,11 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 					for (auto& a : VRMGetMorphTargets(sk)) {
 						dummy.Add(a);
 					}
+#if UE_VERSION_OLDER_THAN(5,7,0)
 					pRd->InitResources(false, 0, dummy, sk);
+#else
+					pRd->InitResources(false, 0, sk);
+#endif
 				}
 #endif // 5.4
 			}

@@ -13,6 +13,7 @@ class VrmJson {
 public:
 	RAPIDJSON_NAMESPACE::Document doc;
 
+	bool validateSchema();
 	bool init(const uint8_t* pData, size_t size);
 	
 	bool IsEnable() const{

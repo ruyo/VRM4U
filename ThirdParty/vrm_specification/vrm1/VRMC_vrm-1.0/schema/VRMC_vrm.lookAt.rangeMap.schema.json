@@ -1,0 +1,20 @@
+{
+  "title": "LookAtRangeMap",
+  "type": "object",
+  "description": "Horizontal inward movement. The left eye moves right. The right eye moves left.",
+  "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
+  "properties": {
+    "inputMaxValue": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 180.0,
+      "description": "Yaw and pitch angles  ( degrees )  between the head bone forward vector and the eye gaze LookAt vector"
+    },
+    "outputScale": {
+      "type": "number",
+      "description": "Degree for type.bone, Weight for type.expressions"
+    },
+    "extensions": { },
+    "extras": { }
+  }
+}

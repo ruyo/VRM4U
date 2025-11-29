@@ -121,6 +121,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	static void VRMChangeMaterialStaticSwitch(UMaterialInstanceConstant *material, FName paramName, bool bEnable);
 
+	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (DevelopmentOnly))
+	static void VRMGetMaterialStaticSwitch(UMaterialInstance* material, FName paramName, bool &bHasParam, bool &bEnable);
+
 	// mat end
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
@@ -134,6 +137,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U")
 	static bool VRMGetAssetsByPackageName(FName PackageName, TArray<FAssetData>& OutAssetData, bool bIncludeOnlyOnDiskAssets = false);
+
+	UFUNCTION(BlueprintCallable, Category = "VRM4U")
+	static void VRMSetIsDirty(UObject *obj);
 
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (WorldContext = "WorldContextObject"))
 	static UTextureRenderTarget2D* VRMCreateRenderTarget2D(UObject* WorldContextObject, int32 Width = 256, int32 Height = 256, ETextureRenderTargetFormat Format = RTF_RGBA16f, FLinearColor ClearColor = FLinearColor::Black);
@@ -250,6 +256,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "VRM4U")
 	static bool VRMIsMovieRendering();
+
+	UFUNCTION(BlueprintPure, Category = "VRM4U")
+	static bool VRMIsTemporaryObject(const UObject *obj);
+
+	UFUNCTION(BlueprintPure, Category = "VRM4U")
+	static bool VRMIsEditorPreviewObject(const UObject* obj);
 
 };
 
