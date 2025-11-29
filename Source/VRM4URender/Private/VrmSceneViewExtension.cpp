@@ -67,6 +67,10 @@ class FMyComputeShader : public FGlobalShader
 
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
 
+
+		SHADER_PARAMETER(FVector3f, CameraPosition)
+		SHADER_PARAMETER(FVector3f, CameraForwardVector)
+
 		SHADER_PARAMETER(float, UseCustomLightPosition)
 		SHADER_PARAMETER(float, UseCustomLightColor)
 		SHADER_PARAMETER(FVector3f, LightPosition)
@@ -329,6 +333,9 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 		//Parameters->SceneTextures = SceneTextures;
 		//Parameters->RenderTargets[0] = Output.GetRenderTargetBinding();
 		//PassParameters->SceneColorTexture = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(SceneColorTexture));
+
+		Parameters->CameraPosition = FVector3f(InView.ViewMatrices.GetViewOrigin());
+		Parameters->CameraForwardVector = FVector3f(InView.ViewRotation.RotateVector(FVector(1, 0, 0)));
 
 		Parameters->UseCustomLightPosition = d.bUseCustomLighPosition;
 		Parameters->LightPosition = FVector3f(d.LightPosition);
