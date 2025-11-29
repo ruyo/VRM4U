@@ -35,6 +35,7 @@ SOFTWARE.
 #include "Kismet/KismetSystemLibrary.h"
 #include "SceneInterface.h"
 #include "DrawDebugHelpers.h"
+#include "SceneManagement.h"
 
 #include "VrmMetaObject.h"
 #include "VrmAssetListObject.h"
