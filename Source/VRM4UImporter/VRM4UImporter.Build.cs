@@ -30,6 +30,8 @@ public class VRM4UImporter : ModuleRules
 				"Persona",
 				"MainFrame",
 
+				"AssetDefinition",
+
 				//"ToolMenus",
 			});
 
