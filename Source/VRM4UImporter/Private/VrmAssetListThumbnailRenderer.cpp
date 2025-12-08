@@ -52,6 +52,8 @@ FText FAssetTypeActions_VrmMeta::GetName() const {
 
 TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetData& AssetData) const {
 
+	return nullptr; // サムネイルで描画するためスキップ
+	/*
 	FString str;
 	FColor col(0, 0, 0, 0);
 
@@ -65,21 +67,21 @@ TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetD
 		TWeakObjectPtr<UVrmLicenseObject> a = Cast<UVrmLicenseObject>(AssetData.GetAsset());
 		if (a.Get()) {
 			str = TEXT(" License ");
-			col.A = 128;
+			//col.A = 128;
 		}
 	}
 	if (str.Len() == 0) {
 		TWeakObjectPtr<UVrm1LicenseObject> a = Cast<UVrm1LicenseObject>(AssetData.GetAsset());
 		if (a.Get()) {
 			str = TEXT(" License ");
-			col.A = 128;
+			//col.A = 128;
 		}
 	}
 	if (str.Len() == 0) {
 		TWeakObjectPtr<UVrmMetaObject> a = Cast<UVrmMetaObject>(AssetData.GetAsset());
 		if (a.Get()) {
 			str = TEXT(" Meta ");
-			col.A = 128;
+			//col.A = 128;
 		}
 	}
 
@@ -101,6 +103,7 @@ TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetD
 		];
 
 	//return FAssetTypeActions_Base::GetThumbnailOverlay(AssetData);
+	*/
 }
 
 
@@ -205,17 +208,22 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 
 	
 	FString str = "none";
+	bool bDark = false;
 
 	if (Object->IsA(UVrmAssetListObject::StaticClass())) {
 		str = TEXT(" AssetList ");
 	} else if (Object->IsA(UVrmMetaObject::StaticClass())) {
 		str = TEXT(" Meta ");
+		bDark = true;
 	} else if (Object->IsA(UVrmLicenseObject::StaticClass())) {
 		str = TEXT(" License ");
+		bDark = true;
 	} else if (Object->IsA(UVrm1LicenseObject::StaticClass())) {
 		str = TEXT(" License ");
+		bDark = true;
 	}
-	auto DrawText = [&str, &Width, &Height, &Canvas](){
+
+	auto DrawText = [&str, &Width, &Height, &Canvas, &bDark](){
 		FText ChannelText = FText::FromString(str);
 
 		FVector2D Position(Width / 24, Height / 24);
@@ -227,6 +235,11 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 
 		TextItem.Draw(Canvas); // サイズ取得のため一度描画する
 
+		if (bDark){
+			FCanvasTileItem BackgroundItem(FVector2D(0,0), FVector2D(Width, Height), FLinearColor(0, 0, 0, 0.5));
+			BackgroundItem.BlendMode = SE_BLEND_AlphaBlend;
+			Canvas->DrawItem(BackgroundItem);
+		}
 		{
 			float DPIScale = Canvas->GetDPIScale();
 
@@ -235,6 +248,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 			FVector2D Padding(4.0f, 2.0f);
 			FVector2D BackgroundSize = TextSize + Padding * 2.0f;
 			FVector2D BackgroundPosition = Position - Padding;
+
 
 			FCanvasTileItem BackgroundItem(BackgroundPosition, BackgroundSize, FLinearColor(0.258, 0.539, 0.068, 0.9));
 			//BackgroundItem.BlendMode = SE_BLEND_Opaque;

@@ -21,7 +21,7 @@ public:
 	virtual FLinearColor GetAssetColor() const override { return UAssetDefinition_VRMAssetList::GetAssetColor(); }
 	virtual FText GetAssetDisplayName() const override { return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_VRMMeta", "VRM4U Meta"); }
 	virtual TSoftClassPtr<UObject> GetAssetClass() const override { return UVrmMetaObject::StaticClass(); }
-	virtual bool GetThumbnailActionOverlay(const FAssetData& InAssetData, FAssetActionThumbnailOverlayInfo& OutActionOverlayInfo) const override {
-		return UAssetDefinition_VRMAssetList::GetThumbnailActionOverlay(InAssetData, OutActionOverlayInfo);
-	}
+	//virtual bool GetThumbnailActionOverlay(const FAssetData& InAssetData, FAssetActionThumbnailOverlayInfo& OutActionOverlayInfo) const override {
+	//	return UAssetDefinition_VRMAssetList::GetThumbnailActionOverlay(InAssetData, OutActionOverlayInfo);
+	//}
 };
