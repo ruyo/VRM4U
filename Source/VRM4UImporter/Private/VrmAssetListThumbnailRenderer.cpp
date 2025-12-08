@@ -119,7 +119,7 @@ void UVrmAssetListThumbnailRenderer::GetThumbnailSize(UObject* Object, float Zoo
 				tex = a->VrmLicenseObject->thumbnail;
 			}
 			if (tex) {
-				return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
+				//return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
 			}
 		}
 		if (a->Vrm1LicenseObject) {
@@ -128,10 +128,10 @@ void UVrmAssetListThumbnailRenderer::GetThumbnailSize(UObject* Object, float Zoo
 				tex = a->Vrm1LicenseObject->thumbnail;
 			}
 			if (tex) {
-				return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
+				//return Super::GetThumbnailSize(tex, Zoom, OutWidth, OutHeight);
+			}
 		}
 	}
-}
 	Super::GetThumbnailSize(Object, Zoom, OutWidth, OutHeight);
 }
 
@@ -203,6 +203,48 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 		}
 	}
 
+	
+	FString str = "none";
+
+	if (Object->IsA(UVrmAssetListObject::StaticClass())) {
+		str = TEXT(" AssetList ");
+	} else if (Object->IsA(UVrmMetaObject::StaticClass())) {
+		str = TEXT(" Meta ");
+	} else if (Object->IsA(UVrmLicenseObject::StaticClass())) {
+		str = TEXT(" License ");
+	} else if (Object->IsA(UVrm1LicenseObject::StaticClass())) {
+		str = TEXT(" License ");
+	}
+	auto DrawText = [&str, &Width, &Height, &Canvas](){
+		FText ChannelText = FText::FromString(str);
+
+		FVector2D Position(Width / 24, Height / 24);
+		//FCanvasTextItem TextItem(Position, ChannelText, GEngine->GetLargeFont(), FLinearColor::Black);
+		FCanvasTextItem TextItem(Position, ChannelText, FSlateFontInfo(UEngine::GetMediumFont(), 28), FLinearColor::Black);
+
+		TextItem.DisableShadow();
+		//TextItem.Scale = FVector2D(Width / 64.0f, Height / 64.0f);
+
+		TextItem.Draw(Canvas); // サイズ取得のため一度描画する
+
+		{
+			float DPIScale = Canvas->GetDPIScale();
+
+			FVector2D TextSize = TextItem.DrawnSize;
+
+			FVector2D Padding(4.0f, 2.0f);
+			FVector2D BackgroundSize = TextSize + Padding * 2.0f;
+			FVector2D BackgroundPosition = Position - Padding;
+
+			FCanvasTileItem BackgroundItem(BackgroundPosition, BackgroundSize, FLinearColor(0.258, 0.539, 0.068, 0.9));
+			//BackgroundItem.BlendMode = SE_BLEND_Opaque;
+			BackgroundItem.BlendMode = SE_BLEND_AlphaBlend;
+			Canvas->DrawItem(BackgroundItem);
+
+		}
+
+		TextItem.Draw(Canvas);
+	};
 
 	// skeleton thumbnail
 	if (tex == nullptr) {
@@ -216,6 +258,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 #else
 				meshThumbnail->Draw((UObject*)(sk), X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
 #endif
+				DrawText();
 				return;
 			}
 		}
@@ -228,11 +271,12 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 	}
 
 #if	UE_VERSION_OLDER_THAN(4,25,0)
-	return Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas);
+	Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas);
 #else
-	return Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
+	Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
 #endif
 
+	DrawText();
 }
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
@@ -242,12 +286,12 @@ bool UVrmAssetListThumbnailRenderer::CanVisualizeAsset(UObject* Object)
 
 	if (UVrmLicenseObject* a = Cast<UVrmLicenseObject>(Object)) {
 		if (a->thumbnail == nullptr) {
-			return false;
+		//	return false;
 		}
 	}
 	if (UVrm1LicenseObject* a = Cast<UVrm1LicenseObject>(Object)) {
 		if (a->thumbnail == nullptr) {
-			return false;
+		//	return false;
 		}
 	}
 

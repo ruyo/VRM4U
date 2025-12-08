@@ -25,7 +25,8 @@ UThumbnailInfo* UAssetDefinition_VRMAssetList::LoadThumbnailInfo(const FAssetDat
 }
 
 TSharedPtr<SWidget> UAssetDefinition_VRMAssetList::GetThumbnailOverlay(const FAssetData& AssetData) const {
-
+	return nullptr;
+	/*
 	FString str;
 	FColor col(0, 0, 0, 0);
 
@@ -75,12 +76,16 @@ TSharedPtr<SWidget> UAssetDefinition_VRMAssetList::GetThumbnailOverlay(const FAs
 		];
 
 	//return FAssetTypeActions_Base::GetThumbnailOverlay(AssetData);
+	*/
 }
 
 
 
 bool UAssetDefinition_VRMAssetList::GetThumbnailActionOverlay(const FAssetData& InAssetData, FAssetActionThumbnailOverlayInfo& OutActionOverlayInfo) const
 {
+	return false;
+
+	/*
 	FString str;
 	FColor col(0, 0, 0, 0);
 
@@ -113,23 +118,6 @@ bool UAssetDefinition_VRMAssetList::GetThumbnailActionOverlay(const FAssetData& 
 	}
 
 	FText txt = FText::FromString(str);
-	/*
-	OutActionOverlayInfo.ActionImageWidget = SNew(SBorder)
-		.HAlign(HAlign_Left)
-		.VAlign(VAlign_Top)
-		//.Padding(FMargin(4))
-		//.Padding(FMargin(4))
-		//.BorderImage(new FSlateColorBrush(FColor::White))
-		.BorderImage(new FSlateColorBrush(col))
-		//.AutoWidth()
-		[
-			SNew(STextBlock)
-				.Text(txt)
-				.HighlightText(txt)
-				.HighlightColor(FColor(64, 64, 64))
-				//.ShadowOffset(FVector2D(1.0f, 1.0f))
-		];
-*/
 	OutActionOverlayInfo.ActionImageWidget = SNew(STextBlock)
 				.Text(txt)
 				.HighlightText(txt)
@@ -141,6 +129,8 @@ bool UAssetDefinition_VRMAssetList::GetThumbnailActionOverlay(const FAssetData& 
 	//OutActionOverlayInfo.ActionButtonArgs.
 
 	return true;
+*/
+
 }
 
 
