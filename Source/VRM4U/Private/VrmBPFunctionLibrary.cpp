@@ -37,6 +37,10 @@
 #include "Kismet/KismetRenderingLibrary.h"
 #endif
 
+#if UE_VERSION_NEWER_THAN(5,6,-1)
+#include "MaterialShared.h"
+#endif
+
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 #else
 #if WITH_EDITOR && PLATFORM_WINDOWS
