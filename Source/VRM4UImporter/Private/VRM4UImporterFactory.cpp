@@ -289,7 +289,7 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 				ImportUI->bSingleUAssetFile = true;
 			}
 #else
-			// 5.2でも動くが、デフォルトをOFFにする
+			// 5.2縺ｧ繧ょ虚縺上′縲√ョ繝輔か繝ｫ繝医ｒOFF縺ｫ縺吶ｋ
 #endif
 
 

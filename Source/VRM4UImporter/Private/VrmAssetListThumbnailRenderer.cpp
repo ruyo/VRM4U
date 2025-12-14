@@ -52,7 +52,7 @@ FText FAssetTypeActions_VrmMeta::GetName() const {
 
 TSharedPtr<SWidget> FAssetTypeActions_VrmBase::GetThumbnailOverlay(const FAssetData& AssetData) const {
 
-	return nullptr; // �T���l�C���ŕ`�悷�邽�߃X�L�b�v
+	return nullptr; // サムネイルで描画するためスキップ
 	/*
 	FString str;
 	FColor col(0, 0, 0, 0);
@@ -233,7 +233,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 		TextItem.DisableShadow();
 		//TextItem.Scale = FVector2D(Width / 64.0f, Height / 64.0f);
 
-		TextItem.Draw(Canvas); // �T�C�Y�擾�̂��߈�x�`�悷��
+		TextItem.Draw(Canvas); // サイズ取得のため一度描画する
 
 		if (bDark){
 			FCanvasTileItem BackgroundItem(FVector2D(0,0), FVector2D(Width, Height), FLinearColor(0, 0, 0, 0.5));

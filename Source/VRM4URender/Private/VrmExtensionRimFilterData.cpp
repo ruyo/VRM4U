@@ -33,7 +33,7 @@ void UVrmExtensionRimFilterData::PostInitProperties() {
 	if (GEngine == nullptr) return;
 
 	if (!HasAnyFlags(RF_ClassDefaultObject)) {
-		// ƒCƒ“ƒXƒ^ƒ“ƒX‚Ìê‡
+		// ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã®å ´åˆ
 		UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
 		if (s == nullptr) return;
 

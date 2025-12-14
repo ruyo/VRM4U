@@ -62,14 +62,14 @@ std::string ReadTextFileFromThirdparty(const FString& RelativePath)
 
 	FString TextFilePath = GetPluginThirdpartyPath() / RelativePath;
 
-	// ƒtƒ@ƒCƒ‹‚Ì‘¶İŠm”F
+	// ãƒ•ã‚¡ã‚¤ãƒ«ã®å­˜åœ¨ç¢ºèª
 	if (!FPaths::FileExists(TextFilePath))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("VRM4U_Schema: no file: %s"), *TextFilePath);
 		return ret;
 	}
 
-	// ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
+	// ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€
 	FString FileContent;
 	TArray<uint8> data;
 	//if (FFileHelper::LoadFileToString(FileContent, *ThirdpartyPath))
@@ -84,7 +84,7 @@ std::string ReadTextFileFromThirdparty(const FString& RelativePath)
 	}
 }
 
-// Schema Provider ($ref ‚ğƒtƒ@ƒCƒ‹ƒpƒX‚Å‰ğŒˆ)
+// Schema Provider ($ref ã‚’ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã§è§£æ±º)
 class FileSchemaProvider : public RAPIDJSON_NAMESPACE::IRemoteSchemaDocumentProvider {
 public:
 	FileSchemaProvider(const std::string& baseDir){
@@ -150,10 +150,10 @@ private:
 bool validateSchemaVRM1_internal(RAPIDJSON_NAMESPACE::Document& jsonDoc, const std::string& path, const std::string& fileExt) {
 
 	// ext check
-	// ext‚È‚µ‚È‚ç’Ê‰ß
+	// extãªã—ãªã‚‰é€šé
 	if (!jsonDoc.HasMember("extensions") || !jsonDoc["extensions"].HasMember(fileExt.c_str())) {
 		UE_LOG(LogTemp, Log, TEXT("VRM4U_Schema: no extensions/%s"), UTF8_TO_TCHAR(fileExt.c_str()));
-		// ‚±‚±‚Í¬Œ÷ˆµ‚¢
+		// ã“ã“ã¯æˆåŠŸæ‰±ã„
 		return true;
 	}
 
@@ -222,7 +222,7 @@ bool validateSchemaVRM0_internal(RAPIDJSON_NAMESPACE::Document &jsonDoc, const s
 	RAPIDJSON_NAMESPACE::SchemaValidator validator(schema);
 	RAPIDJSON_NAMESPACE::Value& vrmExtension = jsonDoc["extensions"]["VRM"];
 	if (!vrmExtension.Accept(validator)) {
-		// ƒGƒ‰[Ú×‚ğo—Í
+		// ã‚¨ãƒ©ãƒ¼è©³ç´°ã‚’å‡ºåŠ›
 		RAPIDJSON_NAMESPACE::StringBuffer sb;
 		validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
 		UE_LOG(LogTemp, Error, TEXT("VRM4U_Schema: Schema validation failed at: %s"), UTF8_TO_TCHAR(sb.GetString()));

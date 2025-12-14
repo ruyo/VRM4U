@@ -1,5 +1,7 @@
 // VRM4U Copyright (c) 2021-2024 Haruyoshi Yamamoto. This software is released under the MIT License.
 
+// 日本語
+
 #include "VrmConvertTexture.h"
 #include "VrmConvert.h"
 #include "VrmUtil.h"

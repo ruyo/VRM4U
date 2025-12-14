@@ -494,7 +494,7 @@ bool ULoaderBPFunctionLibrary::IsValidVRM4UFile(FString filepath) {
 
 	const FString ext = FPaths::GetExtension(filepath);
 	if (ext.Compare(TEXT("vrm"), ESearchCase::IgnoreCase) && ext.Compare(TEXT("vrma"), ESearchCase::IgnoreCase)) {
-		// vrm, vrmaˆÈŠO‚Í‘f’Ê‚µ
+		// vrm, vrmaä»¥å¤–ã¯ç´ é€šã—
 		return true;
 	}
 
@@ -836,7 +836,7 @@ bool ULoaderBPFunctionLibrary::LoadVRMFileFromMemory(const UVrmAssetListObject *
 			return false;
 		}
 		{
-			// Œãˆ—BUE5.7‚Å‚ÍCreateMeshDescription ‚ðŒÄ‚Ô‚½‚ß•K—v
+			// å¾Œå‡¦ç†ã€‚UE5.7ã§ã¯CreateMeshDescription ã‚’å‘¼ã¶ãŸã‚å¿…è¦
 			if (out->SkeletalMesh) {
 				out->SkeletalMesh->PostLoad();
 			}

@@ -423,8 +423,8 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 				ParentIndexByNode = INDEX_NONE;
 
 				if (VRMConverter::Options::Get().IsBVHModel()) {
-					// ƒ_ƒ~[‚ÌRootœ‚ğ’Ç‰Á‚·‚éBBVH‚ÍRootœ‚ÉTrans‚ª“ü‚Á‚Ä‚¢‚é‚±‚Æ‚ª‚ ‚éB
-					// Trans‚ª‚ ‚é‚ÆAƒŠƒ^[ƒQƒbƒg‚ª‚¤‚Ü‚­‚Å‚«‚È‚¢
+					// ãƒ€ãƒŸãƒ¼ã®Rootéª¨ã‚’è¿½åŠ ã™ã‚‹ã€‚BVHã¯Rootéª¨ã«TransãŒå…¥ã£ã¦ã„ã‚‹ã“ã¨ãŒã‚ã‚‹ã€‚
+					// TransãŒã‚ã‚‹ã¨ã€ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã†ã¾ãã§ããªã„
 					FMeshBoneInfo inf;
 					inf.Name = TEXT("root_dummy");
 					inf.ParentIndex = INDEX_NONE;

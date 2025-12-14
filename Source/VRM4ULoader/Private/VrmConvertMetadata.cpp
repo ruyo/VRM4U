@@ -59,7 +59,7 @@ bool VRMConverter::InitJSON(const uint8* pFileData, size_t dataSize) {
 
 	uint32_t jsonSize = 0;
 	if (glTFversion == 1) {
-		// glTF 1.0 GLB VRM“I‚É‚Í•s—v‚¾‚ª”O‚Ì‚½‚ß
+		// glTF 1.0 GLB VRMçš„ã«ã¯ä¸è¦ã ãŒå¿µã®ãŸã‚
 		const uint32_t content_length = readData(pFileData, 12);
 		const uint32_t content_format = readData(pFileData, 16);
 		if (content_format != 0) {
