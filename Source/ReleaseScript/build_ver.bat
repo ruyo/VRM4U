@@ -79,6 +79,7 @@ del "..\..\..\VRM4U\Source\VRM4U\Public\VrmAnimInstanceTemplate.h"
 
 set isRenderModuleEnable=TRUE
 if %UE4VER% == 5.0 set isRenderModuleEnable=FALSE
+if %UE4VER% == 5.1 set isRenderModuleEnable=FALSE
 if %isUE4% == TRUE set isRenderModuleEnable=FALSE
 
 if %isRenderModuleEnable% == FALSE (
