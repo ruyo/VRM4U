@@ -30,7 +30,6 @@ public class VRM4UImporter : ModuleRules
 				"Persona",
 				"MainFrame",
 
-				"AssetDefinition",
 
 				//"ToolMenus",
 			});
@@ -43,6 +42,14 @@ public class VRM4UImporter : ModuleRules
 			}
 			else {
 				PrivateDependencyModuleNames.Add("ToolMenus");
+			}
+
+			if (Version.MajorVersion == 4 || (Version.MajorVersion == 5 && Version.MinorVersion <= 2))
+			{
+			}
+			else
+			{
+				PrivateDependencyModuleNames.Add("AssetDefinition");
 			}
 		}
 

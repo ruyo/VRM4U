@@ -86,6 +86,11 @@ if %isRenderModuleEnable% == FALSE (
 del "..\..\..\VRM4U\Source\VRM4URender\VRM4URender.Build.cs"
 )
 
+set isAssetDefinition=TRUE
+if %UE4VER% == 5.1 set isAssetDefinition=FALSE
+if %UE4VER% == 5.0 set isAssetDefinition=FALSE
+if %isUE4% == TRUE set isAssetDefinition=FALSE
+
 
 ::::::::::::::::::::::::::: generate
 
