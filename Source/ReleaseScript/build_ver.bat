@@ -90,6 +90,16 @@ set isAssetDefinition=TRUE
 if %UE4VER% == 5.1 set isAssetDefinition=FALSE
 if %UE4VER% == 5.0 set isAssetDefinition=FALSE
 if %isUE4% == TRUE set isAssetDefinition=FALSE
+if %isAssetDefinition% == FALSE (
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRM1License.h"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRM1License.cpp"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMLicense.h"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMLicense.cpp"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMAssetList.h"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMAssetList.cpp"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMMeta.h"
+del "..\..\..\VRM4U\Source\VRM4UImporter\Private\AssetTypeActions\AssetDefinition_VRMMeta.cpp"
+)
 
 
 ::::::::::::::::::::::::::: generate
