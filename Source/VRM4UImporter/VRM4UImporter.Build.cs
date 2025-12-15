@@ -44,7 +44,7 @@ public class VRM4UImporter : ModuleRules
 				PrivateDependencyModuleNames.Add("ToolMenus");
 			}
 
-			if (Version.MajorVersion == 4 || (Version.MajorVersion == 5 && Version.MinorVersion <= 2))
+			if (Version.MajorVersion == 4 || (Version.MajorVersion == 5 && Version.MinorVersion <= 1))
 			{
 			}
 			else
