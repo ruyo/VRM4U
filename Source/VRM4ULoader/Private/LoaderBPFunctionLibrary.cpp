@@ -70,7 +70,7 @@
 
 #if UE_VERSION_OLDER_THAN(5,4,0)
 #else
-#include "MIsc/FieldAccessor.h"
+#include "Misc/FieldAccessor.h"
 #endif
 
 #if PLATFORM_WINDOWS
