@@ -1,0 +1,8 @@
+UE4.27
+BaseEngine.ini
+----
+[PlatformPaths]
+UnrealBuildTool=Engine/Binaries/DotNET/UnrealBuildTool.exe
+----
+
+
