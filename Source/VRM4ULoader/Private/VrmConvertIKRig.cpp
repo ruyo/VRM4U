@@ -1024,8 +1024,9 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 					auto settings = sc->GetBoneSettings(boneName);
 					settings.X = EPBIKLimitType::Locked;
 					settings.Y = EPBIKLimitType::Locked;
+					settings.RotationStiffness = 0.5f;
 					settings.bUsePreferredAngles = true;
-					settings.PreferredAngles.Set(0, 0, 90);
+					settings.PreferredAngles.Set(0, 0, 45);
 					sc->SetBoneSettings(boneName, settings);
 				}
 			}
@@ -1041,7 +1042,11 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 				auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
 				if (sc) {
 					auto settings = sc->GetBoneSettings(boneName);
-					settings.RotationStiffness = 0.85f;
+					settings.X = EPBIKLimitType::Locked;
+					settings.Y = EPBIKLimitType::Locked;
+					settings.RotationStiffness = 0.5f;
+					settings.bUsePreferredAngles = true;
+					settings.PreferredAngles.Set(0, 0, 45);
 					sc->SetBoneSettings(boneName, settings);
 				}
 			}
@@ -1058,12 +1063,12 @@ static UIKRigDefinition* GenerateMannequinIK(UVrmAssetListObject* vrmAssetList) 
 			rigcon->ConnectGoalToSolver(goal, sol_index);
 		}
 		{
-			auto goal = rigcon->AddNewGoal(TEXT("RightFootIK"), TEXT("ball_r"));
+			auto goal = rigcon->AddNewGoal(TEXT("RightFootIK"), TEXT("foot_r"));
 			rigcon->SetRetargetChainGoal(TEXT("RightLeg"), goal);
 			rigcon->ConnectGoalToSolver(goal, sol_index);
 		}
 		{
-			auto goal = rigcon->AddNewGoal(TEXT("LeftFootIK"), TEXT("ball_l"));
+			auto goal = rigcon->AddNewGoal(TEXT("LeftFootIK"), TEXT("foot_l"));
 			rigcon->SetRetargetChainGoal(TEXT("LeftLeg"), goal);
 			rigcon->ConnectGoalToSolver(goal, sol_index);
 		}
@@ -1370,7 +1375,8 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						AddedChainList.Add(t.chain);
 					}
 				}
-				rigcon.LocalSolverSetup(vrmAssetList, ik_no);
+				//rigcon.LocalSolverSetup(vrmAssetList, ik_no);
+				rigcon.LocalSolverSetup(vrmAssetList, 1);
 
 				for (auto& modelName : vrmAssetList->VrmMetaObject->humanoidBoneTable) {
 					if (modelName.Key == "" || modelName.Value == "") {
@@ -1409,14 +1415,23 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 			rtgDataTable[1].ModelType = 0;	// mannnequin
 			rtgDataTable[2].ModelType = 1;	// UEFN mannnequin
 
+			bool bGenerated[2] = {};
+
+
 			for (int ikr_no = 0; ikr_no < 3; ikr_no++) {
 
+
 				RTGdata& rtgData = rtgDataTable[ikr_no];
+
+				if (bGenerated[rtgData.ModelType]) {
+					continue;
+				}
 
 				auto *vrm_ikrig = table_rig_ik[rtgData.ModelType];
 
 				UObject* uobjectIK = nullptr;
 
+#if UE_VERSION_OLDER_THAN(5,7,0)
 				for (auto rigName : rtgData.BaseIKRigName) {
 					FSoftObjectPath r(rigName);
 					uobjectIK = r.TryLoad();
@@ -1424,11 +1439,15 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 						break;
 					}
 				}
+#else
+				// 5.7以降は サーチしない。毎回自前で生成する
+#endif
 				if (uobjectIK == nullptr) {
 					if (ikr_no == 0) {
 #if WITH_EDITOR
 #if UE_VERSION_OLDER_THAN(5,6,0)
 #else
+						// IKRig 生成
 						uobjectIK = GenerateMannequinIK(vrmAssetList);
 #endif
 #endif
@@ -1609,7 +1628,9 @@ bool VRMConverter::ConvertIKRig(UVrmAssetListObject *vrmAssetList) {
 #endif
 				}
 				c.SetChainSetting();
-			}
+
+				bGenerated[rtgData.ModelType] = true;
+			} // loop
 		}
 #endif // 5.2
 #endif
