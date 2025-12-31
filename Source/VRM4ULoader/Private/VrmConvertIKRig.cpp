@@ -85,19 +85,19 @@ namespace {
 #else
 			sol_index = rigcon->AddSolver(FIKRigFullBodyIKSolver::StaticStruct());
 			sol = rigcon->GetSolverAtIndex(sol_index);
+			if (sol) {
+				auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
+				if (sc) {
+					auto s = sc->GetSolverSettings();
+					s.RootBehavior = EPBIKRootBehavior::PinToInput;
+					s.GlobalPullChainAlpha = 0;
+					sol->SetSolverSettings(&s);
+				}
+			}
 #endif
 		}
 		if (sol == nullptr) return;
 
-		{
-			auto* sc = Cast<UIKRigFBIKController>(rigcon->GetSolverController(sol_index));
-			if (sc) {
-				auto s = sc->GetSolverSettings();
-				s.RootBehavior = EPBIKRootBehavior::PinToInput;
-				s.GlobalPullChainAlpha = 0;
-				sol->SetSolverSettings(&s);
-			}
-		}
 
 #if UE_VERSION_OLDER_THAN(5,4,0)
 		sol->SetEnabled(false);
