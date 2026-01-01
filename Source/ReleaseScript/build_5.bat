@@ -13,6 +13,11 @@ if not %errorlevel% == 0 (
     echo [ERROR] :P
     goto err
 )
+call %BUILD_SCRIPT% 5.7 Linux Shipping VRM4U_5_7_%V_DATE%_linux.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
 
 ::5_6
 call %BUILD_SCRIPT% 5.6 Win64 Shipping VRM4U_5_6_%V_DATE%.zip
