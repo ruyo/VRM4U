@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "RendererInterface.h"
 
 //#include "VRMImporterModule.h"
 
