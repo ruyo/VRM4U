@@ -3,6 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
+#include "Engine/TextureRenderTarget2D.h"
+
 //#include "VRMImporterModule.h"
 
 //DECLARE_LOG_CATEGORY_EXTERN(LogVRM4URender, Verbose, All);
