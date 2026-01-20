@@ -4,6 +4,7 @@
 #include "VrmExtensionRimFilterData.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#include "TextureResource.h"
 
 #include "VRM4U_RenderSubsystem.h"
 
@@ -543,7 +544,7 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 			case EVRM4U_CaptureSource::SceneColorTexturePostTonemap:
 			case EVRM4U_CaptureSource::SceneColorTextureLastPass:
 
-				DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+				//DstRDGTex = GraphBuilder.RegisterExternalTexture(c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
 
 				break;
 			default:
