@@ -21,6 +21,8 @@ enum EVRM4U_CaptureSource : int
 {
 	ColorTexturePostOpaque,
 	ColorTextureOverlay,
+	ColorTexturePostTonemap,
+	ColorTextureLastPass,
 	DepthTexture,
 	NormalTexture,
 	VelocityTexture,
@@ -28,6 +30,8 @@ enum EVRM4U_CaptureSource : int
 
 	SceneColorTexturePostOpaque,
 	SceneColorTextureOverlay,
+	SceneColorTexturePostTonemap,
+	SceneColorTextureLastPass,
 	SceneDepthTexture,
 	//ScenePartialDepthTexture,
 

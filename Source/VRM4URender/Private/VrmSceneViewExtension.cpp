@@ -478,6 +478,8 @@ void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphB
 	//check(View.bIsViewInfo);
 	//const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(View).GetSceneTextures();
 }
+
+#if	UE_VERSION_OLDER_THAN(5,5,0)
 void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, FAfterPassCallbackDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
 	if (Pass == EPostProcessingPass::FXAA)
 	{
@@ -485,7 +487,112 @@ void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass P
 		//	FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
 	}
 }
+#else
+void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, const FSceneView& InView, FPostProcessingPassDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
+	if (Pass == EPostProcessingPass::FXAA)
+	{
+		InOutPassCallbacks.Add(
+			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
+	}
+	if ((int)Pass == (int)EPostProcessingPass::MAX-1)
+	{
+		InOutPassCallbacks.Add(
+			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::LastPass_RenderThread));
+	}
+}
+#endif
+
 
 bool FVrmSceneViewExtension::IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const  {
 	return FSceneViewExtensionBase::IsActiveThisFrame_Internal(Context);
+}
+
+
+FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
+	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::AfterTonemap);
+}
+FScreenPassTexture FVrmSceneViewExtension::LastPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
+	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::LastPass);
+}
+
+FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & GraphBuilder, const FSceneView & InView, const FPostProcessMaterialInputs & InOutInputs, ECapturePass Pass){
+
+	FVRM4URenderModule* m = FModuleManager::GetModulePtr<FVRM4URenderModule>("VRM4URender");
+	if (m == nullptr) {
+		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+	}
+
+	if (m->CaptureList.Num()) {
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+		decltype(auto) View = static_cast<const FViewInfo&>(InView);
+#else
+		decltype(auto) View = InView;
+#endif
+
+		FRDGTextureRef DstRDGTex = nullptr;
+		FRDGTextureRef SrcRDGTex = nullptr;
+
+		for (auto c : m->CaptureList) {
+			if (c.Key == nullptr) continue;
+			if (c.Key->GetRenderTargetResource() == nullptr) continue;
+
+			switch (c.Value) {
+			case EVRM4U_CaptureSource::ColorTexturePostTonemap:
+			case EVRM4U_CaptureSource::ColorTextureLastPass:
+			case EVRM4U_CaptureSource::SceneColorTexturePostTonemap:
+			case EVRM4U_CaptureSource::SceneColorTextureLastPass:
+
+				DstRDGTex = RegisterExternalTexture(GraphBuilder, c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
+
+				break;
+			default:
+				break;
+			}
+		}
+
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+
+		if (DstRDGTex) {
+			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
+			FScreenPassTexture SrcTex = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
+
+			AddDrawTexturePass(
+				GraphBuilder,
+				View,
+				SrcTex,
+				DstTex
+			);
+		}
+#else
+		if (DstRDGTex) {
+			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
+			FScreenPassTexture SrcTex((InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]));
+
+
+			//VRM4U_AddCopyPass(Parameters, SrcRDGTex, c.Key);
+
+			//AddDrawTexturePass(
+			//	GraphBuilder,
+			//	View,
+			//	SrcTex,
+			//	DstTex
+			//);
+		}
+#endif
+	}
+
+	if (InOutInputs.OverrideOutput.IsValid())
+	{
+		return InOutInputs.OverrideOutput;
+	} else
+	{
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+		/** We don't want to modify scene texture in any way. We just want it to be passed back onto the next stage. */
+		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
+		return SceneTexture;
+#else
+		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+#endif
+	}
 }
