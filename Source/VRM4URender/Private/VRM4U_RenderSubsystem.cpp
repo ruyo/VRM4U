@@ -25,65 +25,6 @@
 #include "LevelEditor.h"
 #endif
 
-namespace{
-	void VRM4U_AddCopyPass(FPostOpaqueRenderParameters& Parameters, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget) {
-
-		const FIntPoint ViewRectSize = FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height());
-
-		AddPass(*Parameters.GraphBuilder, RDG_EVENT_NAME("VRM4UAddCopyPass"), [ViewRectSize, SrcRDGTex, RenderTarget](FRHICommandListImmediate& RHICmdList)
-			{
-				const FIntPoint TargetSize(RenderTarget->GetRenderTargetResource()->GetSizeX(), RenderTarget->GetRenderTargetResource()->GetSizeY());
-
-				FRHITexture* DestRenderTarget = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
-
-				FRHIRenderPassInfo RPInfo(DestRenderTarget, ERenderTargetActions::Load_Store);
-				RHICmdList.BeginRenderPass(RPInfo, TEXT("VRM4U_Copy"));
-				{
-					RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
-
-					const ERHIFeatureLevel::Type FeatureLevel = GMaxRHIFeatureLevel;
-					FGlobalShaderMap* ShaderMap = GetGlobalShaderMap(FeatureLevel);
-					TShaderMapRef<FScreenVS> VertexShader(ShaderMap);
-					TShaderMapRef<FScreenPS> PixelShader(ShaderMap);
-
-					FGraphicsPipelineStateInitializer GraphicsPSOInit;
-					RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
-					GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
-					GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
-					GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
-					GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
-					GraphicsPSOInit.BoundShaderState.VertexShaderRHI = static_cast<FRHIVertexShader*>(VertexShader.GetRHIShaderBase(SF_Vertex));
-					GraphicsPSOInit.BoundShaderState.PixelShaderRHI = static_cast<FRHIPixelShader*>(PixelShader.GetRHIShaderBase(SF_Pixel));
-					GraphicsPSOInit.PrimitiveType = PT_TriangleList;
-					SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
-
-					FRHITexture* SceneTexture = SrcRDGTex->GetRHI()->GetTexture2D();
-
-#if	UE_VERSION_OLDER_THAN(5,3,0)
-					PixelShader->SetParameters(RHICmdList, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
-#else
-					FRHIBatchedShaderParameters& BatchedParameters = RHICmdList.GetScratchShaderParameters();
-					PixelShader->SetParameters(BatchedParameters, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
-					RHICmdList.SetBatchedShaderParameters(RHICmdList.GetBoundPixelShader(), BatchedParameters);
-#endif
-					IRendererModule* RendererModule = &FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
-					RendererModule->DrawRectangle(
-						RHICmdList,
-						0, 0,									// Dest X, Y
-						TargetSize.X, TargetSize.Y,				// Dest Width, Height
-						0, 0,									// Source U, V
-						ViewRectSize.X, ViewRectSize.Y,			// Source USize, VSize
-						TargetSize,								// Target buffer size
-						FIntPoint(SceneTexture->GetSizeX(), SceneTexture->GetSizeY()),	// Source texture size
-						VertexShader,
-						EDRF_Default);
-				}
-				RHICmdList.EndRenderPass();
-			});
-	}
-
-}
-
 void UVRM4U_RenderSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
 	Super::Initialize(Collection);
 
