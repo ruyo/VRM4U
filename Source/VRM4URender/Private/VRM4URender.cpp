@@ -33,53 +33,59 @@
 
 DEFINE_LOG_CATEGORY(LogVRM4URender);
 
-namespace {
-	bool isCaptureTarget(FPostOpaqueRenderParameters& Parameters) {
+bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 
-		bool bCapture = false;
+	bool bCapture = false;
 
-		bool bPlay = false;
-		bool bSIE = false;
-		bool bEditor = false;
-		UVrmBPFunctionLibrary::VRMGetPlayMode(bPlay, bSIE, bEditor);
+	bool bPlay = false;
+	bool bSIE = false;
+	bool bEditor = false;
+	UVrmBPFunctionLibrary::VRMGetPlayMode(bPlay, bSIE, bEditor);
 
-		UWorld* World = Parameters.View->Family->Scene->GetWorld();
-		if (World) {
-			EWorldType::Type WorldType = World->WorldType;
+	UWorld* World = View->Family->Scene->GetWorld();
+	if (World) {
+		EWorldType::Type WorldType = World->WorldType;
 
-			if (bPlay) {
-				switch (WorldType) {
-				case EWorldType::Game:
-				case EWorldType::PIE:
-					bCapture = true;
-					break;
-				}
-			} else {
-				switch (WorldType) {
-				case EWorldType::Editor:
-					bCapture = true;
-					break;
-				}
+		if (bPlay) {
+			switch (WorldType) {
+			case EWorldType::Game:
+			case EWorldType::PIE:
+				bCapture = true;
+				break;
+			}
+		} else {
+			switch (WorldType) {
+			case EWorldType::Editor:
+				bCapture = true;
+				break;
 			}
 		}
-		if (Parameters.View->bIsGameView) {
-			bCapture = true;
-		}
-		if (Parameters.View->bIsOfflineRender) {
-			bCapture = true;
-		}
-
-		return bCapture;
 	}
+	if (View->bIsGameView) {
+		bCapture = true;
+	}
+	if (View->bIsOfflineRender) {
+		bCapture = true;
+	}
+
+	return bCapture;
 }
 
 void FVRM4URenderModule::AddCopyPass(FRDGBuilder &GraphBuilder, FIntPoint ViewRectSize, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget) {
+
+	if (SrcRDGTex == nullptr) {
+		return;
+	}
+	if (RenderTarget == nullptr) {
+		return;
+	}
 
 	//FPostOpaqueRenderParameters& Parameters
 	//const FIntPoint ViewRectSize = FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height());
 
 	AddPass(GraphBuilder, RDG_EVENT_NAME("VRM4UAddCopyPass"), [ViewRectSize, SrcRDGTex, RenderTarget](FRHICommandListImmediate& RHICmdList)
 		{
+			if (SrcRDGTex == nullptr) return;
 			if (SrcRDGTex->GetRHI() == nullptr) return;
 
 			const FIntPoint TargetSize(RenderTarget->GetRenderTargetResource()->GetSizeX(), RenderTarget->GetRenderTargetResource()->GetSizeY());
@@ -171,7 +177,7 @@ void FVRM4URenderModule::OnPostOpaque(FPostOpaqueRenderParameters& Parameters) {
 
 	if (CaptureList.Num() == 0) return;
 
-	if (isCaptureTarget(Parameters) == false) {
+	if (isCaptureTarget(Parameters.View) == false) {
 		return;
 	}
 
@@ -289,7 +295,7 @@ void FVRM4URenderModule::OnPostOpaque(FPostOpaqueRenderParameters& Parameters) {
 void FVRM4URenderModule::OnOverlay(FPostOpaqueRenderParameters& Parameters) {
 	if (CaptureList.Num() == 0) return;
 
-	if (isCaptureTarget(Parameters) == false) {
+	if (isCaptureTarget(Parameters.View) == false) {
 		return;
 	}
 

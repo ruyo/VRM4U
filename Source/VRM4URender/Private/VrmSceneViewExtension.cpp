@@ -490,7 +490,12 @@ void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass P
 }
 #else
 void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, const FSceneView& InView, FPostProcessingPassDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
-	if (Pass == EPostProcessingPass::FXAA)
+	if ((int)Pass == (int)EPostProcessingPass::Tonemap-1)
+	{
+		InOutPassCallbacks.Add(
+			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::PreTonemap_RenderThread));
+	}
+	if (Pass == EPostProcessingPass::Tonemap)
 	{
 		InOutPassCallbacks.Add(
 			FAfterPassCallbackDelegate::CreateRaw(this, &FVrmSceneViewExtension::AfterTonemap_RenderThread));
@@ -509,6 +514,9 @@ bool FVrmSceneViewExtension::IsActiveThisFrame_Internal(const FSceneViewExtensio
 }
 
 
+FScreenPassTexture FVrmSceneViewExtension::PreTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
+	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::PreTonemap);
+}
 FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
 	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::PostTonemap);
 }
@@ -520,6 +528,10 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 
 	FVRM4URenderModule* m = FModuleManager::GetModulePtr<FVRM4URenderModule>("VRM4URender");
 	if (m == nullptr) {
+		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+	}
+
+	if (FVRM4URenderModule::isCaptureTarget(&InView) == false) {
 		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
 	}
 
@@ -544,15 +556,19 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 			if (c.Key->GetRenderTargetResource() == nullptr) continue;
 
 			switch (c.Value) {
+			case EVRM4U_CaptureSource::ColorTexturePostOpaque:
+				if (Pass == ECapturePass::PreTonemap) {
+					dst = c.Key;
+					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
+				}
+				break;
 			case EVRM4U_CaptureSource::ColorTexturePostTonemap:
-			case EVRM4U_CaptureSource::SceneColorTexturePostTonemap:
 				if (Pass == ECapturePass::PostTonemap) {
 					dst = c.Key;
 					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
 				}
 				break;
 			case EVRM4U_CaptureSource::ColorTextureLastPass:
-			case EVRM4U_CaptureSource::SceneColorTextureLastPass:
 				if (Pass == ECapturePass::LastPass) {
 					dst = c.Key;
 					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
@@ -585,7 +601,7 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 #endif
 	}
 
-	if (bOverride)
+	if (bOverride && InOutInputs.OverrideOutput.IsValid())
 	{
 		return InOutInputs.OverrideOutput;
 	} else
