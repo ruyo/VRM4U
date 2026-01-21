@@ -480,7 +480,7 @@ void FVrmSceneViewExtension::PrePostProcessPass_RenderThread(FRDGBuilder& GraphB
 	//const FMinimalSceneTextures& SceneTextures = static_cast<const FViewInfo&>(View).GetSceneTextures();
 }
 
-#if	UE_VERSION_OLDER_THAN(5,5,0)
+#if	UE_VERSION_OLDER_THAN(5,6,0)
 void FVrmSceneViewExtension::SubscribeToPostProcessingPass(EPostProcessingPass Pass, FAfterPassCallbackDelegateArray& InOutPassCallbacks, bool bIsPassEnabled) {
 	if (Pass == EPostProcessingPass::FXAA)
 	{
