@@ -526,13 +526,25 @@ FScreenPassTexture FVrmSceneViewExtension::LastPass_RenderThread(FRDGBuilder& Gr
 
 FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & GraphBuilder, const FSceneView & InView, const FPostProcessMaterialInputs & InOutInputs, ECapturePass Pass){
 
+	auto GetReturnTexture = [&InOutInputs, &GraphBuilder]() {
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+		/** We don't want to modify scene texture in any way. We just want it to be passed back onto the next stage. */
+		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
+		return SceneTexture;
+#else
+		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+#endif
+		};
+
+
+
 	FVRM4URenderModule* m = FModuleManager::GetModulePtr<FVRM4URenderModule>("VRM4URender");
 	if (m == nullptr) {
-		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+		return GetReturnTexture();
 	}
 
 	if (FVRM4URenderModule::isCaptureTarget(&InView) == false) {
-		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
+		return GetReturnTexture();
 	}
 
 	bool bOverride = false;
@@ -604,14 +616,7 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 	if (bOverride && InOutInputs.OverrideOutput.IsValid())
 	{
 		return InOutInputs.OverrideOutput;
-	} else
-	{
-#if	UE_VERSION_OLDER_THAN(5,4,0)
-		/** We don't want to modify scene texture in any way. We just want it to be passed back onto the next stage. */
-		FScreenPassTexture SceneTexture = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
-		return SceneTexture;
-#else
-		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
-#endif
+	} else	{
+		return GetReturnTexture();
 	}
 }
