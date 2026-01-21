@@ -10,8 +10,8 @@
 class FVrmSceneViewExtension : public FSceneViewExtensionBase
 {
 	enum ECapturePass{
-		BeforeTonemap,
-		AfterTonemap,
+		PreTonemap,
+		PostTonemap,
 		LastPass,
 	};
 public:

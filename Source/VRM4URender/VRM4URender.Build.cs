@@ -26,7 +26,8 @@ public class VRM4URender : ModuleRules
                 "RHI",
                 //"ShaderCore",
                 "Renderer",
-            });
+				"VRM4U",
+			});
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("UnrealEd");

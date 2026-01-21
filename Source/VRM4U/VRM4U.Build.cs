@@ -45,6 +45,7 @@ public class VRM4U : ModuleRules
                 "RenderCore",
                 "AnimGraphRuntime",
 				"LiveLinkInterface",
+				"CinematicCamera",
 
                 // ... add other public dependencies that you statically link with here ...
 			}
@@ -58,7 +59,6 @@ public class VRM4U : ModuleRules
 				"SlateCore",
                 "Engine",
 				"AssetRegistry",
-				"CinematicCamera",
 				"InputCore",
 				"ControlRig",
 				"AnimationCore",

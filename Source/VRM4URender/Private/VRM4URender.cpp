@@ -9,6 +9,7 @@
 #include "Internationalization/Internationalization.h"
 
 
+#include "VrmBPFunctionLibrary.h"
 #include "VRM4U_RenderSubsystem.h"
 #include "VrmExtensionRimFilterData.h"
 #include "RenderGraphBuilder.h"
@@ -24,6 +25,8 @@
 #include "SceneRenderTargetParameters.h"
 #include "Slate/SceneViewport.h"
 #include "ScreenRendering.h"
+#include "SceneView.h"
+#include "SceneRendering.h"
 
 
 #define LOCTEXT_NAMESPACE "VRM4URender"
@@ -31,62 +34,102 @@
 DEFINE_LOG_CATEGORY(LogVRM4URender);
 
 namespace {
-	void VRM4U_AddCopyPass(FPostOpaqueRenderParameters& Parameters, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget) {
+	bool isCaptureTarget(FPostOpaqueRenderParameters& Parameters) {
 
-		const FIntPoint ViewRectSize = FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height());
+		bool bCapture = false;
 
-		AddPass(*Parameters.GraphBuilder, RDG_EVENT_NAME("VRM4UAddCopyPass"), [ViewRectSize, SrcRDGTex, RenderTarget](FRHICommandListImmediate& RHICmdList)
+		bool bPlay = false;
+		bool bSIE = false;
+		bool bEditor = false;
+		UVrmBPFunctionLibrary::VRMGetPlayMode(bPlay, bSIE, bEditor);
+
+		UWorld* World = Parameters.View->Family->Scene->GetWorld();
+		if (World) {
+			EWorldType::Type WorldType = World->WorldType;
+
+			if (bPlay) {
+				switch (WorldType) {
+				case EWorldType::Game:
+				case EWorldType::PIE:
+					bCapture = true;
+					break;
+				}
+			} else {
+				switch (WorldType) {
+				case EWorldType::Editor:
+					bCapture = true;
+					break;
+				}
+			}
+		}
+		if (Parameters.View->bIsGameView) {
+			bCapture = true;
+		}
+		if (Parameters.View->bIsOfflineRender) {
+			bCapture = true;
+		}
+
+		return bCapture;
+	}
+}
+
+void FVRM4URenderModule::AddCopyPass(FRDGBuilder &GraphBuilder, FIntPoint ViewRectSize, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget) {
+
+	//FPostOpaqueRenderParameters& Parameters
+	//const FIntPoint ViewRectSize = FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height());
+
+	AddPass(GraphBuilder, RDG_EVENT_NAME("VRM4UAddCopyPass"), [ViewRectSize, SrcRDGTex, RenderTarget](FRHICommandListImmediate& RHICmdList)
+		{
+			if (SrcRDGTex->GetRHI() == nullptr) return;
+
+			const FIntPoint TargetSize(RenderTarget->GetRenderTargetResource()->GetSizeX(), RenderTarget->GetRenderTargetResource()->GetSizeY());
+
+			FRHITexture* DestRenderTarget = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
+
+			FRHIRenderPassInfo RPInfo(DestRenderTarget, ERenderTargetActions::Load_Store);
+			RHICmdList.BeginRenderPass(RPInfo, TEXT("VRM4U_Copy"));
 			{
-				const FIntPoint TargetSize(RenderTarget->GetRenderTargetResource()->GetSizeX(), RenderTarget->GetRenderTargetResource()->GetSizeY());
+				RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
 
-				FRHITexture* DestRenderTarget = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
+				const ERHIFeatureLevel::Type FeatureLevel = GMaxRHIFeatureLevel;
+				FGlobalShaderMap* ShaderMap = GetGlobalShaderMap(FeatureLevel);
+				TShaderMapRef<FScreenVS> VertexShader(ShaderMap);
+				TShaderMapRef<FScreenPS> PixelShader(ShaderMap);
 
-				FRHIRenderPassInfo RPInfo(DestRenderTarget, ERenderTargetActions::Load_Store);
-				RHICmdList.BeginRenderPass(RPInfo, TEXT("VRM4U_Copy"));
-				{
-					RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
+				FGraphicsPipelineStateInitializer GraphicsPSOInit;
+				RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
+				GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
+				GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
+				GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+				GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
+				GraphicsPSOInit.BoundShaderState.VertexShaderRHI = static_cast<FRHIVertexShader*>(VertexShader.GetRHIShaderBase(SF_Vertex));
+				GraphicsPSOInit.BoundShaderState.PixelShaderRHI = static_cast<FRHIPixelShader*>(PixelShader.GetRHIShaderBase(SF_Pixel));
+				GraphicsPSOInit.PrimitiveType = PT_TriangleList;
+				SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
 
-					const ERHIFeatureLevel::Type FeatureLevel = GMaxRHIFeatureLevel;
-					FGlobalShaderMap* ShaderMap = GetGlobalShaderMap(FeatureLevel);
-					TShaderMapRef<FScreenVS> VertexShader(ShaderMap);
-					TShaderMapRef<FScreenPS> PixelShader(ShaderMap);
-
-					FGraphicsPipelineStateInitializer GraphicsPSOInit;
-					RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
-					GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
-					GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
-					GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
-					GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
-					GraphicsPSOInit.BoundShaderState.VertexShaderRHI = static_cast<FRHIVertexShader*>(VertexShader.GetRHIShaderBase(SF_Vertex));
-					GraphicsPSOInit.BoundShaderState.PixelShaderRHI = static_cast<FRHIPixelShader*>(PixelShader.GetRHIShaderBase(SF_Pixel));
-					GraphicsPSOInit.PrimitiveType = PT_TriangleList;
-					SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
-
-					FRHITexture* SceneTexture = SrcRDGTex->GetRHI()->GetTexture2D();
+				FRHITexture* SceneTexture = SrcRDGTex->GetRHI()->GetTexture2D();
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
-					PixelShader->SetParameters(RHICmdList, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
+				PixelShader->SetParameters(RHICmdList, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
 #else
-					FRHIBatchedShaderParameters& BatchedParameters = RHICmdList.GetScratchShaderParameters();
-					PixelShader->SetParameters(BatchedParameters, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
-					RHICmdList.SetBatchedShaderParameters(RHICmdList.GetBoundPixelShader(), BatchedParameters);
+				FRHIBatchedShaderParameters& BatchedParameters = RHICmdList.GetScratchShaderParameters();
+				PixelShader->SetParameters(BatchedParameters, TStaticSamplerState<SF_Bilinear>::GetRHI(), SceneTexture);
+				RHICmdList.SetBatchedShaderParameters(RHICmdList.GetBoundPixelShader(), BatchedParameters);
 #endif
-					IRendererModule* RendererModule = &FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
-					RendererModule->DrawRectangle(
-						RHICmdList,
-						0, 0,									// Dest X, Y
-						TargetSize.X, TargetSize.Y,				// Dest Width, Height
-						0, 0,									// Source U, V
-						ViewRectSize.X, ViewRectSize.Y,			// Source USize, VSize
-						TargetSize,								// Target buffer size
-						FIntPoint(SceneTexture->GetSizeX(), SceneTexture->GetSizeY()),	// Source texture size
-						VertexShader,
-						EDRF_Default);
-				}
-				RHICmdList.EndRenderPass();
-			});
-	}
-
+				IRendererModule* RendererModule = &FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
+				RendererModule->DrawRectangle(
+					RHICmdList,
+					0, 0,									// Dest X, Y
+					TargetSize.X, TargetSize.Y,				// Dest Width, Height
+					0, 0,									// Source U, V
+					ViewRectSize.X, ViewRectSize.Y,			// Source USize, VSize
+					TargetSize,								// Target buffer size
+					FIntPoint(SceneTexture->GetSizeX(), SceneTexture->GetSizeY()),	// Source texture size
+					VertexShader,
+					EDRF_Default);
+			}
+			RHICmdList.EndRenderPass();
+		});
 }
 
 
@@ -128,10 +171,8 @@ void FVRM4URenderModule::OnPostOpaque(FPostOpaqueRenderParameters& Parameters) {
 
 	if (CaptureList.Num() == 0) return;
 
-	if (bIsPlay) {
-		if (Parameters.View->bIsOfflineRender == false) {
-			if (Parameters.View->PlayerIndex == INDEX_NONE) return;
-		}
+	if (isCaptureTarget(Parameters) == false) {
+		return;
 	}
 
 	{
@@ -241,17 +282,15 @@ void FVRM4URenderModule::OnPostOpaque(FPostOpaqueRenderParameters& Parameters) {
 				DstTex
 			);
 			*/
-			VRM4U_AddCopyPass(Parameters, SrcRDGTex, c.Key);
+			FVRM4URenderModule::AddCopyPass(*Parameters.GraphBuilder, FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height()), SrcRDGTex, c.Key);
 		}
 	}
 }
 void FVRM4URenderModule::OnOverlay(FPostOpaqueRenderParameters& Parameters) {
 	if (CaptureList.Num() == 0) return;
 
-	if (bIsPlay) {
-		if (Parameters.View->bIsOfflineRender == false) {
-			if (Parameters.View->PlayerIndex == INDEX_NONE) return;
-		}
+	if (isCaptureTarget(Parameters) == false) {
+		return;
 	}
 
 	for (auto c : CaptureList) {
@@ -294,7 +333,7 @@ void FVRM4URenderModule::OnOverlay(FPostOpaqueRenderParameters& Parameters) {
 				DstTex);
 			*/
 
-			VRM4U_AddCopyPass(Parameters, SrcRDGTex, c.Key);
+			FVRM4URenderModule::AddCopyPass(*Parameters.GraphBuilder, FIntPoint(Parameters.ViewportRect.Width(), Parameters.ViewportRect.Height()), SrcRDGTex, c.Key);
 		}
 	}
 }

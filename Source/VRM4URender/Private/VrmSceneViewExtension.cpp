@@ -510,7 +510,7 @@ bool FVrmSceneViewExtension::IsActiveThisFrame_Internal(const FSceneViewExtensio
 
 
 FScreenPassTexture FVrmSceneViewExtension::AfterTonemap_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
-	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::AfterTonemap);
+	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::PostTonemap);
 }
 FScreenPassTexture FVrmSceneViewExtension::LastPass_RenderThread(FRDGBuilder& GraphBuilder, const FSceneView& InView, const FPostProcessMaterialInputs& InOutInputs) {
 	return Pass_RenderThread(GraphBuilder, InView, InOutInputs, ECapturePass::LastPass);
@@ -523,6 +523,8 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 		return InOutInputs.ReturnUntouchedSceneColorForPostProcessing(GraphBuilder);
 	}
 
+	bool bOverride = false;
+
 	if (m->CaptureList.Num()) {
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
@@ -531,8 +533,11 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 		decltype(auto) View = InView;
 #endif
 
-		FRDGTextureRef DstRDGTex = nullptr;
+		//FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
+
+		TObjectPtr<UTextureRenderTarget2D>  dst;
+		FScreenPassTextureSlice src;
 
 		for (auto c : m->CaptureList) {
 			if (c.Key == nullptr) continue;
@@ -540,12 +545,18 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 
 			switch (c.Value) {
 			case EVRM4U_CaptureSource::ColorTexturePostTonemap:
-			case EVRM4U_CaptureSource::ColorTextureLastPass:
 			case EVRM4U_CaptureSource::SceneColorTexturePostTonemap:
+				if (Pass == ECapturePass::PostTonemap) {
+					dst = c.Key;
+					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
+				}
+				break;
+			case EVRM4U_CaptureSource::ColorTextureLastPass:
 			case EVRM4U_CaptureSource::SceneColorTextureLastPass:
-
-				//DstRDGTex = GraphBuilder.RegisterExternalTexture(c.Key->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-
+				if (Pass == ECapturePass::LastPass) {
+					dst = c.Key;
+					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
+				}
 				break;
 			default:
 				break;
@@ -564,26 +575,17 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 				SrcTex,
 				DstTex
 			);
+			bOverride = true;
 		}
 #else
-		if (DstRDGTex) {
-			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
-			FScreenPassTexture SrcTex((InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]));
-
-
-			//VRM4U_AddCopyPass(Parameters, SrcRDGTex, c.Key);
-
-			//AddDrawTexturePass(
-			//	GraphBuilder,
-			//	View,
-			//	SrcTex,
-			//	DstTex
-			//);
+		if (src.IsValid() && dst.Get()) {
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.TextureSRV->GetParent() , dst);
+			bOverride = true;
 		}
 #endif
 	}
 
-	if (InOutInputs.OverrideOutput.IsValid())
+	if (bOverride)
 	{
 		return InOutInputs.OverrideOutput;
 	} else
