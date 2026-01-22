@@ -557,11 +557,11 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 		decltype(auto) View = InView;
 #endif
 
-		//FRDGTextureRef DstRDGTex = nullptr;
-		FRDGTextureRef SrcRDGTex = nullptr;
 
 		TObjectPtr<UTextureRenderTarget2D>  dst;
-		FScreenPassTextureSlice src;
+		//FScreenPassTextureSlice src;
+		auto src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
+
 
 		for (auto c : m->CaptureList) {
 			if (c.Key == nullptr) continue;
@@ -571,19 +571,16 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 			case EVRM4U_CaptureSource::ColorTexturePostOpaque:
 				if (Pass == ECapturePass::PreTonemap) {
 					dst = c.Key;
-					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
 				}
 				break;
 			case EVRM4U_CaptureSource::ColorTexturePostTonemap:
 				if (Pass == ECapturePass::PostTonemap) {
 					dst = c.Key;
-					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
 				}
 				break;
 			case EVRM4U_CaptureSource::ColorTextureLastPass:
 				if (Pass == ECapturePass::LastPass) {
 					dst = c.Key;
-					src = InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor];
 				}
 				break;
 			default:
@@ -591,26 +588,16 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 			}
 		}
 
-#if	UE_VERSION_OLDER_THAN(5,4,0)
-
-		if (DstRDGTex) {
-			FScreenPassRenderTarget DstTex(DstRDGTex, ERenderTargetLoadAction::EClear);
-			FScreenPassTexture SrcTex = const_cast<FScreenPassTexture&>(InOutInputs.Textures[(uint32)EPostProcessMaterialInput::SceneColor]);
-
-			AddDrawTexturePass(
-				GraphBuilder,
-				View,
-				SrcTex,
-				DstTex
-			);
-			bOverride = true;
-		}
-#else
 		if (src.IsValid() && dst.Get()) {
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.TextureSRV->GetParent() , dst);
+#if	UE_VERSION_OLDER_THAN(5,4,0)
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.Texture, dst);
 			bOverride = true;
-		}
+
+#else
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.TextureSRV->GetParent(), dst);
+			bOverride = true;
 #endif
+		}
 	}
 
 	if (bOverride && InOutInputs.OverrideOutput.IsValid())
