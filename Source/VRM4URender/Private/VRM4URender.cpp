@@ -67,6 +67,9 @@ bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 	if (View->bIsOfflineRender) {
 		bCapture = true;
 	}
+	if (View->bIsSceneCapture) {
+		bCapture = false;
+	}
 
 	return bCapture;
 }
