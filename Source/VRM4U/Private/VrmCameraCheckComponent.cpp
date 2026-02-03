@@ -18,8 +18,10 @@ UVrmCameraCheckComponent::UVrmCameraCheckComponent(const FObjectInitializer& Obj
 
 void UVrmCameraCheckComponent::OnRegister() {
 	Super::OnRegister();
+	SetCameraCheck(true);
 }
 void UVrmCameraCheckComponent::OnUnregister() {
+	SetCameraCheck(false);
 	Super::OnUnregister();
 }
 
@@ -32,10 +34,14 @@ void UVrmCameraCheckComponent::OnCameraTransformChanged(const FVector&, const FR
 void UVrmCameraCheckComponent::SetCameraCheck(bool bCheckOn) {
 #if WITH_EDITOR
 	if (bCheckOn) {
+		if (handle.IsValid()) {
+			FEditorDelegates::OnEditorCameraMoved.Remove(handle);
+		}
 		handle = FEditorDelegates::OnEditorCameraMoved.AddUObject(this, &UVrmCameraCheckComponent::OnCameraTransformChanged);
 	} else {
 		if (handle.IsValid()) {
 			FEditorDelegates::OnEditorCameraMoved.Remove(handle);
+			handle.Reset();
 		}
 	}
 #endif
