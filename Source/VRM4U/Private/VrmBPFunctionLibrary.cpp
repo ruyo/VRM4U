@@ -12,7 +12,9 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Animation/MorphTarget.h"
+#include "RenderCounters.h"
 #include "Misc/EngineVersionComparison.h"
+
 #if	UE_VERSION_OLDER_THAN(4,26,0)
 #include "AssetRegistryModule.h"
 #include "ARFilter.h"
@@ -1942,6 +1944,38 @@ bool UVrmBPFunctionLibrary::VRMIsEditorPreviewObject(const UObject* obj) {
 	}
 
 	return false;
+}
+
+void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoint & BufferSize){
+
+	ViewportSize = FIntPoint(0, 0);
+
+	BufferSize = GPixelRenderCounters.GetRenderResolution();
+
+#if WITH_EDITOR
+	bool b1, b2, b3;
+	VRMGetPlayMode(b1, b2, b3);
+
+	bool bGameView = b1;
+	if (b2) {
+		bGameView = false;
+	}
+
+	if (GEditor == nullptr) bGameView = true;
+	if (GEditor->GetActiveViewport() == nullptr) bGameView = true;
+
+	if (bGameView == false) {
+		ViewportSize = GEditor->GetActiveViewport()->GetRenderTargetTextureSizeXY();
+		return;
+	}
+#endif
+
+	if (GEngine == nullptr) return;
+	if (GEngine->GameViewport == nullptr) return;
+	if (GEngine->GameViewport->Viewport == nullptr) return;
+
+	FViewport* Viewport = GEngine->GameViewport->Viewport;
+	ViewportSize = Viewport->GetRenderTargetTextureSizeXY();
 }
 
 
