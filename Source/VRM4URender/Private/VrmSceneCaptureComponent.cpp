@@ -26,12 +26,6 @@ public:
 	virtual void SetupViewFamily(FSceneViewFamily& InViewFamily) override {};
 	virtual void SetupView(FSceneViewFamily& InViewFamily, FSceneView& InView) override
 	{
-		TStrongObjectPtr<UVrmSceneCaptureComponent2D> CineCaptureComponent = CaptureComponentWeak.Pin();
-
-		if (!CineCaptureComponent.IsValid())
-		{
-			return;
-		}
 	}
 
 	virtual void PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures)
