@@ -4,13 +4,20 @@
 #include "SceneViewExtension.h"
 #include "Runtime/Engine/Public/SceneView.h"
 #include "Engine/TextureRenderTarget2D.h"
-#include "PostProcess/PostProcessMaterialInputs.h"
 #include "ScreenPass.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "VRM4URender.h"
 #include "VrmBPFunctionLibrary.h"
 #include "Misc/EngineVersionComparison.h"
+
+#if	UE_VERSION_OLDER_THAN(5,3,0)
+#include "PostProcess/PostProcessing.h"
+#include "PostProcess/PostProcessMaterial.h"
+#else
+#include "PostProcess/PostProcessMaterialInputs.h"
+#endif
+
 
 
 class FVrmSceneCaptureSceneViewExtension : public ISceneViewExtension, public TSharedFromThis<FVrmSceneCaptureSceneViewExtension, ESPMode::ThreadSafe>
