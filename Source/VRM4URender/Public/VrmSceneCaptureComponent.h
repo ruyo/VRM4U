@@ -30,7 +30,6 @@ public:
 	TObjectPtr<UTextureRenderTarget2D> RenderTargetB;
 
 public:
-	virtual void UpdateSceneCaptureContents(FSceneInterface* Scene, ISceneRenderBuilder& SceneRenderBuilder) override;
 	virtual void OnRegister() override;
 	virtual void OnUnregister() override;
 

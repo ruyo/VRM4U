@@ -1951,8 +1951,6 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 
 	ViewportSize = FIntPoint(0, 0);
 
-	BufferSize = GPixelRenderCounters.GetRenderResolution();
-
 #if WITH_EDITOR
 	bool b1, b2, b3;
 	VRMGetPlayMode(b1, b2, b3);
@@ -1977,6 +1975,17 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 
 	FViewport* Viewport = GEngine->GameViewport->Viewport;
 	ViewportSize = Viewport->GetRenderTargetTextureSizeXY();
+
+#if	UE_VERSION_OLDER_THAN(5,6,0)
+	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 0, 1);
+	BufferSize = FIntPoint (
+		FMath::RoundToInt(ViewportSize.X * ScreenPercentage / 100.0f),
+		FMath::RoundToInt(ViewportSize.Y * ScreenPercentage / 100.0f)
+	);
+#else
+	BufferSize = GPixelRenderCounters.GetRenderResolution();
+#endif
+
 }
 
 

@@ -21,6 +21,8 @@ public:
 
 	virtual ~FVrmSceneCaptureSceneViewExtension() = default;
 
+	virtual void BeginRenderViewFamily(FSceneViewFamily& InViewFamily) override {};
+
 	virtual void SetupViewFamily(FSceneViewFamily& InViewFamily) override {};
 	virtual void SetupView(FSceneViewFamily& InViewFamily, FSceneView& InView) override
 	{
@@ -98,12 +100,6 @@ UVrmSceneCaptureComponent2D::UVrmSceneCaptureComponent2D(const FObjectInitialize
 	: Super(ObjectInitializer)
 {
 }
-
-void UVrmSceneCaptureComponent2D::UpdateSceneCaptureContents(FSceneInterface* Scene, ISceneRenderBuilder& SceneRenderBuilder)
-{
-	Super::UpdateSceneCaptureContents(Scene, SceneRenderBuilder);
-}
-
 
 void UVrmSceneCaptureComponent2D::OnRegister()
 {
