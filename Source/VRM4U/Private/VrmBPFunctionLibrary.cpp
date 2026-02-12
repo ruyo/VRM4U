@@ -13,7 +13,6 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Animation/MorphTarget.h"
-#include "RenderCounters.h"
 #include "Misc/EngineVersionComparison.h"
 
 #if	UE_VERSION_OLDER_THAN(4,26,0)
@@ -34,6 +33,11 @@
 #include "Rendering/SkeletalMeshModel.h"
 
 #include "VrmRigHeader.h"
+
+#if	UE_VERSION_OLDER_THAN(5,2,0)
+#else
+#include "RenderCounters.h"
+#endif
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #else
