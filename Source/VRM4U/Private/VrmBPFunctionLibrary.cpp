@@ -1981,7 +1981,7 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 	ViewportSize = Viewport->GetRenderTargetTextureSizeXY();
 
 #if	UE_VERSION_OLDER_THAN(5,6,0)
-	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 0, 1);
+	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 0.f, 1.f);
 	BufferSize = FIntPoint (
 		FMath::RoundToInt(ViewportSize.X * ScreenPercentage / 100.0f),
 		FMath::RoundToInt(ViewportSize.Y * ScreenPercentage / 100.0f)
