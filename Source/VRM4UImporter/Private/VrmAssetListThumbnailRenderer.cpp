@@ -228,10 +228,18 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 
 		FVector2D Position(Width / 24, Height / 24);
 		//FCanvasTextItem TextItem(Position, ChannelText, GEngine->GetLargeFont(), FLinearColor::Black);
-		FCanvasTextItem TextItem(Position, ChannelText, FSlateFontInfo(UEngine::GetMediumFont(), 28), FLinearColor::Black);
+		FCanvasTextItem TextItem(Position, ChannelText, FSlateFontInfo(UEngine::GetMediumFont(), 32), FLinearColor::Black);
 
 		TextItem.DisableShadow();
-		//TextItem.Scale = FVector2D(Width / 64.0f, Height / 64.0f);
+		TextItem.Scale = FVector2D(Width / 256.0f, Height / 256.0f);
+
+		if (Width < 128) {
+			int ss = 32 * Width / 256;
+			TextItem.Scale = FVector2D(1, 1);
+			TextItem.SlateFontInfo.GetValue().Size = ss;
+			TextItem.SlateFontInfo.GetValue().FontObject = UEngine::GetTinyFont();
+		}
+
 
 		TextItem.Draw(Canvas); // サイズ取得のため一度描画する
 
@@ -245,7 +253,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 
 			FVector2D TextSize = TextItem.DrawnSize;
 
-			FVector2D Padding(4.0f, 2.0f);
+			FVector2D Padding(2.0f, 1.0f);
 			FVector2D BackgroundSize = TextSize + Padding * 2.0f;
 			FVector2D BackgroundPosition = Position - Padding;
 
