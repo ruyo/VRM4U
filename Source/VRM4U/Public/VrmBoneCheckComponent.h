@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
+#include "Components/SceneComponent.h"
 #include "VrmBoneCheckComponent.generated.h"
 
 
