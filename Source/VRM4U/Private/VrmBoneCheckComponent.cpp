@@ -1,7 +1,7 @@
 // VRM4U Copyright (c) 2021-2026 Haruyoshi Yamamoto. This software is released under the MIT License.
 
 #include "VrmBoneCheckComponent.h"
-#include "Components/SkinnedMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
@@ -21,12 +21,12 @@ UVrmBoneCheckComponent::UVrmBoneCheckComponent(const FObjectInitializer& ObjectI
 void UVrmBoneCheckComponent::OnRegister() {
 	Super::OnRegister();
 
-	USkinnedMeshComponent* skin = Cast<USkinnedMeshComponent>(this->GetAttachParent());
-	if (skin == nullptr) return;
+	USkeletalMeshComponent* skc = Cast<USkeletalMeshComponent>(this->GetAttachParent());
+	if (skc == nullptr) return;
 
 	//USkeletalMeshComponent* c;
 	//c->RegisterOnBoneTransformsFinalizedDelegate
-	skin->RegisterOnBoneTransformsFinalizedDelegate(
+	skc->RegisterOnBoneTransformsFinalizedDelegate(
 	FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this, &UVrmBoneCheckComponent::OnTargetTransformUpdate));
 }
 void UVrmBoneCheckComponent::OnUnregister() {
