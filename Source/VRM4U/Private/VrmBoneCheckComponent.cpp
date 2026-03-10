@@ -21,6 +21,9 @@ UVrmBoneCheckComponent::UVrmBoneCheckComponent(const FObjectInitializer& ObjectI
 void UVrmBoneCheckComponent::OnRegister() {
 	Super::OnRegister();
 
+#if	UE_VERSION_OLDER_THAN(4,27,0)
+#else
+
 	USkeletalMeshComponent* skc = Cast<USkeletalMeshComponent>(this->GetAttachParent());
 	if (skc == nullptr) return;
 
@@ -28,6 +31,7 @@ void UVrmBoneCheckComponent::OnRegister() {
 	//c->RegisterOnBoneTransformsFinalizedDelegate
 	skc->RegisterOnBoneTransformsFinalizedDelegate(
 	FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this, &UVrmBoneCheckComponent::OnTargetTransformUpdate));
+#endif
 }
 void UVrmBoneCheckComponent::OnUnregister() {
 	Super::OnUnregister();
