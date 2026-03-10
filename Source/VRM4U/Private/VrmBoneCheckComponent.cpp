@@ -2,7 +2,7 @@
 
 #include "VrmBoneCheckComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Misc/EngineVersion.h"
+#include "Misc/EngineVersionComparison.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
