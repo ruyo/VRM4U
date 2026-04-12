@@ -40,6 +40,10 @@ class VRM4U_API UVrmRuntimeSettings : public UObject
 		))
 	FSoftObjectPath AssetListObject;
 
+	/** Skip VRM validation check on import */
+	UPROPERTY(config, EditAnywhere, Category = Settings)
+	bool bSkipValidationOnImport = false;
+
 	/** priority<100 for VRM4U. Default plugins priority=100 */
 	UPROPERTY(config, EditAnywhere, Category = Settings, meta = (
 		ConfigRestartRequired = true
