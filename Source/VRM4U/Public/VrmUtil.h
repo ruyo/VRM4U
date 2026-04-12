@@ -440,7 +440,7 @@ public:
 	bool bGenerateOutlineMaterial = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
-	bool bMergeMaterial = true;
+	bool bMergeMaterial = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRM4U")
 	bool bMergePrimitive = false;
