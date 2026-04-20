@@ -88,7 +88,10 @@ public:
 
 	UFUNCTION(BlueprintCallable,Category="VRM4U", meta = (DynamicOutputParam = "OutVrmAsset"))
 	static bool LoadVRMFile(const class UVrmAssetListObject *InVrmAsset, class UVrmAssetListObject *&OutVrmAsset, const FString filepath, const FImportOptionData &OptionForRuntimeLoad);
-
+	
+	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (Latent, DynamicOutputParam = "OutVrmAsset", WorldContext = "WorldContextObject", LatentInfo = "LatentInfo"))
+	static void LoadVRMFromMemoryAsync(const UObject* WorldContextObject, const UVrmAssetListObject* InVrmAsset, UVrmAssetListObject*& OutVrmAsset, const TArray<uint8>& Data, const FImportOptionData& OptionForRuntimeLoad, FLatentActionInfo LatentInfo);
+	
 	UFUNCTION(BlueprintCallable, Category = "VRM4U", meta = (Latent, DynamicOutputParam = "OutVrmAsset", WorldContext = "WorldContextObject", LatentInfo = "LatentInfo"))
 	static void LoadVRMFileAsync(const UObject* WorldContextObject, const class UVrmAssetListObject* InVrmAsset, class UVrmAssetListObject*& OutVrmAsset, const FString filepath, const FImportOptionData& OptionForRuntimeLoad, struct FLatentActionInfo LatentInfo);
 
