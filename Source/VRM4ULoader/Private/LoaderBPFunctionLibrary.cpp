@@ -215,9 +215,22 @@ static bool RenewPkgAndSaveObject(UObject *u, bool bSave) {
 			FSavePackageArgs SaveArgs = { nullptr, EObjectFlags::RF_Standalone, SAVE_NoError, true,
 					true, true, FDateTime::MinValue(), GError };
 			bool bSaved = UPackage::SavePackage(s_vrm_package, u, *(s_vrm_package->GetName()), SaveArgs);
-#else
+#elif UE_VERSION_OLDER_THAN(5,8,0)
 			FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Standalone, SAVE_NoError, true,
 					true, true, FDateTime::MinValue(), GError };
+			bool bSaved = UPackage::SavePackage(s_vrm_package, u, *(s_vrm_package->GetName()), SaveArgs);
+#else
+			FSavePackageArgs SaveArgs;
+			SaveArgs.ArchiveCookData = nullptr;
+			SaveArgs.TopLevelFlags = EObjectFlags::RF_Standalone;
+			SaveArgs.SaveFlags = SAVE_NoError;
+			SaveArgs.bForceByteSwapping = true;
+			SaveArgs.bWarnOfLongFilename = true;
+			SaveArgs.bSlowTask = true;
+			SaveArgs.FinalTimeStamp = FDateTime::MinValue();
+			SaveArgs.Error = GError;
+			SaveArgs.SavePackageContext = nullptr;
+
 			bool bSaved = UPackage::SavePackage(s_vrm_package, u, *(s_vrm_package->GetName()), SaveArgs);
 #endif
 		}
