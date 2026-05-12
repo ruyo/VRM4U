@@ -297,17 +297,7 @@ void FAnimNode_VrmSpringBone::ConditionalDebugDraw(FPrimitiveDrawInterface* PDI,
 				FTransform t2 = t;
 				t2.AddToTranslation(tail);
 
-				if (0) {
-					// sphere and line
-					DrawWireSphere(PDI, t1, FLinearColor(1, 1, 1), r, 32, Priority);
-					DrawWireSphere(PDI, t2, FLinearColor::Green, r, 32, Priority);
-					PDI->DrawLine(
-						t1.GetLocation(),
-						t2.GetLocation(),
-						FLinearColor::Green,
-						Priority);
-				}
-				else {
+				{
 					// capsule
 					FVector center = (t1.GetLocation() + t2.GetLocation()) / 2.f;
 					FVector Up = (t1.GetLocation() - t2.GetLocation()).GetSafeNormal();

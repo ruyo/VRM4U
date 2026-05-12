@@ -143,59 +143,6 @@ void FAnimNode_VrmModifyHumanoidBone::EvaluateSkeletalControl_AnyThread(FCompone
 
 	}
 
-	if (0) {
-		for (int boneNo = 0; boneNo < Transform_hum.Num(); ++boneNo) {
-			if (boneNo >= a.Num()) {
-				continue;
-			}
-			auto boneName = table.Find(a[boneNo]);
-
-			if (boneName == nullptr) {
-				continue;
-			}
-
-			int32 boneIndex = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton().FindBoneIndex(**boneName);
-
-			if (boneIndex < 0) {
-				continue;
-			}
-			auto rot = Transform_hum[boneNo].GetRotation();
-
-
-
-			const FCompactPoseBoneIndex CompactPoseBoneToModify(boneIndex);
-			FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(CompactPoseBoneToModify);
-			const FTransform ComponentTransform = Output.AnimInstanceProxy->GetComponentTransform();
-			const FTransform orgTM = NewBoneTM;
-
-			// Convert to Bone Space.
-			FAnimationRuntime::ConvertCSTransformToBoneSpace(ComponentTransform, Output.Pose, NewBoneTM, CompactPoseBoneToModify, RotationSpace);
-
-			//const FQuat BoneQuat(Rotation);
-			const FQuat BoneQuat = rot;
-			//if (RotationMode == BMM_Additive)
-			//{
-				//NewBoneTM.SetRotation(BoneQuat * NewBoneTM.GetRotation());
-			//} else
-			//{
-			NewBoneTM.SetRotation(BoneQuat);
-			//} 
-
-			// Convert back to Component Space.
-			FAnimationRuntime::ConvertBoneSpaceTransformToCS(ComponentTransform, Output.Pose, NewBoneTM, CompactPoseBoneToModify, RotationSpace);
-
-			{
-				TArray<FBoneTransform> bt;
-
-				bt.Add(FBoneTransform(CompactPoseBoneToModify, NewBoneTM));
-
-				const float BlendWeight = FMath::Clamp<float>(ActualAlpha, 0.f, 1.f);
-				Output.Pose.LocalBlendCSBoneTransforms(bt, BlendWeight);
-			}
-			//OutBoneTransforms.Add(FBoneTransform(CompactPoseBoneToModify, NewBoneTM));
-		}
-	}
-
 	//OutBoneTransforms.Sort(FCompareBoneTransformIndex());
 }
 

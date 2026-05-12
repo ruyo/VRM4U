@@ -332,16 +332,7 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 					constraint.ComponentPose.SetLinkNode(&constraint);
 				}
 
-				if (0) {
-					++CalcCount;
-					FComponentSpacePoseContext InputCSPose(this);
-					for (int i = 0; i < 20; ++i) {
-						InputCSPose.Pose.InitPose(Output.Pose);
-						constraint.EvaluateComponentSpace_AnyThread(InputCSPose);
-						ConvertToLocalPoses(InputCSPose.Pose, Output.Pose);
-					}
-				}
-				else {
+				{
 					FComponentSpacePoseContext InputCSPose(this);
 					InputCSPose.Pose.InitPose(Output.Pose);
 					constraint.EvaluateComponentSpace_AnyThread(InputCSPose);
