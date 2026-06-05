@@ -1221,11 +1221,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				TArray<FSoftSkinVertexLocal> meshWeight;
 				auto &mInfo = result.meshInfo[meshID];
 
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5,0,0)
 				// VertexColor Override Allow
 				if (0 < mInfo.VertexColors.Num() && sk->GetHasVertexColors() == false) {
 					sk->SetHasVertexColors(true);
 				}
-
+#endif
 				for (int i = 0; i < mInfo.Vertices.Num(); ++i) {
 					FSoftSkinVertexLocal *meshS = new(meshWeight) FSoftSkinVertexLocal();
 					*meshS = softSkinVertexLocalZero;
