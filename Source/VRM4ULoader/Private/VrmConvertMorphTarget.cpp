@@ -20,6 +20,17 @@
 
 #include "Async/ParallelFor.h"
 
+#if WITH_EDITOR
+
+#if UE_VERSION_OLDER_THAN(5,8,0)
+#else
+#include "MeshDescription.h"
+#include "MeshAttributes.h"
+#include "SkeletalMeshAttributes.h"
+#endif // 5.8
+
+#endif // editor
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
@@ -376,7 +387,9 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 #if WITH_EDITOR
 
 #if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
+
+#elif UE_VERSION_OLDER_THAN(5,8,0)
+
 	// to avoid no morph target
 	// on Immediate
 	VRMSetUseLegacyMeshDerivedDataKey(sk, true);
@@ -386,14 +399,29 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 
 	RawMesh.MorphTargetNames = MorphNameList;
 
-	// to avoid no morph target
-	// on EditorRestart
+
+
 	sk->SaveLODImportedData(0, RawMesh);
-
 	sk->SetLODImportedDataVersions(0, ESkeletalMeshGeoImportVersions::Before_Versionning, ESkeletalMeshSkinningImportVersions::Before_Versionning);
+#else
+	// UE5.8以降: MeshDescriptionとImportedDataの両方を使用
+	FMeshDescription* MeshDescription = sk->GetMeshDescription(0);
+	if (MeshDescription)
+	{
+		FSkeletalMeshAttributes MeshAttributes(*MeshDescription);
+		MeshAttributes.Register();
+		sk->CommitMeshDescription(0);
+	}
 
+	// ImportedDataに保存（UE5.8でも必須）
+	FSkeletalMeshImportData RawMesh;
+	sk->LoadLODImportedData(0, RawMesh);
+	RawMesh.MorphTargetNames = MorphNameList;
+	sk->SaveLODImportedData(0, RawMesh);
+	sk->SetLODImportedDataVersions(0, ESkeletalMeshGeoImportVersions::Before_Versionning, ESkeletalMeshSkinningImportVersions::Before_Versionning);
 #endif
 #endif // editor
+
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else
 	{
@@ -446,7 +474,13 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 	}
 
 #if WITH_EDITOR
+#if UE_VERSION_OLDER_THAN(5,8,0)
 	sk->PostEditChange();
+#else
+	// UE5.8: Force rebuild of skeletal mesh before PostEditChange
+	sk->Build();
+	sk->PostEditChange();
+#endif
 #else
 
 #if	UE_VERSION_OLDER_THAN(4,24,0)

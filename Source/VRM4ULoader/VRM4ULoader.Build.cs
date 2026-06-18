@@ -47,12 +47,19 @@ public class VRM4ULoader : ModuleRules
 			});
 		PrivateDependencyModuleNames.Add("TimeManagement");
 
+		BuildVersion Version;
+		BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version);
+
+		if (Version.MajorVersion == 5 && Version.MinorVersion >= 8)
+		{
+			PrivateDependencyModuleNames.Add("MeshDescriptionOperations");
+			PrivateDependencyModuleNames.Add("SkeletalMeshDescription");
+		}
+
 		if (Target.bBuildEditor) {
 			PrivateDependencyModuleNames.Add("Persona");
 		}
 
-		BuildVersion Version;
-		if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version))
 		{
 			//if (Version.MajorVersion == X && Version.MinorVersion == Y)
 			if (Version.MajorVersion == 5)
