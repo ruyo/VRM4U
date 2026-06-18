@@ -1449,8 +1449,9 @@ namespace {
 		}
 		BOOL b = SetLayeredWindowAttributes(h, cr, a, dwFlags);
 		return b != 0;
-#endif
+#else
 		return false;
+#endif
 	}
 	void setDefaultWindow(const bool) {
 		setTransParent(false, FLinearColor(1, 1, 1, 1));
