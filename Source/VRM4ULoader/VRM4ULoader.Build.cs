@@ -52,6 +52,8 @@ public class VRM4ULoader : ModuleRules
 
 		if (Version.MajorVersion == 5 && Version.MinorVersion >= 8)
 		{
+			PrivateDependencyModuleNames.Add("MeshDescription");
+			PrivateDependencyModuleNames.Add("StaticMeshDescription");
 			PrivateDependencyModuleNames.Add("MeshDescriptionOperations");
 			PrivateDependencyModuleNames.Add("SkeletalMeshDescription");
 		}
