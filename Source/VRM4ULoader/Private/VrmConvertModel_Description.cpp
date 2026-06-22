@@ -1914,23 +1914,37 @@ bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAss
 				}
 
 				// Skin weights
+				// ボーンマップを使用してローカルボーンインデックスをグローバルボーンインデックスに変換
 				FSkinWeightsVertexAttributesRef VertexSkinWeights = MeshAttributes.GetVertexSkinWeights();
-				for (int32 VertexIndex = 0; VertexIndex < allVertex; ++VertexIndex) {
-					const FSoftSkinVertexLocal& SoftVertex = Weight[VertexIndex];
-					FVertexID VertexID(VertexIndex);
 
-					TArray<UE::AnimationCore::FBoneWeight> BoneWeightArray;
-					for (int32 InfluenceIndex = 0; InfluenceIndex < MAX_TOTAL_INFLUENCES; ++InfluenceIndex) {
-						if (SoftVertex.InfluenceWeights[InfluenceIndex] > 0) {
-							BoneWeightArray.Add(UE::AnimationCore::FBoneWeight(
-								SoftVertex.InfluenceBones[InfluenceIndex],
-								SoftVertex.InfluenceWeights[InfluenceIndex] * VRM4U_InvMaxRawBoneWeightFloat
-							));
+				for (int32 SectionIndex = 0; SectionIndex < pLODModel->Sections.Num(); ++SectionIndex) {
+					const FSkelMeshSection& Section = pLODModel->Sections[SectionIndex];
+
+					// このセクションの各頂点を処理
+					for (int32 LocalVertexIndex = 0; LocalVertexIndex < Section.SoftVertices.Num(); ++LocalVertexIndex) {
+						int32 GlobalVertexIndex = Section.BaseVertexIndex + LocalVertexIndex;
+						if (GlobalVertexIndex >= allVertex) continue;
+
+						const FSoftSkinVertex& SoftVertex = Section.SoftVertices[LocalVertexIndex];
+						FVertexID VertexID(GlobalVertexIndex);
+
+						TArray<UE::AnimationCore::FBoneWeight> BoneWeightArray;
+						for (int32 InfluenceIndex = 0; InfluenceIndex < MAX_TOTAL_INFLUENCES; ++InfluenceIndex) {
+							if (SoftVertex.InfluenceWeights[InfluenceIndex] > 0) {
+								// ローカルボーンインデックスをグローバルボーンインデックスに変換
+								int32 LocalBoneIndex = SoftVertex.InfluenceBones[InfluenceIndex];
+								if (LocalBoneIndex < Section.BoneMap.Num()) {
+									int32 GlobalBoneIndex = Section.BoneMap[LocalBoneIndex];
+									float w = SoftVertex.InfluenceWeights[InfluenceIndex] * VRM4U_InvMaxRawBoneWeightFloat;
+
+									BoneWeightArray.Add(UE::AnimationCore::FBoneWeight(GlobalBoneIndex, w));
+								}
+							}
 						}
-					}
 
-					if (BoneWeightArray.Num() > 0) {
-						VertexSkinWeights.Set(VertexID, TArrayView<const UE::AnimationCore::FBoneWeight>(BoneWeightArray));
+						if (BoneWeightArray.Num() > 0) {
+							VertexSkinWeights.Set(VertexID, TArrayView<const UE::AnimationCore::FBoneWeight>(BoneWeightArray));
+						}
 					}
 				}
 
