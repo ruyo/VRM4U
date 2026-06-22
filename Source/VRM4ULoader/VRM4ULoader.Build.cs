@@ -54,7 +54,6 @@ public class VRM4ULoader : ModuleRules
 		{
 			PrivateDependencyModuleNames.Add("MeshDescription");
 			PrivateDependencyModuleNames.Add("StaticMeshDescription");
-			PrivateDependencyModuleNames.Add("MeshDescriptionOperations");
 			PrivateDependencyModuleNames.Add("SkeletalMeshDescription");
 		}
 
