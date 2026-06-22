@@ -1837,18 +1837,38 @@ bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAss
 				// Material to PolygonGroup mapping
 				TMap<int32, FPolygonGroupID> MaterialIndexToPolygonGroupID;
 
+				// PolygonGroup属性を取得
+				TPolygonGroupAttributesRef<FName> PolygonGroupImportedMaterialSlotNames = MeshAttributes.GetPolygonGroupMaterialSlotNames();
+
+				// 各マテリアルインデックスに対してPolygonGroupを作成
+				for (int32 SectionIndex = 0; SectionIndex < pLODModel->Sections.Num(); ++SectionIndex) {
+					const FSkelMeshSection& Section = pLODModel->Sections[SectionIndex];
+
+					if (!MaterialIndexToPolygonGroupID.Contains(Section.MaterialIndex)) {
+						FPolygonGroupID PolygonGroupID = MeshDesc.CreatePolygonGroup();
+						MaterialIndexToPolygonGroupID.Add(Section.MaterialIndex, PolygonGroupID);
+
+						// マテリアルスロット名を設定
+						FName MaterialSlotName = NAME_None;
+						if (VRMGetMaterials(sk).IsValidIndex(Section.MaterialIndex)) {
+							MaterialSlotName = VRMGetMaterials(sk)[Section.MaterialIndex].MaterialSlotName;
+							if (MaterialSlotName == NAME_None && aiData && aiData->mMaterials && Section.MaterialIndex < (int32)aiData->mNumMaterials) {
+								MaterialSlotName = FName(UTF8_TO_TCHAR(aiData->mMaterials[Section.MaterialIndex]->GetName().C_Str()));
+							}
+						}
+						PolygonGroupImportedMaterialSlotNames[PolygonGroupID] = MaterialSlotName;
+					}
+				}
+
 				// Process each section
 				for (int32 SectionIndex = 0; SectionIndex < pLODModel->Sections.Num(); ++SectionIndex) {
 					const FSkelMeshSection& Section = pLODModel->Sections[SectionIndex];
 
-					// Create or get PolygonGroup for this material
-					FPolygonGroupID PolygonGroupID;
+					// Get PolygonGroup for this material (already created above)
 					if (!MaterialIndexToPolygonGroupID.Contains(Section.MaterialIndex)) {
-						PolygonGroupID = MeshDesc.CreatePolygonGroup();
-						MaterialIndexToPolygonGroupID.Add(Section.MaterialIndex, PolygonGroupID);
-					} else {
-						PolygonGroupID = MaterialIndexToPolygonGroupID[Section.MaterialIndex];
+						continue; // Should not happen
 					}
+					FPolygonGroupID PolygonGroupID = MaterialIndexToPolygonGroupID[Section.MaterialIndex];
 
 					// Process triangles in this section
 					for (uint32 TriIndex = 0; TriIndex < Section.NumTriangles; ++TriIndex) {
