@@ -50,6 +50,15 @@
 
 #if WITH_EDITOR
 #include "Kismet2/KismetEditorUtilities.h"
+
+#if UE_VERSION_OLDER_THAN(5,8,0)
+#else
+#include "MeshDescription.h"
+#include "MeshAttributes.h"
+#include "SkeletalMeshAttributes.h"
+#include "StaticMeshAttributes.h"
+#endif
+
 #endif
 
 
@@ -591,19 +600,7 @@ static void CreateSwingHead(UVrmAssetListObject *vrmAssetList, VRM::VRMSpring &s
 	}
 }
 
-bool VRMConverter::ConvertModel(UVrmAssetListObject* vrmAssetList) {
-
-
-#if	UE_VERSION_OLDER_THAN(5,8,0)
-	return ConvertModel_internal(vrmAssetList);
-#else
-	return ConvertModel_internal_description(vrmAssetList);
-#endif
-
-}
-
-bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
-
+bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAssetList) {
 	if (vrmAssetList == nullptr) {
 		return false;
 	}
@@ -1819,6 +1816,110 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 				p->ActiveBoneIndices = rd.ActiveBoneIndices;
 				p->RequiredBones = rd.RequiredBones;
 			}
+
+#if UE_VERSION_OLDER_THAN(5,8,0)
+#else
+			// UE 5.8: Create MeshDescription from LODModel data
+			{
+				FSkeletalMeshLODModel *pLODModel = &(sk->GetImportedModel()->LODModels[0]);
+
+				FMeshDescription MeshDesc;
+				FSkeletalMeshAttributes MeshAttributes(MeshDesc);
+				MeshAttributes.Register();
+
+				// Vertex positions
+				TVertexAttributesRef<FVector3f> VertexPositions = MeshAttributes.GetVertexPositions();
+				for (int32 VertexIndex = 0; VertexIndex < allVertex; ++VertexIndex) {
+					FVertexID VertexID = MeshDesc.CreateVertex();
+					VertexPositions[VertexID] = FVector3f(v.PositionVertexBuffer.VertexPosition(VertexIndex));
+				}
+
+				// Material to PolygonGroup mapping
+				TMap<int32, FPolygonGroupID> MaterialIndexToPolygonGroupID;
+
+				// Process each section
+				for (int32 SectionIndex = 0; SectionIndex < pLODModel->Sections.Num(); ++SectionIndex) {
+					const FSkelMeshSection& Section = pLODModel->Sections[SectionIndex];
+
+					// Create or get PolygonGroup for this material
+					FPolygonGroupID PolygonGroupID;
+					if (!MaterialIndexToPolygonGroupID.Contains(Section.MaterialIndex)) {
+						PolygonGroupID = MeshDesc.CreatePolygonGroup();
+						MaterialIndexToPolygonGroupID.Add(Section.MaterialIndex, PolygonGroupID);
+					} else {
+						PolygonGroupID = MaterialIndexToPolygonGroupID[Section.MaterialIndex];
+					}
+
+					// Process triangles in this section
+					for (uint32 TriIndex = 0; TriIndex < Section.NumTriangles; ++TriIndex) {
+						TArray<FVertexInstanceID> VertexInstanceIDs;
+						VertexInstanceIDs.SetNum(3);
+
+						for (int32 CornerIndex = 0; CornerIndex < 3; ++CornerIndex) {
+							// 修正: Section.BaseIndexから開始
+							int32 IndexBufferIndex = Section.BaseIndex + TriIndex * 3 + CornerIndex;
+							int32 WedgeIndex = pLODModel->IndexBuffer[IndexBufferIndex];
+
+							// SoftVerticesはセクション内のローカルインデックスを使用
+							int32 LocalVertexIndex = WedgeIndex - Section.BaseVertexIndex;
+							if (LocalVertexIndex < 0 || LocalVertexIndex >= Section.SoftVertices.Num()) {
+								continue;
+							}
+							const FSoftSkinVertex& SoftVertex = Section.SoftVertices[LocalVertexIndex];
+
+							FVertexInstanceID VertexInstanceID = MeshDesc.CreateVertexInstance(FVertexID(WedgeIndex));
+							VertexInstanceIDs[CornerIndex] = VertexInstanceID;
+
+							// Set UV
+							TVertexInstanceAttributesRef<FVector2f> UVs = MeshAttributes.GetVertexInstanceUVs();
+							UVs.Set(VertexInstanceID, 0, SoftVertex.UVs[0]);
+
+							// Set normals and tangents
+							TVertexInstanceAttributesRef<FVector3f> Normals = MeshAttributes.GetVertexInstanceNormals();
+							TVertexInstanceAttributesRef<FVector3f> Tangents = MeshAttributes.GetVertexInstanceTangents();
+							TVertexInstanceAttributesRef<float> BinormalSigns = MeshAttributes.GetVertexInstanceBinormalSigns();
+
+							Normals[VertexInstanceID] = FVector3f(SoftVertex.TangentZ);
+							Tangents[VertexInstanceID] = SoftVertex.TangentX;
+							BinormalSigns[VertexInstanceID] = GetBasisDeterminantSign(
+								FVector(SoftVertex.TangentX),
+								FVector(SoftVertex.TangentY),
+								FVector(SoftVertex.TangentZ)
+							);
+						}
+
+						// Create polygon (triangle)
+						MeshDesc.CreatePolygon(PolygonGroupID, VertexInstanceIDs);
+					}
+				}
+
+				// Skin weights
+				FSkinWeightsVertexAttributesRef VertexSkinWeights = MeshAttributes.GetVertexSkinWeights();
+				for (int32 VertexIndex = 0; VertexIndex < allVertex; ++VertexIndex) {
+					const FSoftSkinVertexLocal& SoftVertex = Weight[VertexIndex];
+					FVertexID VertexID(VertexIndex);
+
+					TArray<UE::AnimationCore::FBoneWeight> BoneWeightArray;
+					for (int32 InfluenceIndex = 0; InfluenceIndex < MAX_TOTAL_INFLUENCES; ++InfluenceIndex) {
+						if (SoftVertex.InfluenceWeights[InfluenceIndex] > 0) {
+							BoneWeightArray.Add(UE::AnimationCore::FBoneWeight(
+								SoftVertex.InfluenceBones[InfluenceIndex],
+								SoftVertex.InfluenceWeights[InfluenceIndex] * VRM4U_InvMaxRawBoneWeightFloat
+							));
+						}
+					}
+
+					if (BoneWeightArray.Num() > 0) {
+						VertexSkinWeights.Set(VertexID, TArrayView<const UE::AnimationCore::FBoneWeight>(BoneWeightArray));
+					}
+				}
+
+				// Commit MeshDescription to SkeletalMesh
+				sk->CreateMeshDescription(0, MoveTemp(MeshDesc));
+				sk->CommitMeshDescription(0);
+			}
+#endif // 5.8
+
 #else // game
 
 #if	UE_VERSION_OLDER_THAN(4,25,0)
@@ -2736,10 +2837,10 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 }
 
 
-VrmConvertModel::VrmConvertModel()
-{
-}
+//VrmConvertModel::VrmConvertModel()
+//{
+//}
 
-VrmConvertModel::~VrmConvertModel()
-{
-}
+//VrmConvertModel::~VrmConvertModel()
+//{
+//}
