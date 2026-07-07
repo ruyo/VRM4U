@@ -2,6 +2,7 @@
 
 using UnrealBuildTool;
 using System.IO;
+using System.Reflection;
 
 
 public class VRM4ULoader : ModuleRules
@@ -20,8 +21,28 @@ public class VRM4ULoader : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		// for thirdparty header
-		//bUseUnityBuild = false;
+		BuildVersion Version;
+		BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version);
+
+		//PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		//PCHUsage = PCHUsageMode.NoSharedPCHs;
+
+		{
+			var unityBuildProperty = GetType().GetProperty("bUseUnityBuild", BindingFlags.Public | BindingFlags.Instance);
+			if (unityBuildProperty != null)
+			{
+				// UE5.8+
+			//	unityBuildProperty.SetValue(this, false);
+			}
+		}
+		{
+			// UE5.7 and earlier
+			var unityProperty = GetType().GetProperty("bUseUnity", BindingFlags.Public | BindingFlags.Instance);
+			if (unityProperty != null)
+			{
+			//	unityProperty.SetValue(this, false);
+			}
+		}
 
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -47,8 +68,6 @@ public class VRM4ULoader : ModuleRules
 			});
 		PrivateDependencyModuleNames.Add("TimeManagement");
 
-		BuildVersion Version;
-		BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version);
 
 		if (Version.MajorVersion == 5 && Version.MinorVersion >= 8)
 		{
