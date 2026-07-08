@@ -590,11 +590,11 @@ FScreenPassTexture FVrmSceneViewExtension::Pass_RenderThread(FRDGBuilder & Graph
 
 		if (src.IsValid() && dst.Get()) {
 #if	UE_VERSION_OLDER_THAN(5,4,0)
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.Texture, dst);
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, View.UnscaledViewRect, src.Texture, dst);
 			bOverride = true;
 
 #else
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(View.UnscaledViewRect.Width(), View.UnscaledViewRect.Height()), src.TextureSRV->GetParent(), dst);
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, View.UnscaledViewRect, src.TextureSRV->GetParent(), dst);
 			bOverride = true;
 #endif
 		}

@@ -76,6 +76,6 @@ public:
 	void OnPIEEvent(bool bPIEBegin, bool bPIEEnd);
 #endif
 
-	static void AddCopyPass(FRDGBuilder& GraphBuilder, FIntPoint ViewRectSize, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
+	static void AddCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static bool isCaptureTarget(const FSceneView* View);
 };

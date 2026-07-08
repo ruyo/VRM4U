@@ -11,6 +11,11 @@
 #include "VrmBPFunctionLibrary.h"
 #include "Misc/EngineVersionComparison.h"
 
+#if WITH_EDITOR
+#include "Editor.h"
+#include "UnrealClient.h"
+#endif
+
 #if	UE_VERSION_OLDER_THAN(5,3,0)
 #include "PostProcess/PostProcessing.h"
 #include "PostProcess/PostProcessMaterial.h"
@@ -55,7 +60,8 @@ public:
 			}
 		}
 		if (SrcRDGTex) {
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(InView.UnscaledViewRect.Width(), InView.UnscaledViewRect.Height()), SrcRDGTex, CaptureComponentWeak->RenderTargetA);
+			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnscaledViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetA);
 		}
 
 		SrcRDGTex = nullptr;
@@ -69,7 +75,8 @@ public:
 		}
 
 		if (SrcRDGTex) {
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, FIntPoint(InView.UnscaledViewRect.Width(), InView.UnscaledViewRect.Height()), SrcRDGTex, CaptureComponentWeak->RenderTargetB);
+			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnscaledViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetB);
 		}
 
 	}
@@ -144,24 +151,8 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 	float fovDegree;
 	UVrmBPFunctionLibrary::VRMGetCameraTransform(this, 0, false, transform, fovDegree);
 
-	float fov = fovDegree;
-
-	{
-		bool b1, b2, b3;
-		UVrmBPFunctionLibrary::VRMGetPlayMode(b1, b2, b3);
-		if (b1 == true && b2 == false) {
-			auto* c = UGameplayStatics::GetPlayerCameraManager(this, 0);
-		
-			float ar_current = (float)RenderTargetA->SizeX / RenderTargetA->SizeY;
-			float HalfX_game = FMath::DegreesToRadians(fovDegree / 2);
-
-			float HalfY = FMath::Atan(FMath::Tan(HalfX_game) / c->ViewTarget.POV.AspectRatio);
-			float HalfX_new = FMath::Atan(ar_current * FMath::Tan(HalfY));
-			fov = 2.f * FMath::RadiansToDegrees(HalfX_new);
-		}
-	}
-
-	this->FOVAngle = fov;
+	// RenderTargetのサイズに関わらず、カメラ（ビューポート）と同じFOVを使用
+	this->FOVAngle = fovDegree;
 
 }
 
