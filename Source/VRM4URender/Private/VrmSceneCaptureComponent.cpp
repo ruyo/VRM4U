@@ -112,8 +112,51 @@ UVrmSceneCaptureComponent2D::UVrmSceneCaptureComponent2D(const FObjectInitialize
 {
 }
 
+void UVrmSceneCaptureComponent2D::EnsureTextureTargetCreated()
+{
+	if (TextureTarget)
+	{
+		return;
+	}
+
+	FIntPoint ViewportSize(0, 0), BufferSize(0, 0);
+	UVrmBPFunctionLibrary::VRMGetViewportSize(ViewportSize, BufferSize);
+
+	int32 Width = BufferSize.X > 0 ? BufferSize.X : 256;
+	int32 Height = BufferSize.Y > 0 ? BufferSize.Y : 256;
+
+	if (RenderTargetResolutionDivisorX > 0)
+	{
+		Width = FMath::Max(1, FMath::FloorToInt(static_cast<float>(Width) / RenderTargetResolutionDivisorX));
+	}
+	if (RenderTargetResolutionDivisorY > 0)
+	{
+		Height = FMath::Max(1, FMath::FloorToInt(static_cast<float>(Height) / RenderTargetResolutionDivisorY));
+	}
+
+	UTextureRenderTarget2D* NewTextureTarget = NewObject<UTextureRenderTarget2D>(this, NAME_None, RF_Transient);
+	if (NewTextureTarget == nullptr)
+	{
+		return;
+	}
+
+	NewTextureTarget->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
+	NewTextureTarget->ClearColor = FLinearColor::Transparent;
+	NewTextureTarget->InitAutoFormat(Width, Height);
+	NewTextureTarget->UpdateResourceImmediate(true);
+
+	TextureTarget = NewTextureTarget;
+}
+
+void UVrmSceneCaptureComponent2D::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+	EnsureTextureTargetCreated();
+}
+
 void UVrmSceneCaptureComponent2D::OnRegister()
 {
+	EnsureTextureTargetCreated();
 	Super::OnRegister();
 #if WITH_EDITORONLY_DATA
 	if (ProxyMeshComponent)
@@ -149,6 +192,31 @@ void UVrmSceneCaptureComponent2D::OnAttachmentChanged()
 void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	{
+		FIntPoint vs, bs;
+		UVrmBPFunctionLibrary::VRMGetViewportSize(vs, bs);
+
+		if (bs.X > 0 && bs.Y > 0) {
+			if (RenderTargetResolutionDivisorX > 0){
+				bs.X /= RenderTargetResolutionDivisorX;
+			}
+			if (RenderTargetResolutionDivisorY > 0){
+				bs.Y /= RenderTargetResolutionDivisorY;
+			}
+
+			if (this->TextureTarget){
+				this->TextureTarget->ResizeTarget(bs.X, bs.Y);
+			}
+
+			if (RenderTargetA){
+				RenderTargetA->ResizeTarget(bs.X, bs.Y);
+			}
+			if (RenderTargetB) {
+				RenderTargetB->ResizeTarget(bs.X, bs.Y);
+			}
+		}
+	}
 
 	// ビューポートの縦横比
 	float ViewportAspectRatio = 0.0f;

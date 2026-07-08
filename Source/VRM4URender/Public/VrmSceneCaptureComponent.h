@@ -29,7 +29,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
 	TObjectPtr<UTextureRenderTarget2D> RenderTargetB;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings", meta = (UIMin = 1.0, UIMax = 10.0))
+	float RenderTargetResolutionDivisorX = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings", meta = (UIMin = 1.0, UIMax = 10.0))
+	float RenderTargetResolutionDivisorY = 1.f;
+
 public:
+	virtual void OnComponentCreated() override;
 	virtual void OnRegister() override;
 	virtual void OnUnregister() override;
 
@@ -38,6 +44,7 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	void EnsureTextureTargetCreated();
 
 private:
 	/** This scene view extension is used to get ahold of views during the setup process. */
