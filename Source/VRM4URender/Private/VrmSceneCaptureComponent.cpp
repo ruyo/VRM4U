@@ -150,13 +150,6 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FTransform transform;
-	float fovDegree;
-	UVrmBPFunctionLibrary::VRMGetCameraTransform(this, 0, false, transform, fovDegree);
-
-	// RenderTargetのサイズに関わらず、カメラと同じFOVを使用
-	this->FOVAngle = fovDegree;
-
 	// ビューポートの縦横比
 	float ViewportAspectRatio = 0.0f;
 	bool bAspectRatioFound = false;
@@ -232,6 +225,26 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 		}
 	}
 #endif
+
+
+
+	FTransform transform;
+	float fovDegree;
+	UVrmBPFunctionLibrary::VRMGetCameraTransform(this, 0, false, transform, fovDegree);
+
+	{
+		// PIEでは画角度を補正する。
+		bool b1, b2, b3;
+		UVrmBPFunctionLibrary::VRMGetPlayMode(b1, b2, b3);
+		if (b1 == true && b2 == false) {
+			float ff = FMath::DegreesToRadians(fovDegree);
+			ff = 2 * FMath::Atan( FMath::Tan(ff / 2.0) * (ViewportAspectRatio / 1.777));
+			fovDegree = FMath::RadiansToDegrees(ff);
+		}
+	}
+
+	// RenderTargetのサイズに関わらず、カメラと同じFOVを使用
+	this->FOVAngle = fovDegree;
 
 
 	// ビューポートの縦横比が取得できた場合、カスタム投影行列を設定
