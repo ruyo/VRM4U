@@ -4,6 +4,7 @@
 #include "SceneViewExtension.h"
 #include "Runtime/Engine/Public/SceneView.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Engine/GameViewportClient.h"
 #include "ScreenPass.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -14,6 +15,8 @@
 #if WITH_EDITOR
 #include "Editor.h"
 #include "UnrealClient.h"
+#include "Slate/SceneViewport.h"
+#include "LevelEditorViewport.h"
 #endif
 
 #if	UE_VERSION_OLDER_THAN(5,3,0)
@@ -61,7 +64,7 @@ public:
 		}
 		if (SrcRDGTex) {
 			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnscaledViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetA);
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetA);
 		}
 
 		SrcRDGTex = nullptr;
@@ -76,7 +79,7 @@ public:
 
 		if (SrcRDGTex) {
 			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnscaledViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetB);
+			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetB);
 		}
 
 	}
@@ -151,8 +154,109 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 	float fovDegree;
 	UVrmBPFunctionLibrary::VRMGetCameraTransform(this, 0, false, transform, fovDegree);
 
-	// RenderTargetのサイズに関わらず、カメラ（ビューポート）と同じFOVを使用
+	// RenderTargetのサイズに関わらず、カメラと同じFOVを使用
 	this->FOVAngle = fovDegree;
 
+	// ビューポートの縦横比
+	float ViewportAspectRatio = 0.0f;
+	bool bAspectRatioFound = false;
+
+
+	// ゲーム画面として縦横比取得。のちにエディタでは上書きする
+	{
+		if (UWorld* World = GetWorld())
+		{
+			if (UGameViewportClient* ViewportClient = World->GetGameViewport())
+			{
+				FViewport* Viewport = ViewportClient->Viewport;
+				if (Viewport)
+				{
+					// ビューポートの実際の描画領域を取得（レターボックス/ピラーボックスを除いた領域）
+					FVector2D ViewRect;
+					ViewportClient->GetViewportSize(ViewRect);
+
+					int32 ViewWidth = ViewRect.X;
+					int32 ViewHeight = ViewRect.Y;
+
+					if (ViewHeight > 0)
+					{
+						ViewportAspectRatio = static_cast<float>(ViewWidth) / static_cast<float>(ViewHeight);
+						bAspectRatioFound = true;
+					}
+				}
+			}
+		}
+	}
+
+
+#if WITH_EDITOR
+	// エディタの場合：アクティブなエディタビューポートから取得
+	if (GEditor && GEditor->GetActiveViewport())
+	{
+		FViewport* EditorViewport = GEditor->GetActiveViewport();
+		if (EditorViewport)
+		{
+			FIntPoint ViewportSize = EditorViewport->GetSizeXY();
+			if (ViewportSize.Y > 0)
+			{
+				// デフォルトは物理サイズから計算
+				ViewportAspectRatio = static_cast<float>(ViewportSize.X) / static_cast<float>(ViewportSize.Y);
+
+				// 以下、レター・ピラー対応
+				bool b1, b2, b3;
+				UVrmBPFunctionLibrary::VRMGetPlayMode(b1, b2, b3);
+				if (b1 == false || b2 == true) {
+					FViewportClient* ViewportClient = EditorViewport->GetClient();
+					if (ViewportClient)
+					{
+						// FLevelEditorViewportClientの場合、AspectRatio制約を確認
+						// Note: Cast<>は安全な動的キャストで、失敗時にnullptrを返す
+						const FLevelEditorViewportClient* LevelClient = StaticCast<FLevelEditorViewportClient*>(ViewportClient);
+						//if (FLevelEditorViewportClient* LevelViewportClient =
+						//	Cast<FLevelEditorViewportClient>(ViewportClient))
+						if (LevelClient)
+						{
+							if (LevelClient->IsAspectRatioConstrained()){
+								// AspectRatio制約が設定されている場合はそれを使用
+								if (LevelClient->AspectRatio > 0.0f)
+								{
+									ViewportAspectRatio = LevelClient->AspectRatio;
+								}
+							}
+						}
+					}
+				}
+
+				bAspectRatioFound = true;
+			}
+		}
+	}
+#endif
+
+
+	// ビューポートの縦横比が取得できた場合、カスタム投影行列を設定
+	if (bAspectRatioFound && ViewportAspectRatio > 0.0f)
+	{
+		// パースペクティブ投影の場合のみカスタム投影行列を設定
+		if (ProjectionType == ECameraProjectionMode::Perspective)
+		{
+			const float HalfFOVRadians = FMath::DegreesToRadians(FOVAngle) * 0.5f;
+			const float NearPlane = bOverride_CustomNearClippingPlane ? CustomNearClippingPlane : GNearClippingPlane;
+
+			// ビューポートの縦横比を使用してパースペクティブ投影行列を作成
+			// UE 5.7では4パラメータ (HalfFOV, Width, Height, MinZ) が必要
+			const float Width = ViewportAspectRatio;
+			const float Height = 1.0f;
+			FMatrix ProjectionMatrix = FReversedZPerspectiveMatrix(HalfFOVRadians, Width, Height, NearPlane);
+
+			this->bUseCustomProjectionMatrix = true;
+			this->CustomProjectionMatrix = ProjectionMatrix;
+		}
+		else
+		{
+			// オルソグラフィック投影の場合はカスタム投影行列を無効化
+			this->bUseCustomProjectionMatrix = false;
+		}
+	}
 }
 
