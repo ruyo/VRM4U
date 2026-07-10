@@ -264,7 +264,7 @@ public:
 	static bool VRMIsEditorPreviewObject(const UObject* obj);
 
 	UFUNCTION(BlueprintPure, Category = "VRM4U")
-	static void VRMGetViewportSize(FIntPoint &ViewportSize, FIntPoint &BufferSize);
+	static void VRMGetViewportSize(FIntPoint &ViewportSize, FIntPoint &BufferSize, bool bForceMainView = false);
 
 };
 

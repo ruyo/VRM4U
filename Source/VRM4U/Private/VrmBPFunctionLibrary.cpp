@@ -1952,16 +1952,20 @@ bool UVrmBPFunctionLibrary::VRMIsEditorPreviewObject(const UObject* obj) {
 	return false;
 }
 
-void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoint & BufferSize){
+void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoint & BufferSize, bool bForceMainView){
 
 	ViewportSize = FIntPoint(0, 0);
+	BufferSize = FIntPoint(0, 0);
+
+	bool bFoundViewport = false;
 
 #if WITH_EDITOR
-	bool b1, b2, b3;
-	VRMGetPlayMode(b1, b2, b3);
+	//bool bPlay, bool bSIE, bool bEditor
+	bool bPlay, bSIE, bEditor;
+	VRMGetPlayMode(bPlay, bSIE, bEditor);
 
-	bool bGameView = b1;
-	if (b2) {
+	bool bGameView = bPlay;
+	if (bSIE) {
 		bGameView = false;
 	}
 
@@ -1969,17 +1973,35 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 	if (GEditor->GetActiveViewport() == nullptr) bGameView = true;
 
 	if (bGameView == false) {
+		bFoundViewport = true;
 		ViewportSize = GEditor->GetActiveViewport()->GetRenderTargetTextureSizeXY();
-		return;
+		if (bForceMainView)
+		{
+			FViewportClient* ViewportClient = GEditor->GetActiveViewport()->GetClient();
+			UWorld* ViewportWorld = ViewportClient ? ViewportClient->GetWorld() : nullptr;
+
+			const EWorldType::Type WT = ViewportWorld ? (EWorldType::Type)ViewportWorld->WorldType : EWorldType::None;
+			const bool bIsEditorViewport = (WT == EWorldType::Editor);
+			const bool bIsPreviewOrThumbnail = (WT == EWorldType::EditorPreview);
+
+			// レベルエディタのビューポートだけ採用
+			if (bIsEditorViewport && !bPlay && !bSIE && !bIsPreviewOrThumbnail)
+			{
+				BufferSize = ViewportSize;
+				return;
+			}
+		}
 	}
 #endif
 
-	if (GEngine == nullptr) return;
-	if (GEngine->GameViewport == nullptr) return;
-	if (GEngine->GameViewport->Viewport == nullptr) return;
+	if (bFoundViewport == false){
+		if (GEngine == nullptr) return;
+		if (GEngine->GameViewport == nullptr) return;
+		if (GEngine->GameViewport->Viewport == nullptr) return;
 
-	FViewport* Viewport = GEngine->GameViewport->Viewport;
-	ViewportSize = Viewport->GetRenderTargetTextureSizeXY();
+		FViewport* Viewport = GEngine->GameViewport->Viewport;
+		ViewportSize = Viewport->GetRenderTargetTextureSizeXY();
+	}
 
 #if	UE_VERSION_OLDER_THAN(5,6,0)
 	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 0.f, 1.f);

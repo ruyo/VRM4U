@@ -5,6 +5,7 @@
 #include "Runtime/Engine/Public/SceneView.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/World.h"
 #include "ScreenPass.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -46,40 +47,57 @@ public:
 	virtual void PostRenderBasePassDeferred_RenderThread(FRDGBuilder& GraphBuilder, FSceneView& InView, const FRenderTargetBindingSlots& RenderTargets, TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures)
 	{
 		if (InView.bIsSceneCapture == false) return;
+		if (InView.Family && InView.Family->bThumbnailRendering) return;
+		if (InView.Family && InView.Family->Scene)
+		{
+			if (const UWorld* ViewWorld = InView.Family->Scene->GetWorld())
+			{
+				if (ViewWorld->WorldType == EWorldType::EditorPreview) return;
+			}
+		}
 		FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
 
 
 		if (CaptureComponentWeak.IsValid() == false) return;
-		if (CaptureComponentWeak->RenderTargetA == nullptr) return;
-		if (CaptureComponentWeak->RenderTargetB == nullptr) return;
 
-		//DstRDGTex = RegisterExternalTexture(GraphBuilder, CaptureComponentWeak->RenderTargetA->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-		for (auto &a : RenderTargets.Output) {
-			if (a.GetTexture() == nullptr) continue;
-			FString s = a.GetTexture()->Name;
-			if (s.Contains("BufferC")) {
-				SrcRDGTex = a.GetTexture();
+		if (CaptureComponentWeak->RT_BaseColor) {
+			// base color
+			for (auto &a : RenderTargets.Output) {
+				if (a.GetTexture() == nullptr) continue;
+				FString s = a.GetTexture()->Name;
+				if (s.Contains("BufferC")) {
+					SrcRDGTex = a.GetTexture();
+				}
 			}
-		}
-		if (SrcRDGTex) {
-			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetA);
-		}
-
-		SrcRDGTex = nullptr;
-		//DstRDGTex = RegisterExternalTexture(GraphBuilder, CaptureComponentWeak->RenderTargetA->GetRenderTargetResource()->GetTexture2DRHI(), TEXT("VRM4U_CopyDst"));
-		for (auto& a : RenderTargets.Output) {
-			if (a.GetTexture() == nullptr) continue;
-			FString s = a.GetTexture()->Name;
-			if (s.Contains("BufferA")) {
-				SrcRDGTex = a.GetTexture();
+			if (SrcRDGTex) {
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_BaseColor);
 			}
 		}
 
-		if (SrcRDGTex) {
-			// ビューポートに表示されている範囲（実際のバッファ内のピクセル範囲）をコピー
-			FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RenderTargetB);
+		if (CaptureComponentWeak->RT_Normal) {
+			// normal
+			SrcRDGTex = nullptr;
+			for (auto& a : RenderTargets.Output) {
+				if (a.GetTexture() == nullptr) continue;
+				FString s = a.GetTexture()->Name;
+				if (s.Contains("BufferA")) {
+					SrcRDGTex = a.GetTexture();
+				}
+			}
+			if (SrcRDGTex) {
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_Normal);
+			}
+		}
+
+		if (CaptureComponentWeak->RT_Depth) {
+			// depth
+			SrcRDGTex = nullptr;
+			SrcRDGTex = RenderTargets.DepthStencil.GetTexture();
+			if (SrcRDGTex)
+			{
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_Depth);
+			}
 		}
 
 	}
@@ -146,6 +164,8 @@ void UVrmSceneCaptureComponent2D::EnsureTextureTargetCreated()
 	NewTextureTarget->UpdateResourceImmediate(true);
 
 	TextureTarget = NewTextureTarget;
+
+	ResizeRenderTargets();
 }
 
 void UVrmSceneCaptureComponent2D::OnComponentCreated()
@@ -170,6 +190,16 @@ void UVrmSceneCaptureComponent2D::OnRegister()
 		SceneViewExtension = FSceneViewExtensions::NewExtension<FVrmSceneCaptureSceneViewExtension>();
 		SceneViewExtension->CaptureComponentWeak = this;
 	}
+
+
+#if WITH_EDITOR
+	if (handle.IsValid()) {
+		FEditorDelegates::OnEditorCameraMoved.Remove(handle);
+	}
+	handle = FEditorDelegates::OnEditorCameraMoved.AddUObject(this, &UVrmSceneCaptureComponent2D::OnCameraTransformChanged);
+#endif
+
+
 }
 
 void UVrmSceneCaptureComponent2D::OnUnregister()
@@ -185,38 +215,64 @@ void UVrmSceneCaptureComponent2D::OnUnregister()
 	//CineCameraComponent = nullptr;
 }
 
+void UVrmSceneCaptureComponent2D::OnCameraTransformChanged(const FVector&, const FRotator&, ELevelViewportType, int32) {
+
+	FTransform transform;
+	float fov;
+	UVrmBPFunctionLibrary::VRMGetCameraTransform(this, 0, false, transform, fov);
+
+	this->SetWorldTransform(transform);
+}
+
+
 void UVrmSceneCaptureComponent2D::OnAttachmentChanged()
 {
 }
+
+void UVrmSceneCaptureComponent2D::ResizeRenderTargets() {
+	FIntPoint vs, bs;
+	UVrmBPFunctionLibrary::VRMGetViewportSize(vs, bs, true);
+
+	if (bs.X > 0 && bs.Y > 0)
+	{
+		if (RenderTargetResolutionDivisorX > 0)
+		{
+			bs.X /= RenderTargetResolutionDivisorX;
+		}
+		if (RenderTargetResolutionDivisorY > 0)
+		{
+			bs.Y /= RenderTargetResolutionDivisorY;
+		}
+
+		if (this->TextureTarget)
+		{
+			this->TextureTarget->ResizeTarget(bs.X, bs.Y);
+		}
+
+		if (RT_BaseColor)
+		{
+			RT_BaseColor->ResizeTarget(bs.X, bs.Y);
+		}
+		if (RT_Normal)
+		{
+			RT_Normal->ResizeTarget(bs.X, bs.Y);
+		}
+
+		if (RT_Depth)
+		{
+			RT_Depth->ResizeTarget(bs.X, bs.Y);
+		}
+	}
+}
+
 
 void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	{
-		FIntPoint vs, bs;
-		UVrmBPFunctionLibrary::VRMGetViewportSize(vs, bs);
+	OnCameraTransformChanged(FVector::ZeroVector, FRotator::ZeroRotator, ELevelViewportType::LVT_Perspective, 0);
 
-		if (bs.X > 0 && bs.Y > 0) {
-			if (RenderTargetResolutionDivisorX > 0){
-				bs.X /= RenderTargetResolutionDivisorX;
-			}
-			if (RenderTargetResolutionDivisorY > 0){
-				bs.Y /= RenderTargetResolutionDivisorY;
-			}
-
-			if (this->TextureTarget){
-				this->TextureTarget->ResizeTarget(bs.X, bs.Y);
-			}
-
-			if (RenderTargetA){
-				RenderTargetA->ResizeTarget(bs.X, bs.Y);
-			}
-			if (RenderTargetB) {
-				RenderTargetB->ResizeTarget(bs.X, bs.Y);
-			}
-		}
-	}
+	ResizeRenderTargets();
 
 	// ビューポートの縦横比
 	float ViewportAspectRatio = 0.0f;
