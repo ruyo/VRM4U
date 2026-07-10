@@ -214,8 +214,13 @@ void UVrmSceneCaptureComponent2D::OnUnregister()
 
 	//CineCameraComponent = nullptr;
 }
-
+#if WITH_EDITOR
 void UVrmSceneCaptureComponent2D::OnCameraTransformChanged(const FVector&, const FRotator&, ELevelViewportType, int32) {
+	OnCameraTransformChanged();
+}
+#endif
+
+void UVrmSceneCaptureComponent2D::OnCameraTransformChanged() {
 
 	FTransform transform;
 	float fov;
@@ -223,7 +228,6 @@ void UVrmSceneCaptureComponent2D::OnCameraTransformChanged(const FVector&, const
 
 	this->SetWorldTransform(transform);
 }
-
 
 void UVrmSceneCaptureComponent2D::OnAttachmentChanged()
 {
@@ -270,7 +274,7 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	OnCameraTransformChanged(FVector::ZeroVector, FRotator::ZeroRotator, ELevelViewportType::LVT_Perspective, 0);
+	OnCameraTransformChanged();
 
 	ResizeRenderTargets();
 

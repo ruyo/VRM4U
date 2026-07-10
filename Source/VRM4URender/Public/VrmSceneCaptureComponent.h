@@ -51,7 +51,10 @@ private:
 
 	FDelegateHandle handle;
 
+#if WITH_EDITOR
 	void OnCameraTransformChanged(const FVector&, const FRotator&, ELevelViewportType, int32);
+#endif
+	void OnCameraTransformChanged();
 
 	void ResizeRenderTargets();
 
