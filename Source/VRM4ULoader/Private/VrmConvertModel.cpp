@@ -6,6 +6,8 @@
 #include "VrmConvertModel.h"
 #include "VrmConvert.h"
 
+#if UE_VERSION_OLDER_THAN(5,8,0)
+
 #include "VrmAssetListObject.h"
 #include "VrmMetaObject.h"
 #include "VrmSkeleton.h"
@@ -592,14 +594,7 @@ static void CreateSwingHead(UVrmAssetListObject *vrmAssetList, VRM::VRMSpring &s
 }
 
 bool VRMConverter::ConvertModel(UVrmAssetListObject* vrmAssetList) {
-
-
-#if	UE_VERSION_OLDER_THAN(5,8,0)
 	return ConvertModel_internal(vrmAssetList);
-#else
-	return ConvertModel_internal_description(vrmAssetList);
-#endif
-
 }
 
 bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
@@ -2743,3 +2738,11 @@ VrmConvertModel::VrmConvertModel()
 VrmConvertModel::~VrmConvertModel()
 {
 }
+
+#else
+
+bool VRMConverter::ConvertModel(UVrmAssetListObject* vrmAssetList) {
+	return ConvertModel_internal_description(vrmAssetList);
+}
+
+#endif // UE5.8
