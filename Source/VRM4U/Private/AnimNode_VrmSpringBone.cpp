@@ -73,7 +73,7 @@ void FAnimNode_VrmSpringBone::Initialize_AnyThread(const FAnimationInitializeCon
 
 	if (Context.AnimInstanceProxy == nullptr) return;
 
-	VrmMetaObject_Internal = VrmMetaObject;
+	VrmMetaObject_Internal = FSoftObjectPath(VrmMetaObject);
 	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
 		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
 		if (VrmAssetListObject_Internal) {
