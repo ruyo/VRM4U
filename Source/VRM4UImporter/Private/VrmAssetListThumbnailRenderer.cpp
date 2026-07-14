@@ -258,7 +258,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 			FVector2D BackgroundPosition = Position - Padding;
 
 
-			FCanvasTileItem BackgroundItem(BackgroundPosition, BackgroundSize, FLinearColor(0.258, 0.539, 0.068, 0.9));
+			FCanvasTileItem BackgroundItem(BackgroundPosition, BackgroundSize, FLinearColor(0.258, 0.539, 0.068, 0.9f));
 			//BackgroundItem.BlendMode = SE_BLEND_Opaque;
 			BackgroundItem.BlendMode = SE_BLEND_AlphaBlend;
 			Canvas->DrawItem(BackgroundItem);

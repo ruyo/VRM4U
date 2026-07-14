@@ -36,7 +36,7 @@ FAnimNode_VrmVMC::~FAnimNode_VrmVMC()
 void FAnimNode_VrmVMC::Initialize_AnyThread(const FAnimationInitializeContext& Context) {
 	Super::Initialize_AnyThread(Context);
 
-	VrmMetaObject_Internal = VrmMetaObject;
+	VrmMetaObject_Internal = FSoftObjectPath(VrmMetaObject);
 	if (VrmMetaObject_Internal == nullptr && EnableAutoSearchMetaData) {
 		VrmAssetListObject_Internal = VRMUtil::GetAssetListObject(VRMGetSkinnedAsset(Context.AnimInstanceProxy->GetSkelMeshComponent()));
 		if (VrmAssetListObject_Internal) {
