@@ -2123,17 +2123,11 @@ bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAss
 					s = s.ToLower();
 
 					// addlist changed recur...
-					if (1) {//addedList.Find(s) >= 0) {
-						for (auto& a : pa->SkeletalBodySetups) {
-							if (a->BoneName.IsEqual(*s)) {
-								bs = a;
-								break;
-							}
+					for (auto& a : pa->SkeletalBodySetups) {
+						if (a->BoneName.IsEqual(*s)) {
+							bs = a;
+							break;
 						}
-
-					}
-					else {
-						addedList.Add(s);
 					}
 				}
 				if (bs == nullptr) {
@@ -2256,17 +2250,11 @@ bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAss
 						s = s.ToLower();
 
 						// addlist changed recur...
-						if (1) {//addedList.Find(s) >= 0) {
-							for (auto& a : pa->SkeletalBodySetups) {
-								if (a->BoneName.IsEqual(*s)) {
-									bs = a;
-									break;
-								}
+						for (auto& a : pa->SkeletalBodySetups) {
+							if (a->BoneName.IsEqual(*s)) {
+								bs = a;
+								break;
 							}
-
-						}
-						else {
-							addedList.Add(s);
 						}
 					}
 					if (bs == nullptr) {
