@@ -1089,16 +1089,15 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 								t.BoneVRM,
 							};
 							bool finish = false;
-							for (int i = 0; i < 2; ++i) {
-								auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(target[i]);
+							{
+								auto* m = vrmAssetList->VrmMetaObject->humanoidBoneTable.Find(target[0]);
 								if (m) {
 									bFound = true;
-									a.BoneVRM = target[i];
+									a.BoneVRM = target[0];
 									a.BoneModel = *m;
 									mapTable.Add(a.BoneModel, a);
 								}
 								finish = true;
-								break;
 							}
 
 							if (finish) break;
