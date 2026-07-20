@@ -1969,26 +1969,31 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 		bGameView = false;
 	}
 
-	if (GEditor == nullptr) bGameView = true;
-	if (GEditor->GetActiveViewport() == nullptr) bGameView = true;
+	if (GEditor == nullptr) {
+		bGameView = true;
+	}else{
+		if (GEditor->GetActiveViewport() == nullptr) bGameView = true;
+	}
 
-	if (bGameView == false) {
-		bFoundViewport = true;
-		ViewportSize = GEditor->GetActiveViewport()->GetRenderTargetTextureSizeXY();
-		if (bForceMainView)
-		{
-			FViewportClient* ViewportClient = GEditor->GetActiveViewport()->GetClient();
-			UWorld* ViewportWorld = ViewportClient ? ViewportClient->GetWorld() : nullptr;
-
-			const EWorldType::Type WT = ViewportWorld ? (EWorldType::Type)ViewportWorld->WorldType : EWorldType::None;
-			const bool bIsEditorViewport = (WT == EWorldType::Editor);
-			const bool bIsPreviewOrThumbnail = (WT == EWorldType::EditorPreview);
-
-			// レベルエディタのビューポートだけ採用
-			if (bIsEditorViewport && !bPlay && !bSIE && !bIsPreviewOrThumbnail)
+	if (GEditor) {
+		if (bGameView == false) {
+			bFoundViewport = true;
+			ViewportSize = GEditor->GetActiveViewport()->GetRenderTargetTextureSizeXY();
+			if (bForceMainView)
 			{
-				BufferSize = ViewportSize;
-				return;
+				FViewportClient* ViewportClient = GEditor->GetActiveViewport()->GetClient();
+				UWorld* ViewportWorld = ViewportClient ? ViewportClient->GetWorld() : nullptr;
+
+				const EWorldType::Type WT = ViewportWorld ? (EWorldType::Type)ViewportWorld->WorldType : EWorldType::None;
+				const bool bIsEditorViewport = (WT == EWorldType::Editor);
+				const bool bIsPreviewOrThumbnail = (WT == EWorldType::EditorPreview);
+
+				// レベルエディタのビューポートだけ採用
+				if (bIsEditorViewport && !bPlay && !bSIE && !bIsPreviewOrThumbnail)
+				{
+					BufferSize = ViewportSize;
+					return;
+				}
 			}
 		}
 	}
@@ -2004,7 +2009,7 @@ void UVrmBPFunctionLibrary::VRMGetViewportSize(FIntPoint & ViewportSize, FIntPoi
 	}
 
 #if	UE_VERSION_OLDER_THAN(5,6,0)
-	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 0.f, 1.f);
+	float ScreenPercentage = FMath::Clamp(UKismetSystemLibrary::GetConsoleVariableFloatValue("r.ScreenPercentage"), 1.f, 100.f);
 	BufferSize = FIntPoint (
 		FMath::RoundToInt(ViewportSize.X * ScreenPercentage / 100.0f),
 		FMath::RoundToInt(ViewportSize.Y * ScreenPercentage / 100.0f)

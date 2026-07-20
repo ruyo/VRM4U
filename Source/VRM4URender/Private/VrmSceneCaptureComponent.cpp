@@ -59,9 +59,8 @@ public:
 		FRDGTextureRef SrcRDGTex = nullptr;
 
 
-		if (CaptureComponentWeak.IsValid() == false) return;
 
-		if (CaptureComponentWeak->RT_BaseColor) {
+		if (RT_BaseColor) {
 			// base color
 			for (auto &a : RenderTargets.Output) {
 				if (a.GetTexture() == nullptr) continue;
@@ -71,11 +70,11 @@ public:
 				}
 			}
 			if (SrcRDGTex) {
-				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_BaseColor);
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_BaseColor);
 			}
 		}
 
-		if (CaptureComponentWeak->RT_Normal) {
+		if (RT_Normal) {
 			// normal
 			SrcRDGTex = nullptr;
 			for (auto& a : RenderTargets.Output) {
@@ -86,17 +85,17 @@ public:
 				}
 			}
 			if (SrcRDGTex) {
-				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_Normal);
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_Normal);
 			}
 		}
 
-		if (CaptureComponentWeak->RT_Depth) {
+		if (RT_Depth) {
 			// depth
 			SrcRDGTex = nullptr;
 			SrcRDGTex = RenderTargets.DepthStencil.GetTexture();
 			if (SrcRDGTex)
 			{
-				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, CaptureComponentWeak->RT_Depth);
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_Depth);
 			}
 		}
 
@@ -121,7 +120,14 @@ public:
 	}
 
 public:
-	TWeakObjectPtr<UVrmSceneCaptureComponent2D> CaptureComponentWeak;
+	UPROPERTY()
+	TObjectPtr<UTextureRenderTarget2D> RT_BaseColor = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTextureRenderTarget2D> RT_Normal = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTextureRenderTarget2D> RT_Depth = nullptr;
 };
 
 
@@ -188,7 +194,10 @@ void UVrmSceneCaptureComponent2D::OnRegister()
 	if (!SceneViewExtension.IsValid())
 	{
 		SceneViewExtension = FSceneViewExtensions::NewExtension<FVrmSceneCaptureSceneViewExtension>();
-		SceneViewExtension->CaptureComponentWeak = this;
+
+		SceneViewExtension->RT_BaseColor = RT_BaseColor;
+		SceneViewExtension->RT_Normal = RT_Normal;
+		SceneViewExtension->RT_Depth = RT_Depth;
 	}
 
 
@@ -209,6 +218,10 @@ void UVrmSceneCaptureComponent2D::OnUnregister()
 	if (SceneViewExtension.IsValid())
 	{
 		SceneViewExtensions.Remove(SceneViewExtension);
+
+		SceneViewExtension->RT_BaseColor = nullptr;
+		SceneViewExtension->RT_Normal = nullptr;
+		SceneViewExtension->RT_Depth = nullptr;
 		SceneViewExtension.Reset();
 	}
 
