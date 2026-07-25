@@ -366,12 +366,23 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 
 	UWorld* World = GetWorld();
 
+	// Simulate In Editor / Eject(F8) 中は、ワールドは Game World だが実際に
+	// 画を出しているのはエディタのレベルビューポート（フリーカメラ）。
+	// LocalPlayer 側の投影データを見ると必ずズレるので、ここで経路を分ける。
+#if WITH_EDITOR
+	const bool bUseEditorView =
+		(GEditor != nullptr) &&
+		(GEditor->bIsSimulatingInEditor || World == nullptr || !World->IsGameWorld());
+#else
+	const bool bUseEditorView = false;
+#endif
+
 	// ---------------------------------------------------------------
 	// ゲーム／PIE：主ビューが実際に使う投影データをそのまま受け取る。
 	// 軸拘束・レターボックス・シネカメラ・カメラシェイク・ニアプレーンが
 	// すべてここで解決されるため、FOV を組み直す必要はない。
 	// ---------------------------------------------------------------
-	if (World && World->IsGameWorld())
+	if (!bUseEditorView && World && World->IsGameWorld())
 	{
 		if (ULocalPlayer* LocalPlayer = World->GetFirstLocalPlayerFromController())
 		{
@@ -389,25 +400,49 @@ void UVrmSceneCaptureComponent2D::TickComponent(float DeltaTime, ELevelTick Tick
 	}
 #if WITH_EDITOR
 	// ---------------------------------------------------------------
-	// エディタ（非プレイ）：レベルビューポートから再構築する。
+	// エディタ（非プレイ）／Simulate／Eject：レベルビューポートから再構築する。
 	// GEditor->GetActiveViewport() はフォーカス依存で別アセットエディタを
 	// 返し得るため使用しない。
 	// ---------------------------------------------------------------
 	else if (GEditor)
 	{
-		FLevelEditorViewportClient* LevelClient = GCurrentLevelEditingViewportClient;
+		FLevelEditorViewportClient* LevelClient = nullptr;
 
-		if (LevelClient == nullptr || LevelClient->Viewport == nullptr)
+		// このコンポーネントが属するワールドを表示しているビューポートを選ぶ。
+		// Simulate 中は IsSimulateInEditorViewport() が立っているものが正解。
+		for (FLevelEditorViewportClient* Candidate : GEditor->GetLevelViewportClients())
 		{
-			LevelClient = nullptr;
-			for (FLevelEditorViewportClient* Candidate : GEditor->GetLevelViewportClients())
+			if (Candidate == nullptr || Candidate->Viewport == nullptr || !Candidate->IsVisible())
 			{
-				if (Candidate && Candidate->Viewport && Candidate->IsVisible())
-				{
-					LevelClient = Candidate;
-					break;
-				}
+				continue;
 			}
+			if (World != nullptr && Candidate->GetWorld() != World)
+			{
+				continue;
+			}
+			if (GEditor->bIsSimulatingInEditor && !Candidate->IsSimulateInEditorViewport())
+			{
+				continue;
+			}
+			LevelClient = Candidate;
+			break;
+		}
+
+		if (LevelClient == nullptr &&
+			GCurrentLevelEditingViewportClient != nullptr &&
+			GCurrentLevelEditingViewportClient->Viewport != nullptr)
+		{
+			LevelClient = GCurrentLevelEditingViewportClient;
+		}
+
+		// Simulate 中はプレイヤーカメラではなくエディタのフリーカメラが画になる。
+		// 投影行列だけでなく位置・回転もこちらから取らないとズレる
+		// （冒頭の OnCameraTransformChanged() の結果をここで上書きする）。
+		if (LevelClient && LevelClient->Viewport)
+		{
+			SetWorldLocationAndRotation(
+				LevelClient->GetViewLocation(),
+				LevelClient->GetViewRotation());
 		}
 
 		// オルソは編集用ビューでのみ発生し、投影系が別物なので追従しない
