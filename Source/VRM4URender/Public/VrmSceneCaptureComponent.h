@@ -56,7 +56,7 @@ private:
 #endif
 	void OnCameraTransformChanged();
 
-	void ResizeRenderTargets();
+	void ResizeRenderTargets(FIntPoint size);
 
 private:
 	/** This scene view extension is used to get ahold of views during the setup process. */
