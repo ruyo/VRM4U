@@ -153,8 +153,25 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     // このスレッドで書き込み対象にしている座標
     const uint2 pixelCoord = DispatchThreadID.xy;
 
+    // Dispatch数は端数を切り上げるため、最終グループ内の範囲外スレッドを除外する。
+    if (pixelCoord.x >= width || pixelCoord.y >= height) {
+        return;
+    }
+
+    // SceneTextureのExtentには、実際のビュー外にパディング領域が含まれることがある。
+    // ViewRect外を処理・探索すると、右端や下端にあるStencil=0の領域を輪郭として
+    // 誤検出するため、以降の座標判定は実ビューの範囲に限定する。
+    const int2 ViewRectMin = int2(View.ViewRectMin.xy);
+    const int2 ViewRectSize = int2(View.ViewSizeAndInvSize.xy);
+    const int2 ViewRectMax = ViewRectMin + ViewRectSize;
+    const int2 PixelCoordInt = int2(pixelCoord);
+
+    if (any(PixelCoordInt < ViewRectMin) || any(PixelCoordInt >= ViewRectMax)) {
+        return;
+    }
+
     // ビューに対して 0-1 で示したもの
-    const float2 ScreenUV = float2(pixelCoord.x, pixelCoord.y) / View.ViewSizeAndInvSize.xy;
+    const float2 ScreenUV = float2(PixelCoordInt - ViewRectMin) / float2(ViewRectSize);
 
     // WorldPos
     const float3 WorldPosition = LocalGetWorldPositionFromScreenUV_raw(ScreenUV, pixelCoord);
@@ -163,6 +180,8 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
     // 
     if ((CustomStencilTexture[pixelCoord].y & CustomStencilMask)) {
+    // UE標準のreversed-Z（値が大きいほどカメラに近い）を前提とした比較。
+    // SceneDepth <= CustomDepth なら、対象オブジェクト(CustomDepth)が実シーン面と同じかそれより手前にある＝遮蔽されていない、とみなす。
     if (SceneDepthTexture[pixelCoord] <= CustomDepthTexture[pixelCoord].r) {
 
 
@@ -181,21 +200,30 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
 
 
         // 法線とライトを考慮してフェード            
-        float NormalWeight = 1.f;
-        if (dot(PackedNormal, PackedNormal) == 0.f) {
-            // for unlit (no normal)
-            // 常にrimを出す 1
-                
+        float NormalWeight = 0.f;
+        if (dot(PackedNormal, PackedNormal) <= 1.e-6f) {
+            // GBuffer法線がない画素はライト方向を判定できない。
+            // ここを1にすると、ライトと反対側にも常時リムが出るため発光させない。
         } else {
-            NormalWeight = dot(WorldNormal, LocalLightDirection);
-            NormalWeight = saturate(NormalWeight);
+            const float LightFacing = dot(WorldNormal, LocalLightDirection);
 
             if (UseBinaryEdge) {
                 // エッジを2値にする
-                NormalWeight = (NormalWeight >= RimEdgeBinaryRange) ? 1.f : 0.f;
+                NormalWeight = (LightFacing >= RimEdgeBinaryRange) ? 1.f : 0.f;
             } else {
-                // エッジ フェード
-                NormalWeight = pow(NormalWeight, RimEdgeFade);
+                // ライト側の面だけを対象にし、輪郭で強く、内側で弱くなるよう反転する。
+                // saturate(dot(N,L))をそのまま使うと、輪郭から内側へ向かって明るくなるため
+                // リムとしてはフェード方向が逆になる。
+                if (LightFacing > 0.f) {
+                    NormalWeight = 1.f - saturate(LightFacing);
+
+                    // RimEdgeFade <= 0 の場合 pow(0,0) はハードウェア依存の未定義動作になるため、明示的に分岐する
+                    if (RimEdgeFade > 0.f) {
+                        NormalWeight = pow(NormalWeight, RimEdgeFade);
+                    } else {
+                        NormalWeight = (NormalWeight > 0.f) ? 1.f : 0.f;
+                    }
+                }
             }
         }
         
@@ -225,7 +253,11 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
             // サーチ距離
             float SampleRange = View.ViewSizeAndInvSize.y * SampleScreenScale;
             SampleRange = SampleRange / LinearDepth * 10.f * (3.14159265f/ 2.f / View.FieldOfViewWideAngles.x);
-                
+
+            // 近距離で SampleRange が際限なく増大し、ループが重くなるのを防ぐための上限
+            const float MaxSampleRange = View.ViewSizeAndInvSize.y * 2.f;
+            SampleRange = min(SampleRange, MaxSampleRange);
+
             //float2 UnscaledMin = View.UnscaledViewRect.Min.xy;
             //float2 UnscaledMax = View.UnscaledViewRect.Max.xy;
             //float2 UnscaledSize = UnscaledMax - UnscaledMin;  // フル幅/高さ (pixels)
@@ -237,32 +269,31 @@ void MainCS(uint3 DispatchThreadID : SV_DispatchThreadID)
                 
             float EdgeColorScale = 1.0f;
             {
-                float fade = 0.01f;
-                float2 OutArea = float2(width, height) * fade;
-                    
-                // エッジサーチ先の座標
-                //float2 checkEnd = float2(pixelCoord) + SampleRange;
-                float2 checkEnd = (ClipLightDir.xy * float2(SampleRange,SampleRange)) + pixelCoord;
+                // 画面端そのものに近い画素は、探索方向に関わらずリムをフェードアウトさせる。
+                // 探索先(checkEnd)のはみ出し量だけで判定すると、探索方向がほぼ水平/垂直な場合に
+                // 「画面端ぴったりの直線」状にリムが出てしまう（端の画素自身が持つ情報だけで
+                // 有効/無効を判定してしまうため）。画素自身の画面端からの距離でフェードさせることで
+                // 探索方向に依存せず、ViewRect端で必ず0になるようにする。
+                float FadeWidthScalar = max(SampleRange * 0.5f, 2.f);
 
-                // 左上のはみ出し
-                float2 out1 = abs( min(float2(0,0), checkEnd - OutArea));
+                float2 distToLow = PixelCoordInt - ViewRectMin;
+                float2 distToHigh = (ViewRectMax - 1) - PixelCoordInt;
+                float2 distToEdge = min(distToLow, distToHigh);
 
-                // 右下のはみ出し
-                float2 out2 = abs(max(float2(width, height), checkEnd + OutArea));
-                    
-                // はみ出し 最大
-                float2 out3 = max(out1, out2-float2(width, height));
-                    
-                out3.x = saturate(max(out3.x, out3.y));
-           
-                //EdgeColorScale = 1.f - out3.x;
-                    
+                EdgeColorScale = saturate(min(distToEdge.x, distToEdge.y) / FadeWidthScalar);
             }
                 
             // Stencilのエッジを検出
             for (float i = 0; i < SampleRange; i += LocalSampleScale) {
-                int2 target = int2(ClipLightDir.xy * float2(i,i)) + pixelCoord;
-                target = clamp(target, int2(0,0), int2(width-1, height-1));
+                int2 target = int2(ClipLightDir.xy * float2(i,i)) + PixelCoordInt;
+
+                // サーチ先が画面外に出たら打ち切る。
+                // ここでclamp()して境界ピクセルを再サンプルすると、画面端に近いだけの
+                // 本来無関係な画素が「常に境界ピクセルでエッジ検出」されてしまい、
+                // 左右(および上下)の画面端に不要なリムが出る原因になる。
+                if (any(target < ViewRectMin) || any(target >= ViewRectMax)) {
+                    break;
+                }
 
                 if (CustomStencilTexture[target].y == 0) {
                     bEdge = true;

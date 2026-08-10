@@ -2,6 +2,7 @@
 
 #include "VrmSceneViewExtension.h"
 #include "VrmExtensionRimFilterData.h"
+#include "VRM4URenderLog.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
 #include "TextureResource.h"
@@ -113,17 +114,29 @@ IMPLEMENT_GLOBAL_SHADER(FMyComputeShader, "/VRM4UShaders/private/BaseColorCS.usf
 
 static bool LocalCSEnable()
 {
+	// 無効化理由をユーザーに気付かせるための警告（フレーム毎のログスパムを避けるため一度だけ出す）
+	static bool bWarnedCustomDepth = false;
+	static bool bWarnedFeatureLevel = false;
 
 	static const auto CVarCustomDepth = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.CustomDepth"));
 	const int32 EnabledWithStencil = 3;// CustomDepthMode::EnabledWithStencil ではダメ。
 	if (CVarCustomDepth) {
 		if (CVarCustomDepth->GetValueOnAnyThread() != EnabledWithStencil) {
+			if (bWarnedCustomDepth == false) {
+				bWarnedCustomDepth = true;
+				UE_LOG(LogVRM4URender, Warning, TEXT("VRM4U RimLight: r.CustomDepth is not 3 (EnabledWithStencil). Rim light filter is disabled."));
+			}
 			return false;
 		}
 	}
 
 	if (GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM6) {
 		return true;
+	}
+
+	if (bWarnedFeatureLevel == false) {
+		bWarnedFeatureLevel = true;
+		UE_LOG(LogVRM4URender, Warning, TEXT("VRM4U RimLight: current RHI feature level is below SM6. Rim light filter is disabled."));
 	}
 	return false;
 }
@@ -364,7 +377,10 @@ static void LocalRimFilter(FRDGBuilder& GraphBuilder, FSceneView& InView, const 
 			RDG_EVENT_NAME("VRM4U_CustomGBufferWrite %d", dataIndex),
 			ComputeShader,
 			Parameters,
-			FIntVector(Width / 8, Height / 8, 1)
+			FIntVector(
+				FMath::DivideAndRoundUp(Width, 8),
+				FMath::DivideAndRoundUp(Height, 8),
+				1)
 		);
 		/*
 		//FRDGBuilder GraphBuilder(FRHICommandListExecutor::GetImmediateCommandList());
