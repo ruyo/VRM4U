@@ -150,6 +150,21 @@ public:
 			}
 		}
 
+		if (RT_MRS) {
+			// metallic / specular / roughness
+			SrcRDGTex = nullptr;
+			for (auto& a : RenderTargets.Output) {
+				if (a.GetTexture() == nullptr) continue;
+				FString s = a.GetTexture()->Name;
+				if (s.Contains("BufferB")) {
+					SrcRDGTex = a.GetTexture();
+				}
+			}
+			if (SrcRDGTex) {
+				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_MRS);
+			}
+		}
+
 		if (RT_Depth) {
 			// depth
 			SrcRDGTex = nullptr;
@@ -226,6 +241,9 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<UTextureRenderTarget2D> RT_Normal = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTextureRenderTarget2D> RT_MRS = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<UTextureRenderTarget2D> RT_Depth = nullptr;
@@ -307,6 +325,7 @@ void UVrmSceneCaptureComponent2D::OnRegister()
 
 		SceneViewExtension->RT_BaseColor = RT_BaseColor;
 		SceneViewExtension->RT_Normal = RT_Normal;
+		SceneViewExtension->RT_MRS = RT_MRS;
 		SceneViewExtension->RT_Depth = RT_Depth;
 		SceneViewExtension->RT_CustomStencil = RT_CustomStencil;
 		SceneViewExtension->RT_CustomDepth = RT_CustomDepth;
@@ -333,6 +352,7 @@ void UVrmSceneCaptureComponent2D::OnUnregister()
 
 		SceneViewExtension->RT_BaseColor = nullptr;
 		SceneViewExtension->RT_Normal = nullptr;
+		SceneViewExtension->RT_MRS = nullptr;
 		SceneViewExtension->RT_Depth = nullptr;
 		SceneViewExtension->RT_CustomStencil = nullptr;
 		SceneViewExtension->RT_CustomDepth = nullptr;
@@ -390,6 +410,11 @@ void UVrmSceneCaptureComponent2D::ResizeRenderTargets(FIntPoint size) {
 		if (RT_Normal)
 		{
 			RT_Normal->ResizeTarget(bs.X, bs.Y);
+		}
+
+		if (RT_MRS)
+		{
+			RT_MRS->ResizeTarget(bs.X, bs.Y);
 		}
 
 		if (RT_Depth)

@@ -29,6 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
 	TObjectPtr<UTextureRenderTarget2D> RT_Normal;
 
+	/** Metallic / Specular / Roughness (GBufferB) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
+	TObjectPtr<UTextureRenderTarget2D> RT_MRS;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
 	TObjectPtr<UTextureRenderTarget2D> RT_Depth;
 
