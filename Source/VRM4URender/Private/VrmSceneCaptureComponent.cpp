@@ -17,10 +17,10 @@
 #include "Engine/LocalPlayer.h"
 #include "SceneView.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#include "UnrealClient.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
-#include "UnrealClient.h"
 #include "Slate/SceneViewport.h"
 #include "LevelEditorViewport.h"
 #include "Settings/LevelEditorViewportSettings.h"
@@ -262,6 +262,16 @@ UVrmSceneCaptureComponent2D::UVrmSceneCaptureComponent2D(const FObjectInitialize
 	PrimaryComponentTick.bCanEverTick = true;
 	// ボーン・カメラの最終姿勢が確定した後に投影行列を読む
 	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
+
+	// このコンポーネントはGBuffer(BaseColor/Normal/MRS/Depth/CustomStencil/CustomDepth)取得専用で、
+	// 最終的なライティング済みシーンカラー(TextureTarget)は使わない。
+	// BasePassが書き出すGBuffer自体はライティング計算の結果に依存しないため、
+	// ライト・シャドウ・ポストプロセス系の重いパスをまとめて止めて負荷を下げる。
+	ApplyViewMode(VMI_Unlit, true, ShowFlags);
+	ShowFlags.SetPostProcessing(false);
+	ShowFlags.SetMotionBlur(false);
+	ShowFlags.SetTemporalAA(false);
+	ShowFlags.SetAntiAliasing(false);
 }
 
 void UVrmSceneCaptureComponent2D::EnsureTextureTargetCreated()
