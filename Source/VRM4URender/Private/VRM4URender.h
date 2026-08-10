@@ -6,6 +6,7 @@
 #include "Modules/ModuleManager.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "RendererInterface.h"
+#include "RenderGraphResources.h"
 
 //#include "VRMImporterModule.h"
 
@@ -77,5 +78,6 @@ public:
 #endif
 
 	static void AddCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
+	static void AddCustomStencilCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureSRVRef SrcStencilSRV, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static bool isCaptureTarget(const FSceneView* View);
 };

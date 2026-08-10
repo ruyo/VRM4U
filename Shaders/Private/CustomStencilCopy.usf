@@ -1,0 +1,14 @@
+#include "/Engine/Private/Common.ush"
+
+Texture2D<uint2> CustomStencilTexture;
+float2 SourceTextureSize;
+
+float4 MainPS(
+	noperspective float2 UV : TEXCOORD0
+	) : SV_Target0
+{
+	const uint2 Size = uint2(SourceTextureSize);
+	const uint2 PixelCoord = min(uint2(UV * SourceTextureSize), Size - 1);
+	const uint Stencil = CustomStencilTexture.Load(int3(PixelCoord, 0)).y;
+	return float4(float(Stencil) / 255.0, 0.0, 0.0, 1.0);
+}

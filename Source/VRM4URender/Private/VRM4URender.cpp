@@ -27,11 +27,100 @@
 #include "ScreenRendering.h"
 #include "SceneView.h"
 #include "SceneRendering.h"
+#include "GlobalShader.h"
+#include "ShaderParameterStruct.h"
 
 
 #define LOCTEXT_NAMESPACE "VRM4URender"
 
 DEFINE_LOG_CATEGORY(LogVRM4URender);
+
+class FCustomStencilCopyPS : public FGlobalShader
+{
+	DECLARE_GLOBAL_SHADER(FCustomStencilCopyPS);
+	SHADER_USE_PARAMETER_STRUCT(FCustomStencilCopyPS, FGlobalShader);
+
+	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<uint2>, CustomStencilTexture)
+		SHADER_PARAMETER(FVector2f, SourceTextureSize)
+	END_SHADER_PARAMETER_STRUCT()
+
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	{
+		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
+	}
+};
+
+void FVRM4URenderModule::AddCustomStencilCopyPass(
+	FRDGBuilder& GraphBuilder,
+	FIntRect ViewRect,
+	FRDGTextureSRVRef SrcStencilSRV,
+	TObjectPtr<UTextureRenderTarget2D> RenderTarget)
+{
+	if (SrcStencilSRV == nullptr || RenderTarget == nullptr ||
+		RenderTarget->GetRenderTargetResource() == nullptr)
+	{
+		return;
+	}
+
+	FRHITexture* DestTexture = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
+	if (DestTexture == nullptr || SrcStencilSRV->GetParent() == nullptr)
+	{
+		return;
+	}
+
+	FCustomStencilCopyPS::FParameters* Parameters =
+		GraphBuilder.AllocParameters<FCustomStencilCopyPS::FParameters>();
+	Parameters->CustomStencilTexture = SrcStencilSRV;
+	Parameters->SourceTextureSize = FVector2f(SrcStencilSRV->GetParent()->Desc.Extent);
+
+	const FIntPoint TargetSize(
+		RenderTarget->GetRenderTargetResource()->GetSizeX(),
+		RenderTarget->GetRenderTargetResource()->GetSizeY());
+	const FIntPoint SourceTextureSize = SrcStencilSRV->GetParent()->Desc.Extent;
+
+	TShaderMapRef<FScreenVS> VertexShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<FCustomStencilCopyPS> PixelShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	// destはRDGに登録せず、AddCopyPassと同じく生のRHIテクスチャへ手動でBeginRenderPassする。
+	// (RDGのRENDER_TARGET_BINDING_SLOTS経由でミッドフレームに外部RTを登録すると
+	//  環境によってPSO生成に失敗してFatalになるケースがあったため)
+	GraphBuilder.AddPass(
+		RDG_EVENT_NAME("VRM4U_CustomStencilCopy"),
+		Parameters,
+		ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass | ERDGPassFlags::NeverCull,
+		[Parameters, VertexShader, PixelShader, ViewRect, TargetSize, SourceTextureSize, DestTexture](FRHICommandListImmediate& RHICmdList)
+		{
+			FRHIRenderPassInfo RPInfo(DestTexture, ERenderTargetActions::Load_Store);
+			RHICmdList.BeginRenderPass(RPInfo, TEXT("VRM4U_CustomStencilCopy"));
+			{
+				RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
+
+				FGraphicsPipelineStateInitializer GraphicsPSOInit{};
+				RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
+				GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
+				GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
+				GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+				GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
+				GraphicsPSOInit.BoundShaderState.VertexShaderRHI = VertexShader.GetVertexShader();
+				GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
+				GraphicsPSOInit.PrimitiveType = PT_TriangleList;
+				SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
+				SetShaderParameters(RHICmdList, PixelShader, PixelShader.GetPixelShader(), *Parameters);
+
+				IRendererModule* RendererModule =
+					&FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
+				RendererModule->DrawRectangle(
+					RHICmdList,
+					0, 0, TargetSize.X, TargetSize.Y,
+					ViewRect.Min.X, ViewRect.Min.Y, ViewRect.Width(), ViewRect.Height(),
+					TargetSize, SourceTextureSize, VertexShader, EDRF_Default);
+			}
+			RHICmdList.EndRenderPass();
+	});
+}
+
+IMPLEMENT_GLOBAL_SHADER(FCustomStencilCopyPS, "/VRM4UShaders/Private/CustomStencilCopy.usf", "MainPS", SF_Pixel);
 
 bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 
@@ -131,8 +220,8 @@ void FVRM4URenderModule::AddCopyPass(FRDGBuilder &GraphBuilder, FIntRect ViewRec
 					RHICmdList,
 					0, 0,									// Dest X, Y
 					TargetSize.X, TargetSize.Y,				// Dest Width, Height
-					ViewRect.Min.X, ViewRect.Min.Y,			// Source U, V (�R�s�[�J�n�ʒu)
-					ViewRect.Width(), ViewRect.Height(),	// Source USize, VSize (�R�s�[�T�C�Y)
+					ViewRect.Min.X, ViewRect.Min.Y,			// Source U, V (�R�s�[�J�n�ʒu)
+					ViewRect.Width(), ViewRect.Height(),	// Source USize, VSize (�R�s�[�T�C�Y)
 					TargetSize,								// Target buffer size
 					SourceTextureSize,						// Source texture size
 					VertexShader,

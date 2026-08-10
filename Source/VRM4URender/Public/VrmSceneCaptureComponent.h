@@ -32,6 +32,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
 	TObjectPtr<UTextureRenderTarget2D> RT_Depth;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings")
+	TObjectPtr<UTextureRenderTarget2D> RT_CustomStencil;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings", meta = (UIMin = 1.0, UIMax = 10.0))
 	float RenderTargetResolutionDivisorX = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture Settings", meta = (UIMin = 1.0, UIMax = 10.0))
