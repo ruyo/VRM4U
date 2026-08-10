@@ -1,0 +1,14 @@
+#include "/Engine/Private/Common.ush"
+
+Texture2D<float4> CustomDepthTexture;
+float2 SourceTextureSize;
+
+float4 MainPS(
+	noperspective float2 UV : TEXCOORD0
+	) : SV_Target0
+{
+	const uint2 Size = uint2(SourceTextureSize);
+	const uint2 PixelCoord = min(uint2(UV * SourceTextureSize), Size - 1);
+	const float Depth = CustomDepthTexture.Load(int3(PixelCoord, 0)).r;
+	return float4(Depth, Depth, Depth, 1.0);
+}

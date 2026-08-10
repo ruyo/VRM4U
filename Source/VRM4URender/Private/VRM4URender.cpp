@@ -122,6 +122,90 @@ void FVRM4URenderModule::AddCustomStencilCopyPass(
 
 IMPLEMENT_GLOBAL_SHADER(FCustomStencilCopyPS, "/VRM4UShaders/Private/CustomStencilCopy.usf", "MainPS", SF_Pixel);
 
+class FCustomDepthCopyPS : public FGlobalShader
+{
+	DECLARE_GLOBAL_SHADER(FCustomDepthCopyPS);
+	SHADER_USE_PARAMETER_STRUCT(FCustomDepthCopyPS, FGlobalShader);
+
+	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<float4>, CustomDepthTexture)
+		SHADER_PARAMETER(FVector2f, SourceTextureSize)
+	END_SHADER_PARAMETER_STRUCT()
+
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	{
+		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
+	}
+};
+
+void FVRM4URenderModule::AddCustomDepthCopyPass(
+	FRDGBuilder& GraphBuilder,
+	FIntRect ViewRect,
+	FRDGTextureSRVRef SrcDepthSRV,
+	TObjectPtr<UTextureRenderTarget2D> RenderTarget)
+{
+	if (SrcDepthSRV == nullptr || RenderTarget == nullptr ||
+		RenderTarget->GetRenderTargetResource() == nullptr)
+	{
+		return;
+	}
+
+	FRHITexture* DestTexture = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
+	if (DestTexture == nullptr || SrcDepthSRV->GetParent() == nullptr)
+	{
+		return;
+	}
+
+	FCustomDepthCopyPS::FParameters* Parameters =
+		GraphBuilder.AllocParameters<FCustomDepthCopyPS::FParameters>();
+	Parameters->CustomDepthTexture = SrcDepthSRV;
+	Parameters->SourceTextureSize = FVector2f(SrcDepthSRV->GetParent()->Desc.Extent);
+
+	const FIntPoint TargetSize(
+		RenderTarget->GetRenderTargetResource()->GetSizeX(),
+		RenderTarget->GetRenderTargetResource()->GetSizeY());
+	const FIntPoint SourceTextureSize = SrcDepthSRV->GetParent()->Desc.Extent;
+
+	TShaderMapRef<FScreenVS> VertexShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+	TShaderMapRef<FCustomDepthCopyPS> PixelShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+	GraphBuilder.AddPass(
+		RDG_EVENT_NAME("VRM4U_CustomDepthCopy"),
+		Parameters,
+		ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass | ERDGPassFlags::NeverCull,
+		[Parameters, VertexShader, PixelShader, ViewRect, TargetSize, SourceTextureSize, DestTexture](FRHICommandListImmediate& RHICmdList)
+		{
+			FRHIRenderPassInfo RPInfo(DestTexture, ERenderTargetActions::Load_Store);
+			RHICmdList.BeginRenderPass(RPInfo, TEXT("VRM4U_CustomDepthCopy"));
+			{
+				RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
+
+				FGraphicsPipelineStateInitializer GraphicsPSOInit{};
+				RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
+				GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
+				GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
+				GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+				GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
+				GraphicsPSOInit.BoundShaderState.VertexShaderRHI = VertexShader.GetVertexShader();
+				GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
+				GraphicsPSOInit.PrimitiveType = PT_TriangleList;
+				SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit, 0);
+				SetShaderParameters(RHICmdList, PixelShader, PixelShader.GetPixelShader(), *Parameters);
+
+				IRendererModule* RendererModule =
+					&FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer"));
+				RendererModule->DrawRectangle(
+					RHICmdList,
+					0, 0, TargetSize.X, TargetSize.Y,
+					ViewRect.Min.X, ViewRect.Min.Y, ViewRect.Width(), ViewRect.Height(),
+					TargetSize, SourceTextureSize, VertexShader, EDRF_Default);
+			}
+			RHICmdList.EndRenderPass();
+	});
+}
+
+IMPLEMENT_GLOBAL_SHADER(FCustomDepthCopyPS, "/VRM4UShaders/Private/CustomDepthCopy.usf", "MainPS", SF_Pixel);
+
 bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 
 	bool bCapture = false;

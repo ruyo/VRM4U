@@ -160,30 +160,42 @@ public:
 			}
 		}
 
-		if (RT_CustomStencil)
+		if (RT_CustomStencil || RT_CustomDepth)
 		{
-			// r.CustomDepth=3(EnabledWithStencil)でない場合、CustomStencilTextureはダミーテクスチャになり
-			// コピーしても意味がないため、無駄なパス追加(=不要な記述子確保)を避けるためスキップする。
+			// r.CustomDepth=0(Disabled)の場合、Custom Depth/Stencilはそもそも存在しないため
+			// 無駄なパス追加(=不要な記述子確保)を避けるためスキップする。
 			static const auto CVarCustomDepth = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.CustomDepth"));
-			const int32 EnabledWithStencil = 3;
-			const bool bCustomStencilAvailable = (CVarCustomDepth == nullptr) || (CVarCustomDepth->GetValueOnAnyThread() == EnabledWithStencil);
+			const bool bCustomDepthFeatureEnabled = (CVarCustomDepth == nullptr) || (CVarCustomDepth->GetValueOnAnyThread() != 0);
 
-			if (bCustomStencilAvailable && InView.bIsViewInfo)
+			if (bCustomDepthFeatureEnabled && InView.bIsViewInfo)
 			{
-				// SceneTextures->GetParameters()->CustomStencilTextureは、このビューでCustom Depthが
-				// まだ生成されていない場合ダミーSRV(実体は極小テクスチャ)に静かにフォールバックすることがある。
-				// (このダミーを読むと、画面全体が同一ピクセルをサンプリングし続け、一様な値で塗りつぶされる)
-				// FViewInfo経由でHasBeenProducedを確認し、本当に生成済みのCustomDepth.Stencilのみを使う。
+				// SceneTextures->GetParameters()->CustomStencilTexture/CustomDepthTextureは、
+				// このビューでCustom Depthがまだ生成されていない場合ダミーSRV(実体は極小テクスチャ)に
+				// 静かにフォールバックすることがある(全画面が同一ピクセルをサンプリングし続け、一様な値で塗りつぶされる)。
+				// FViewInfo経由でHasBeenProducedを確認し、本当に生成済みの場合のみ使う。
 				const FViewInfo& ViewInfo = static_cast<const FViewInfo&>(InView);
 				const FCustomDepthTextures& CustomDepthTextures = ViewInfo.GetSceneTextures().CustomDepth;
 
-				if (HasBeenProduced(CustomDepthTextures.Depth) && CustomDepthTextures.Stencil)
+				if (HasBeenProduced(CustomDepthTextures.Depth))
 				{
-					FVRM4URenderModule::AddCustomStencilCopyPass(
-						GraphBuilder,
-						InView.UnconstrainedViewRect,
-						CustomDepthTextures.Stencil,
-						RT_CustomStencil);
+					if (RT_CustomStencil && CustomDepthTextures.Stencil)
+					{
+						FVRM4URenderModule::AddCustomStencilCopyPass(
+							GraphBuilder,
+							InView.UnconstrainedViewRect,
+							CustomDepthTextures.Stencil,
+							RT_CustomStencil);
+					}
+
+					if (RT_CustomDepth)
+					{
+						FRDGTextureSRVRef DepthSRV = GraphBuilder.CreateSRV(CustomDepthTextures.Depth);
+						FVRM4URenderModule::AddCustomDepthCopyPass(
+							GraphBuilder,
+							InView.UnconstrainedViewRect,
+							DepthSRV,
+							RT_CustomDepth);
+					}
 				}
 			}
 		}
@@ -220,6 +232,9 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<UTextureRenderTarget2D> RT_CustomStencil = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTextureRenderTarget2D> RT_CustomDepth = nullptr;
 };
 
 
@@ -294,6 +309,7 @@ void UVrmSceneCaptureComponent2D::OnRegister()
 		SceneViewExtension->RT_Normal = RT_Normal;
 		SceneViewExtension->RT_Depth = RT_Depth;
 		SceneViewExtension->RT_CustomStencil = RT_CustomStencil;
+		SceneViewExtension->RT_CustomDepth = RT_CustomDepth;
 	}
 
 
@@ -319,6 +335,7 @@ void UVrmSceneCaptureComponent2D::OnUnregister()
 		SceneViewExtension->RT_Normal = nullptr;
 		SceneViewExtension->RT_Depth = nullptr;
 		SceneViewExtension->RT_CustomStencil = nullptr;
+		SceneViewExtension->RT_CustomDepth = nullptr;
 		SceneViewExtension.Reset();
 	}
 
@@ -383,6 +400,11 @@ void UVrmSceneCaptureComponent2D::ResizeRenderTargets(FIntPoint size) {
 		if (RT_CustomStencil)
 		{
 			RT_CustomStencil->ResizeTarget(bs.X, bs.Y);
+		}
+
+		if (RT_CustomDepth)
+		{
+			RT_CustomDepth->ResizeTarget(bs.X, bs.Y);
 		}
 	}
 }
