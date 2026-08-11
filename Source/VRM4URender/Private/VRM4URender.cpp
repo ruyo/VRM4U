@@ -30,6 +30,9 @@
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
 
+#if	UE_VERSION_OLDER_THAN(5,5,0)
+#include "DataDrivenShaderPlatformInfo.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "VRM4URender"
 
