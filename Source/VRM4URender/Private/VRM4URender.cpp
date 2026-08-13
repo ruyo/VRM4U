@@ -29,6 +29,7 @@
 #include "SceneRendering.h"
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
+#include "Substrate/Substrate.h"
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #include "DataDrivenShaderPlatformInfo.h"
@@ -208,6 +209,86 @@ void FVRM4URenderModule::AddCustomDepthCopyPass(
 }
 
 IMPLEMENT_GLOBAL_SHADER(FCustomDepthCopyPS, "/VRM4UShaders/Private/CustomDepthCopy.usf", "MainPS", SF_Pixel);
+
+class FSubstrateBaseColorCopyPS : public FGlobalShader
+{
+	DECLARE_GLOBAL_SHADER(FSubstrateBaseColorCopyPS);
+	SHADER_USE_PARAMETER_STRUCT(FSubstrateBaseColorCopyPS, FGlobalShader);
+	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, ViewUniformBuffer)
+		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSubstrateGlobalUniformParameters, Substrate)
+		SHADER_PARAMETER(FVector2f, SourceTextureSize)
+	END_SHADER_PARAMETER_STRUCT()
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	{
+		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5) && Substrate::IsSubstrateEnabled();
+	}
+};
+
+class FSubstrateNormalCopyPS : public FSubstrateBaseColorCopyPS
+{
+	DECLARE_GLOBAL_SHADER(FSubstrateNormalCopyPS);
+	SHADER_USE_PARAMETER_STRUCT(FSubstrateNormalCopyPS, FSubstrateBaseColorCopyPS);
+};
+
+IMPLEMENT_GLOBAL_SHADER(FSubstrateBaseColorCopyPS, "/VRM4UShaders/Private/SubstrateBaseColorCopy.usf", "MainPS", SF_Pixel);
+IMPLEMENT_GLOBAL_SHADER(FSubstrateNormalCopyPS, "/VRM4UShaders/Private/SubstrateNormalCopy.usf", "MainPS", SF_Pixel);
+
+template<typename TPixelShader>
+static void AddSubstrateCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget, const TCHAR* PassName)
+{
+	const FSubstrateSceneData* SceneData = View.SubstrateViewData.SceneData;
+	if (!SceneData || !SceneData->MaterialTextureArray || !SceneData->TopLayerTexture || !RenderTarget || !RenderTarget->GetRenderTargetResource()) return;
+	FRHITexture* DestTexture = RenderTarget->GetRenderTargetResource()->GetTextureRHI();
+	if (!DestTexture) return;
+
+	typename TPixelShader::FParameters* Parameters = GraphBuilder.AllocParameters<typename TPixelShader::FParameters>();
+	Parameters->ViewUniformBuffer = View.ViewUniformBuffer;
+	// Substrate.ush declares the global Substrate uniform buffer. Binding the complete
+	// buffer is required by D3D12 even though this pass only reads three of its fields.
+	Parameters->Substrate = View.SubstrateViewData.SubstrateGlobalUniformParameters;
+	Parameters->SourceTextureSize = FVector2f(SceneData->TopLayerTexture->Desc.Extent);
+	const FIntPoint TargetSize(RenderTarget->GetRenderTargetResource()->GetSizeX(), RenderTarget->GetRenderTargetResource()->GetSizeY());
+	const FIntPoint SourceSize = SceneData->TopLayerTexture->Desc.Extent;
+	const FIntRect ViewRect = View.UnconstrainedViewRect;
+	TShaderMapRef<FScreenVS> VertexShader(View.ShaderMap);
+	TShaderMapRef<TPixelShader> PixelShader(View.ShaderMap);
+
+	GraphBuilder.AddPass(RDG_EVENT_NAME("VRM4U_SubstrateCopy"), Parameters,
+		ERDGPassFlags::Raster | ERDGPassFlags::SkipRenderPass | ERDGPassFlags::NeverCull,
+		[Parameters, VertexShader, PixelShader, ViewRect, TargetSize, SourceSize, DestTexture, PassName](FRHICommandListImmediate& RHICmdList)
+		{
+			FRHIRenderPassInfo RPInfo(DestTexture, ERenderTargetActions::Load_Store);
+			RHICmdList.BeginRenderPass(RPInfo, PassName);
+			RHICmdList.SetViewport(0, 0, 0.0f, TargetSize.X, TargetSize.Y, 1.0f);
+			FGraphicsPipelineStateInitializer PSO{};
+			RHICmdList.ApplyCachedRenderTargets(PSO);
+			PSO.BlendState = TStaticBlendState<>::GetRHI();
+			PSO.RasterizerState = TStaticRasterizerState<>::GetRHI();
+			PSO.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+			PSO.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
+			PSO.BoundShaderState.VertexShaderRHI = VertexShader.GetVertexShader();
+			PSO.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
+			PSO.PrimitiveType = PT_TriangleList;
+			SetGraphicsPipelineState(RHICmdList, PSO, 0);
+			SetShaderParameters(RHICmdList, PixelShader, PixelShader.GetPixelShader(), *Parameters);
+			FModuleManager::GetModuleChecked<IRendererModule>(TEXT("Renderer")).DrawRectangle(
+				RHICmdList, 0, 0, TargetSize.X, TargetSize.Y,
+				ViewRect.Min.X, ViewRect.Min.Y, ViewRect.Width(), ViewRect.Height(),
+				TargetSize, SourceSize, VertexShader, EDRF_Default);
+			RHICmdList.EndRenderPass();
+		});
+}
+
+void FVRM4URenderModule::AddSubstrateBaseColorCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget)
+{
+	AddSubstrateCopyPass<FSubstrateBaseColorCopyPS>(GraphBuilder, View, RenderTarget, TEXT("VRM4U_SubstrateBaseColorCopy"));
+}
+
+void FVRM4URenderModule::AddSubstrateNormalCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget)
+{
+	AddSubstrateCopyPass<FSubstrateNormalCopyPS>(GraphBuilder, View, RenderTarget, TEXT("VRM4U_SubstrateNormalCopy"));
+}
 
 bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 

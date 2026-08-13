@@ -1,0 +1,35 @@
+// VRM4U Copyright (c) 2021-2026 Haruyoshi Yamamoto. This software is released under the MIT License.
+//
+// Substrate有効時にBaseColorを取得するためのコピーパス。
+// SubstrateはBaseColorを単一のバッファとして保持しない(DiffuseAlbedo/F0等のパラメータで
+// 表現される)ため、Substrateのヘッダ/BSDFをアンパックし、SubstrateGetBSDFBaseColor()で
+// 従来のBaseColor相当値に再構成する。
+// 複数レイヤー(BSDF)を持つマテリアルの場合、先頭(トップレイヤー)のBSDFのみを対象とする。
+
+#include "/Engine/Private/Common.ush"
+#include "/Engine/Private/Substrate/Substrate.ush"
+
+float2 SourceTextureSize;
+
+float4 MainPS(
+	noperspective float2 UV : TEXCOORD0
+	) : SV_Target0
+{
+	float3 BaseColor = float3(0, 0, 0);
+
+#if SUBSTRATE_ENABLED
+	const uint2 BufferSize = uint2(SourceTextureSize);
+	const uint2 PixelPos = min(uint2(UV * SourceTextureSize), BufferSize - 1);
+
+	FSubstrateAddressing SubstrateAddressing = GetSubstratePixelDataByteOffset(PixelPos, BufferSize, Substrate.MaxBytesPerPixel);
+	FSubstratePixelHeader SubstrateHeader = UnpackSubstrateHeaderIn(Substrate.MaterialTextureArray, SubstrateAddressing, Substrate.TopLayerTexture);
+
+	if (SubstrateHeader.ClosureCount > 0)
+	{
+		const FSubstrateBSDF BSDF = UnpackSubstrateBSDFIn(Substrate.MaterialTextureArray, SubstrateAddressing, SubstrateHeader);
+		BaseColor = SubstrateGetBSDFBaseColor(BSDF);
+	}
+#endif
+
+	return float4(BaseColor, 1.0f);
+}

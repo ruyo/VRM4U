@@ -1,0 +1,32 @@
+// VRM4U Copyright (c) 2021-2026 Haruyoshi Yamamoto. This software is released under the MIT License.
+//
+// Substrate有効時にWorldNormalを取得するためのコピーパス。
+// TopLayerData(トップレイヤーの法線+ラフネスを軽量にまとめたバッファ。Blendable/Adaptiveの
+// どちらのGBuffer形式でも書き出される)から取得するため、BaseColorのようなBSDF全体の
+// アンパックは不要。
+// 出力は従来のGBufferA(WorldNormal)と同じ [-1,1] -> [0,1] のエンコードに合わせている。
+
+#include "/Engine/Private/Common.ush"
+#include "/Engine/Private/Substrate/Substrate.ush"
+
+float2 SourceTextureSize;
+
+float4 MainPS(
+	noperspective float2 UV : TEXCOORD0
+	) : SV_Target0
+{
+	float3 WorldNormal = float3(0, 0, 0);
+
+#if SUBSTRATE_ENABLED
+	const uint2 BufferSize = uint2(SourceTextureSize);
+	const uint2 PixelPos = min(uint2(UV * SourceTextureSize), BufferSize - 1);
+
+	FSubstrateAddressing SubstrateAddressing = GetSubstratePixelDataByteOffset(PixelPos, BufferSize, Substrate.MaxBytesPerPixel);
+	FSubstratePixelHeader SubstrateHeader = UnpackSubstrateHeaderIn(Substrate.MaterialTextureArray, SubstrateAddressing, Substrate.TopLayerTexture);
+
+	const FSubstrateTopLayerData TopLayerData = SubstrateUnpackTopLayerData(SubstrateHeader.PackedTopLayerData);
+	WorldNormal = TopLayerData.WorldNormal;
+#endif
+
+	return float4(WorldNormal * 0.5f + 0.5f, 1.0f);
+}

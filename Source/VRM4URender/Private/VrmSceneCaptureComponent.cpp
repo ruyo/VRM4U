@@ -17,6 +17,7 @@
 #include "Engine/LocalPlayer.h"
 #include "SceneView.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#include "Runtime/Renderer/Private/Substrate/Substrate.h"
 #include "UnrealClient.h"
 
 #if WITH_EDITOR
@@ -118,10 +119,22 @@ public:
 		}
 		FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
+		const FViewInfo* CaptureViewInfo = InView.bIsViewInfo ? static_cast<const FViewInfo*>(&InView) : nullptr;
+		const bool bUseSubstrateMaterialBuffer =
+			CaptureViewInfo && Substrate::IsSubstrateEnabled() &&
+			CaptureViewInfo->SubstrateViewData.SceneData &&
+			CaptureViewInfo->SubstrateViewData.SceneData->MaterialTextureArray &&
+			CaptureViewInfo->SubstrateViewData.SceneData->TopLayerTexture;
 
 
 
 		if (RT_BaseColor) {
+			if (bUseSubstrateMaterialBuffer)
+			{
+				FVRM4URenderModule::AddSubstrateBaseColorCopyPass(GraphBuilder, *CaptureViewInfo, RT_BaseColor);
+			}
+			else
+			{
 			// base color
 			for (auto &a : RenderTargets.Output) {
 				if (a.GetTexture() == nullptr) continue;
@@ -133,9 +146,16 @@ public:
 			if (SrcRDGTex) {
 				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_BaseColor);
 			}
+			}
 		}
 
 		if (RT_Normal) {
+			if (bUseSubstrateMaterialBuffer)
+			{
+				FVRM4URenderModule::AddSubstrateNormalCopyPass(GraphBuilder, *CaptureViewInfo, RT_Normal);
+			}
+			else
+			{
 			// normal
 			SrcRDGTex = nullptr;
 			for (auto& a : RenderTargets.Output) {
@@ -147,6 +167,7 @@ public:
 			}
 			if (SrcRDGTex) {
 				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_Normal);
+			}
 			}
 		}
 
