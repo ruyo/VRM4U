@@ -82,6 +82,7 @@ public:
 	static void AddCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureRef SrcRDGTex, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static void AddSubstrateBaseColorCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static void AddSubstrateNormalCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
+	static void AddSubstrateMRSCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static void AddCustomStencilCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureSRVRef SrcStencilSRV, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static void AddCustomDepthCopyPass(FRDGBuilder& GraphBuilder, FIntRect ViewRect, FRDGTextureSRVRef SrcDepthSRV, TObjectPtr<UTextureRenderTarget2D> RenderTarget);
 	static bool isCaptureTarget(const FSceneView* View);

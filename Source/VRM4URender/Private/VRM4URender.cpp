@@ -231,8 +231,15 @@ class FSubstrateNormalCopyPS : public FSubstrateBaseColorCopyPS
 	SHADER_USE_PARAMETER_STRUCT(FSubstrateNormalCopyPS, FSubstrateBaseColorCopyPS);
 };
 
+class FSubstrateMRSCopyPS : public FSubstrateBaseColorCopyPS
+{
+	DECLARE_GLOBAL_SHADER(FSubstrateMRSCopyPS);
+	SHADER_USE_PARAMETER_STRUCT(FSubstrateMRSCopyPS, FSubstrateBaseColorCopyPS);
+};
+
 IMPLEMENT_GLOBAL_SHADER(FSubstrateBaseColorCopyPS, "/VRM4UShaders/Private/SubstrateBaseColorCopy.usf", "MainPS", SF_Pixel);
 IMPLEMENT_GLOBAL_SHADER(FSubstrateNormalCopyPS, "/VRM4UShaders/Private/SubstrateNormalCopy.usf", "MainPS", SF_Pixel);
+IMPLEMENT_GLOBAL_SHADER(FSubstrateMRSCopyPS, "/VRM4UShaders/Private/SubstrateMRSCopy.usf", "MainPS", SF_Pixel);
 
 template<typename TPixelShader>
 static void AddSubstrateCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget, const TCHAR* PassName)
@@ -288,6 +295,11 @@ void FVRM4URenderModule::AddSubstrateBaseColorCopyPass(FRDGBuilder& GraphBuilder
 void FVRM4URenderModule::AddSubstrateNormalCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget)
 {
 	AddSubstrateCopyPass<FSubstrateNormalCopyPS>(GraphBuilder, View, RenderTarget, TEXT("VRM4U_SubstrateNormalCopy"));
+}
+
+void FVRM4URenderModule::AddSubstrateMRSCopyPass(FRDGBuilder& GraphBuilder, const FViewInfo& View, TObjectPtr<UTextureRenderTarget2D> RenderTarget)
+{
+	AddSubstrateCopyPass<FSubstrateMRSCopyPS>(GraphBuilder, View, RenderTarget, TEXT("VRM4U_SubstrateMRSCopy"));
 }
 
 bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {

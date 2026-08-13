@@ -172,6 +172,12 @@ public:
 		}
 
 		if (RT_MRS) {
+			if (bUseSubstrateMaterialBuffer)
+			{
+				FVRM4URenderModule::AddSubstrateMRSCopyPass(GraphBuilder, *CaptureViewInfo, RT_MRS);
+			}
+			else
+			{
 			// metallic / specular / roughness
 			SrcRDGTex = nullptr;
 			for (auto& a : RenderTargets.Output) {
@@ -183,6 +189,7 @@ public:
 			}
 			if (SrcRDGTex) {
 				FVRM4URenderModule::AddCopyPass(GraphBuilder, InView.UnconstrainedViewRect, SrcRDGTex, RT_MRS);
+			}
 			}
 		}
 

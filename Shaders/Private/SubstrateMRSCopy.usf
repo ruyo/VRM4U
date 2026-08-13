@@ -1,0 +1,36 @@
+// VRM4U Copyright (c) 2021-2026 Haruyoshi Yamamoto. This software is released under the MIT License.
+//
+// Reconstruct the legacy GBufferB RGB channels from the first Substrate closure:
+// R = Metallic, G = Specular, B = Roughness. Alpha has no equivalent legacy
+// shading-model/selective-output-mask value in Adaptive Substrate, so it is opaque.
+
+#include "/Engine/Private/Common.ush"
+#include "/Engine/Private/Substrate/Substrate.ush"
+
+float2 SourceTextureSize;
+
+float4 MainPS(
+	noperspective float2 UV : TEXCOORD0
+	) : SV_Target0
+{
+	float3 MRS = float3(0.0f, 0.0f, 0.0f);
+
+#if SUBSTRATE_ENABLED
+	const uint2 BufferSize = uint2(SourceTextureSize);
+	const uint2 PixelPos = min(uint2(UV * SourceTextureSize), BufferSize - 1);
+
+	FSubstrateAddressing SubstrateAddressing = GetSubstratePixelDataByteOffset(PixelPos, BufferSize, Substrate.MaxBytesPerPixel);
+	FSubstratePixelHeader SubstrateHeader = UnpackSubstrateHeaderIn(Substrate.MaterialTextureArray, SubstrateAddressing, Substrate.TopLayerTexture);
+
+	if (SubstrateHeader.ClosureCount > 0)
+	{
+		const FSubstrateBSDF BSDF = UnpackSubstrateBSDFIn(Substrate.MaterialTextureArray, SubstrateAddressing, SubstrateHeader);
+		MRS = saturate(float3(
+			SubstrateGetBSDFMetallic(BSDF),
+			SubstrateGetBSDFSpecular(BSDF),
+			SubstrateGetBSDFRoughness(BSDF)));
+	}
+#endif
+
+	return float4(MRS, 1.0f);
+}
