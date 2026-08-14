@@ -291,15 +291,74 @@ UVrmSceneCaptureComponent2D::UVrmSceneCaptureComponent2D(const FObjectInitialize
 	// ボーン・カメラの最終姿勢が確定した後に投影行列を読む
 	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
-	// このコンポーネントはGBuffer(BaseColor/Normal/MRS/Depth/CustomStencil/CustomDepth)取得専用で、
-	// 最終的なライティング済みシーンカラー(TextureTarget)は使わない。
-	// BasePassが書き出すGBuffer自体はライティング計算の結果に依存しないため、
-	// ライト・シャドウ・ポストプロセス系の重いパスをまとめて止めて負荷を下げる。
 	ApplyViewMode(VMI_Unlit, true, ShowFlags);
+
 	ShowFlags.SetPostProcessing(false);
 	ShowFlags.SetMotionBlur(false);
 	ShowFlags.SetTemporalAA(false);
 	ShowFlags.SetAntiAliasing(false);
+
+#if !UE_VERSION_OLDER_THAN(5,2,0)
+	// UE 5.2-5.8 common settings.
+	ShowFlags.DisableAdvancedFeatures();
+
+#if !UE_VERSION_OLDER_THAN(5,6,0)
+	// Added in UE 5.6 for custom render passes and unlit scene captures.
+	ShowFlags.DisableFeaturesForUnlit();
+#endif
+
+	ShowFlags.SetLighting(false);
+	ShowFlags.SetGlobalIllumination(false);
+	ShowFlags.SetLumenGlobalIllumination(false);
+	ShowFlags.SetLumenReflections(false);
+	ShowFlags.SetLumenScreenTraces(false);
+	ShowFlags.SetLumenDetailTraces(false);
+	ShowFlags.SetLumenGlobalTraces(false);
+	ShowFlags.SetLumenFarFieldTraces(false);
+	ShowFlags.SetLumenSecondaryBounces(false);
+	ShowFlags.SetLumenShortRangeAmbientOcclusion(false);
+	ShowFlags.SetScreenSpaceReflections(false);
+	ShowFlags.SetReflectionEnvironment(false);
+	ShowFlags.SetSkyLighting(false);
+	ShowFlags.SetDirectLighting(false);
+	ShowFlags.SetDeferredLighting(false);
+	ShowFlags.SetDynamicShadows(false);
+	ShowFlags.SetContactShadows(false);
+	ShowFlags.SetCapsuleShadows(false);
+	ShowFlags.SetRayTracedDistanceFieldShadows(false);
+	ShowFlags.SetAmbientOcclusion(false);
+	ShowFlags.SetScreenSpaceAO(false);
+	ShowFlags.SetDistanceFieldAO(false);
+
+#if !UE_VERSION_OLDER_THAN(5,5,0)
+	// MegaLights was added in UE 5.5.
+	ShowFlags.SetMegaLights(false);
+#endif
+
+	ShowFlags.SetLightFunctions(false);
+	ShowFlags.SetTexturedLightProfiles(false);
+	ShowFlags.SetLightShafts(false);
+	ShowFlags.SetVolumetricLightmap(false);
+	ShowFlags.SetIndirectLightingCache(false);
+	ShowFlags.SetAtmosphere(false);
+	ShowFlags.SetCloud(false);
+	ShowFlags.SetFog(false);
+	ShowFlags.SetVolumetricFog(false);
+	ShowFlags.SetRefraction(false);
+	ShowFlags.SetSeparateTranslucency(false);
+
+#if !UE_VERSION_OLDER_THAN(5,3,0)
+	// Heterogeneous Volumes was added in UE 5.3.
+	ShowFlags.SetHeterogeneousVolumes(false);
+#endif
+
+	ShowFlags.SetSubsurfaceScattering(false);
+
+	PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+	PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::None;
+	PostProcessSettings.bOverride_ReflectionMethod = true;
+	PostProcessSettings.ReflectionMethod = EReflectionMethod::None;
+#endif
 }
 
 void UVrmSceneCaptureComponent2D::EnsureTextureTargetCreated()
