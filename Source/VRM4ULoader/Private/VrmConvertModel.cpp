@@ -995,6 +995,21 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #endif
 		}
 
+		bool bHasNormals = aiData->mNumMeshes > 0;
+		bool bHasTangents = aiData->mNumMeshes > 0;
+		for (uint32 MeshIndex = 0; MeshIndex < aiData->mNumMeshes; ++MeshIndex) {
+			const aiMesh* Mesh = aiData->mMeshes[MeshIndex];
+			bHasNormals &= Mesh != nullptr && Mesh->HasNormals();
+			bHasTangents &= Mesh != nullptr && Mesh->HasTangentsAndBitangents();
+		}
+
+		// Keep source normals/tangents when every submesh provides them, and
+		// only ask Unreal to recompute attributes that are missing.
+		if (FSkeletalMeshLODInfo* LODInfo = sk->GetLODInfo(0)) {
+			LODInfo->BuildSettings.bRecomputeNormals = !bHasNormals;
+			LODInfo->BuildSettings.bRecomputeTangents = !bHasTangents;
+		}
+
 
 		if (VRMConverter::Options::Get().IsVRM10Model() && VRMConverter::Options::Get().IsVRM10Bindpose() == false
 			&& VRMConverter::Options::Get().IsDebugOneBone() == false
@@ -1261,25 +1276,38 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #endif
 					}
 
-					if (i < mInfo.Tangents.Num()){
+					if (i < mInfo.Normals.Num()){
 						//v.StaticMeshVertexBuffer.SetVertexTangents(currentVertex + i, FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 						//v.StaticMeshVertexBuffer.SetVertexTangents(currentVertex + i, result.meshInfo[meshID].Tangents);
 						auto &n = mInfo.Normals[i];
 						FVector n_tmp(-n.X, n.Z, n.Y);
-						FVector t_tmp(-mInfo.Tangents[i].X, mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
+						const bool bHasTangent = i < mInfo.Tangents.Num();
+						FVector t_tmp = FVector::ZeroVector;
+						if (bHasTangent) {
+							t_tmp.Set(-mInfo.Tangents[i].X, mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
+						}
 
 						if (VRMConverter::Options::Get().IsVRM10Model()) {
 							n_tmp.Set(n.X, -n.Z, n.Y);
-							t_tmp.Set(mInfo.Tangents[i].X, -mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
+							if (bHasTangent) {
+								t_tmp.Set(mInfo.Tangents[i].X, -mInfo.Tangents[i].Z, mInfo.Tangents[i].Y);
+							}
 						}
 						if (VRMConverter::Options::Get().IsPMXModel() || VRMConverter::Options::Get().IsBVHModel()) {
 							FVector tmpv(-1, -1, 1);
 							n_tmp *= tmpv;
-							t_tmp *= tmpv;
+							if (bHasTangent) {
+								t_tmp *= tmpv;
+							}
 						}
 
-						t_tmp.Normalize();
 						n_tmp.Normalize();
+						if (bHasTangent) {
+							t_tmp.Normalize();
+						} else {
+							const FVector ReferenceAxis = FMath::Abs(n_tmp.Z) < 0.999f ? FVector::UpVector : FVector::ForwardVector;
+							t_tmp = (ReferenceAxis ^ n_tmp).GetSafeNormal();
+						}
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 						meshS->TangentX = t_tmp;
