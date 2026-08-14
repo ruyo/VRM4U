@@ -17,7 +17,10 @@
 #include "Engine/LocalPlayer.h"
 #include "SceneView.h"
 #include "Runtime/Renderer/Private/SceneRendering.h"
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#else
 #include "Runtime/Renderer/Private/Substrate/Substrate.h"
+#endif
 #include "UnrealClient.h"
 
 #if WITH_EDITOR
@@ -119,12 +122,17 @@ public:
 		}
 		FRDGTextureRef DstRDGTex = nullptr;
 		FRDGTextureRef SrcRDGTex = nullptr;
+#if UE_VERSION_OLDER_THAN(5,4,0)
+		const bool bUseSubstrateMaterialBuffer = false;
+		const FViewInfo* CaptureViewInfo = nullptr;
+#else
 		const FViewInfo* CaptureViewInfo = InView.bIsViewInfo ? static_cast<const FViewInfo*>(&InView) : nullptr;
 		const bool bUseSubstrateMaterialBuffer =
 			CaptureViewInfo && Substrate::IsSubstrateEnabled() &&
 			CaptureViewInfo->SubstrateViewData.SceneData &&
 			CaptureViewInfo->SubstrateViewData.SceneData->MaterialTextureArray &&
 			CaptureViewInfo->SubstrateViewData.SceneData->TopLayerTexture;
+#endif
 
 
 

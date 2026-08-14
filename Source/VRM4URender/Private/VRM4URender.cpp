@@ -29,7 +29,10 @@
 #include "SceneRendering.h"
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
+#if UE_VERSION_OLDER_THAN(5,4,0)
+#else
 #include "Substrate/Substrate.h"
+#endif
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)
 #include "DataDrivenShaderPlatformInfo.h"
@@ -210,6 +213,22 @@ void FVRM4URenderModule::AddCustomDepthCopyPass(
 
 IMPLEMENT_GLOBAL_SHADER(FCustomDepthCopyPS, "/VRM4UShaders/Private/CustomDepthCopy.usf", "MainPS", SF_Pixel);
 
+#if UE_VERSION_OLDER_THAN(5,4,0)
+
+void FVRM4URenderModule::AddSubstrateBaseColorCopyPass(FRDGBuilder&, const FViewInfo&, TObjectPtr<UTextureRenderTarget2D>)
+{
+}
+
+void FVRM4URenderModule::AddSubstrateNormalCopyPass(FRDGBuilder&, const FViewInfo&, TObjectPtr<UTextureRenderTarget2D>)
+{
+}
+
+void FVRM4URenderModule::AddSubstrateMRSCopyPass(FRDGBuilder&, const FViewInfo&, TObjectPtr<UTextureRenderTarget2D>)
+{
+}
+
+#else
+
 class FSubstrateBaseColorCopyPS : public FGlobalShader
 {
 	DECLARE_GLOBAL_SHADER(FSubstrateBaseColorCopyPS);
@@ -301,6 +320,8 @@ void FVRM4URenderModule::AddSubstrateMRSCopyPass(FRDGBuilder& GraphBuilder, cons
 {
 	AddSubstrateCopyPass<FSubstrateMRSCopyPS>(GraphBuilder, View, RenderTarget, TEXT("VRM4U_SubstrateMRSCopy"));
 }
+
+#endif
 
 bool FVRM4URenderModule::isCaptureTarget(const FSceneView* View) {
 
