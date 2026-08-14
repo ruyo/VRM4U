@@ -125,6 +125,15 @@ static FMatrix convertAiMatToFMatrix(aiMatrix4x4 t, bool bOffsetMode = false) {
 		m.M[3][0] *= -1.f;
 		m.M[3][1] *= -1.f;
 	}
+	if (VRMConverter::Options::Get().IsBVHModel()) {
+		// Use the same BVH basis conversion as the animation tracks.  Preserve
+		// the already-converted translation while rotating the local basis.
+		const FVector Translation = m.GetOrigin();
+		m.SetOrigin(FVector::ZeroVector);
+		const FMatrix Basis = FQuat(FVector::ForwardVector, -PI / 2.f).ToMatrix();
+		m = Basis * m * Basis.Inverse();
+		m.SetOrigin(Translation);
+	}
 	{
 		m.M[3][0] *= VRMConverter::Options::Get().GetModelScale();
 		m.M[3][1] *= VRMConverter::Options::Get().GetModelScale();
@@ -336,7 +345,7 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 
 					FTransform localpose_Identity = localpose;
 
-					if (VRMConverter::Options::Get().IsRemoveRootBoneRotation()) {
+					if (VRMConverter::Options::Get().IsRemoveRootBoneRotation() && !VRMConverter::Options::Get().IsBVHModel()) {
 						// localpose correct
 						if (ParentIndex >= 0) {
 							localpose_Identity = tpose_root.Inverse() * localpose * tpose_root;
@@ -362,6 +371,21 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 					poseLocal_tpose_rootIdentity[nodeNo] = localpose_Identity;
 				}
 			}// tpose
+		}
+
+		int32 BVHDummyRootIndex = INDEX_NONE;
+		if (VRMConverter::Options::Get().IsBVHModel()) {
+			BVHDummyRootIndex = RefSkelModifier.FindBoneIndex(TEXT("root_dummy"));
+			if (BVHDummyRootIndex == INDEX_NONE) {
+				FMeshBoneInfo DummyRootInfo;
+				DummyRootInfo.Name = TEXT("root_dummy");
+#if WITH_EDITORONLY_DATA
+				DummyRootInfo.ExportName = TEXT("root_dummy");
+#endif
+				DummyRootInfo.ParentIndex = INDEX_NONE;
+				RefSkelModifier.Add(DummyRootInfo, FTransform::Identity);
+				BVHDummyRootIndex = RefSkelModifier.FindBoneIndex(TEXT("root_dummy"));
+			}
 		}
 
 		for (int nodeNo = 0; nodeNo < nodeArray.Num(); ++nodeNo) {
@@ -421,18 +445,14 @@ void VRMSkeleton::readVrmBone(aiScene* scene, int& boneOffset, FReferenceSkeleto
 			int32 ParentIndexByNode = INDEX_NONE;
 			if (nodeArray.Find(node->mParent, ParentIndexByNode) == false) {
 				ParentIndexByNode = INDEX_NONE;
-
-				if (VRMConverter::Options::Get().IsBVHModel()) {
-					// ダミーのRoot骨を追加する。BVHはRoot骨にTransが入っていることがある。
-					// Transがあると、リターゲットがうまくできない
-					FMeshBoneInfo inf;
-					inf.Name = TEXT("root_dummy");
-					inf.ParentIndex = INDEX_NONE;
-					RefSkelModifier.Add(inf, FTransform());
-				}
 			}
 			if (VRMConverter::Options::Get().IsBVHModel()) {
-				info.ParentIndex = ParentIndexByNode + 1;
+				if (ParentIndexByNode == INDEX_NONE) {
+					info.ParentIndex = BVHDummyRootIndex;
+				} else {
+					info.ParentIndex = RefSkelModifier.FindBoneIndex(
+						UTF8_TO_TCHAR(nodeArray[ParentIndexByNode]->mName.C_Str()));
+				}
 			} else {
 				info.ParentIndex = ParentIndexByNode;
 			}
