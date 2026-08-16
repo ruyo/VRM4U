@@ -30,7 +30,12 @@ public class VRM4URender : ModuleRules
 			});
 		if (Target.bBuildEditor)
 		{
-			PrivateDependencyModuleNames.Add("UnrealEd");
+			PrivateDependencyModuleNames.AddRange(
+				new string[] {
+					"UnrealEd",
+					"Slate",
+					"SlateCore",
+				});
 		}
 	}
 }

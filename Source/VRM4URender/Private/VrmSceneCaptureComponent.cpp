@@ -11,6 +11,8 @@
 
 #include "VRM4URender.h"
 #include "VrmBPFunctionLibrary.h"
+#include "VrmCustomStencilNotification.h"
+#include "HAL/IConsoleManager.h"
 #include "Misc/EngineVersionComparison.h"
 
 #include "Camera/CameraTypes.h"
@@ -411,6 +413,10 @@ void UVrmSceneCaptureComponent2D::OnComponentCreated()
 {
 	Super::OnComponentCreated();
 	EnsureTextureTargetCreated();
+
+#if WITH_EDITOR
+	VrmCustomStencilNotification::TryShow(*this);
+#endif
 }
 
 void UVrmSceneCaptureComponent2D::OnRegister()

@@ -3,6 +3,7 @@
 
 #include "VrmExtensionRimFilterData.h"
 #include "VRM4U_RenderSubsystem.h"
+#include "VrmCustomStencilNotification.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -34,6 +35,10 @@ void UVrmExtensionRimFilterData::PostInitProperties() {
 
 	if (!HasAnyFlags(RF_ClassDefaultObject)) {
 		// インスタンスの場合
+#if WITH_EDITOR
+		VrmCustomStencilNotification::TryShow(*this);
+#endif
+
 		UVRM4U_RenderSubsystem* s = GEngine->GetEngineSubsystem<UVRM4U_RenderSubsystem>();
 		if (s == nullptr) return;
 
