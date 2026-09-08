@@ -82,16 +82,14 @@
       ]
     },
     {
-      "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+",
+      "_comment_vrm4u_dummy": "IKRig Plugin for Use UE5.0+. Required (not Optional): the VRM4U runtime modules hard-import IKRig.dll, so IKRig must be enabled before they load or the whole plugin fails to load.",
       "Name": "IKRig",
-      "Enabled": true,
-      "Optional": true
+      "Enabled": true
     },
     {
-      "_comment_vrm4u_dummy": "OSC Plugin for Use UE5.0+",
+      "_comment_vrm4u_dummy": "OSC Plugin for Use UE5.0+. Required (not Optional): VRM4UCapture hard-imports OSC.dll, so OSC must be enabled before it loads or the whole plugin fails to load.",
       "Name": "OSC",
-      "Enabled": true,
-      "Optional": true
+      "Enabled": true
     }
   ],
   "_comment_vrm4u_dummy": "comment"
