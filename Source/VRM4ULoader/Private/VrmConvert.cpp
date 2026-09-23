@@ -15,12 +15,11 @@
 //}
 
 
-static bool bImportMode = false;
 bool VRMConverter::IsImportMode() {
-	return bImportMode;
+	return Options::Get().bImportMode;
 }
 void VRMConverter::SetImportMode(bool b) {
-	bImportMode = b;
+	Options::Get().bImportMode = b;
 }
 
 UPackage *VRMConverter::CreatePackageFromImportMode(UPackage *p, const FString &name) {
@@ -242,9 +241,43 @@ bool VRMConverter::NormalizeBoneName(const aiScene *mScenePtr) {
 
 ////
 
+namespace {
+	thread_local VRMConverter::Options DefaultOptions;
+	thread_local VRMConverter::Options* ActiveOptions = nullptr;
+}
+
 VRMConverter::Options& VRMConverter::Options::Get(){
-	static VRMConverter::Options o;
-	return o;
+	return ActiveOptions ? *ActiveOptions : DefaultOptions;
+}
+
+VRMConverter::Options::Options(const Options& Other)
+	: bImportMode(Other.bImportMode)
+	, bVRM0(Other.bVRM0), bVRM10(Other.bVRM10), bVRMA(Other.bVRMA)
+	, bBVH(Other.bBVH), bPMX(Other.bPMX), bNoMesh(Other.bNoMesh)
+	, MaterialType(Other.MaterialType) {
+	SetVrmOption(Other.ImportOption);
+}
+
+void VRMConverter::Options::SetVrmOption(const FImportOptionData* Value) {
+	if (Value == ImportOption) {
+		return;
+	}
+	if (Value) {
+		ImportOptionStorage.Emplace(*Value);
+		ImportOption = &ImportOptionStorage.GetValue();
+	} else {
+		ImportOption = nullptr;
+		ImportOptionStorage.Reset();
+	}
+}
+
+VRMConverter::Options::Scope::Scope(Options& InOptions)
+	: Previous(ActiveOptions) {
+	ActiveOptions = &InOptions;
+}
+
+VRMConverter::Options::Scope::~Scope() {
+	ActiveOptions = Previous;
 }
 
 USkeleton *VRMConverter::Options::GetSkeleton() {
@@ -523,22 +556,20 @@ bool VRMConverter::Options::IsUE5Material() const {
 	return ImportOption->bUseUE5Material;
 }
 
-static bool bbVRM0 = false;
-static bool bbVRM10 = false;
 void VRMConverter::Options::SetVRM0Model(bool bVRM) {
-	bbVRM0 = bVRM;
-	bbVRM10 = !bVRM;
+	bVRM0 = bVRM;
+	bVRM10 = !bVRM;
 }
 void VRMConverter::Options::SetVRM10Model(bool bVRM) {
-	bbVRM10 = bVRM;
-	bbVRM0 = !bVRM;
+	bVRM10 = bVRM;
+	bVRM0 = !bVRM;
 }
 
 bool VRMConverter::Options::IsVRM0Model() const {
-	return bbVRM0;
+	return bVRM0;
 }
 bool VRMConverter::Options::IsVRM10Model() const {
-	return bbVRM10;
+	return bVRM10;
 }
 bool VRMConverter::Options::IsRemoveRootBoneRotation() const {
 	bool ret = true;
@@ -597,49 +628,45 @@ bool VRMConverter::Options::IsVRMModel() const {
 	return IsVRM0Model() || IsVRM10Model();
 }
 
-static bool bbVRMA = false;
-void VRMConverter::Options::SetVRMAModel(bool bVRMA) {
-	bbVRMA = bVRMA;
+void VRMConverter::Options::SetVRMAModel(bool Value) {
+	bVRMA = Value;
 }
 
 bool VRMConverter::Options::IsVRMAModel() const {
-	return bbVRMA;
+	return bVRMA;
 }
 
-static bool bbBVH = false;
-void VRMConverter::Options::SetBVHModel(bool bBVH) {
-	bbBVH = bBVH;
+void VRMConverter::Options::SetBVHModel(bool Value) {
+	bBVH = Value;
 }
 
 bool VRMConverter::Options::IsBVHModel() const {
-	return bbBVH;
+	return bBVH;
 }
 
-static bool bbPMX = false;
 void VRMConverter::Options::SetPMXModel(bool bVRM) {
-	bbPMX = bVRM;
+	bPMX = bVRM;
 }
 
 bool VRMConverter::Options::IsPMXModel() const {
-	return bbPMX;
+	return bPMX;
 }
 
-static bool bbNoMesh = false;
-void VRMConverter::Options::SetNoMesh(bool bNoMesh) {
-	bbNoMesh = bNoMesh;
+void VRMConverter::Options::SetNoMesh(bool Value) {
+	bNoMesh = Value;
 }
 
 bool VRMConverter::Options::IsNoMesh() const {
-	return bbNoMesh;
+	return bNoMesh;
 }
 
 void VRMConverter::Options::ClearModelType() {
-	bbVRM0 = false;
-	bbVRM10 = false;
-	bbVRMA = false;
-	bbBVH = false;
-	bbPMX = false;
-	bbNoMesh = false;
+	bVRM0 = false;
+	bVRM10 = false;
+	bVRMA = false;
+	bBVH = false;
+	bPMX = false;
+	bNoMesh = false;
 }
 
 bool VRMConverter::Options::IsForceOverride() const {
@@ -682,12 +709,11 @@ bool VRMConverter::Options::IsAPoseRetarget() const {
 }
 
 
-static EVRMImportMaterialType mType = EVRMImportMaterialType::VRMIMT_Auto;
 void VRMConverter::Options::SetMaterialType(EVRMImportMaterialType t) {
-	mType = t;
+	MaterialType = t;
 }
 EVRMImportMaterialType VRMConverter::Options::GetMaterialType() const {
-	if (ImportOption == nullptr) return mType;
+	if (ImportOption == nullptr) return MaterialType;
 	return ImportOption->MaterialType;
 }
 

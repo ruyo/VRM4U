@@ -6,10 +6,12 @@
 #include "UObject/WeakObjectPtr.h"
 #include "Engine/LatentActionManager.h"
 #include "LatentActions.h"
+#include "Templates/UniquePtr.h"
 #include "VrmUtil.h"
 
 class UVrmAssetListObject;
 struct FImportOptionData;
+struct FVrmLocalAsyncAsset;
 
 class FVrmAsyncLoadActionParam {
 public:
@@ -31,10 +33,16 @@ public:
 
 	int SequenceCount = 0;
 	FGraphEventRef t2 = nullptr;
+	int TexCount = 0;
+	int SubCount = 0;
+	int FrameCount = 0;
+	double StartTime = 0.0;
+	TUniquePtr<FVrmLocalAsyncAsset> LocalAsset;
 
 	FVrmAsyncLoadActionParam param;
 
 	FVrmAsyncLoadAction(const FLatentActionInfo& LatentInfo, FVrmAsyncLoadActionParam &);
+	virtual ~FVrmAsyncLoadAction() override;
 
 	virtual void UpdateOperation(FLatentResponse& Response) override;
 

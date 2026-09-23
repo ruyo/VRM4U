@@ -6,6 +6,7 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/Object.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Misc/Optional.h"
 #include "Engine/SkeletalMesh.h"
 
 #if UE_VERSION_OLDER_THAN(5,4,0)
@@ -91,11 +92,21 @@ public:
 	class VRM4ULOADER_API Options {
 	public:
 		static Options & Get();
+		Options() = default;
+		Options(const Options& Other);
+		Options& operator=(const Options&) = delete;
 
-		const FImportOptionData *ImportOption = nullptr;
-		void SetVrmOption(const FImportOptionData *p) {
-			ImportOption = p;
-		}
+		class Scope {
+		public:
+			explicit Scope(Options& InOptions);
+			~Scope();
+			Scope(const Scope&) = delete;
+			Scope& operator=(const Scope&) = delete;
+		private:
+			Options* Previous;
+		};
+
+		void SetVrmOption(const FImportOptionData *p);
 
 		class USkeleton *GetSkeleton();
 		bool IsSimpleRootBone() const;
@@ -170,16 +181,16 @@ public:
 		void SetVRM10Model(bool bVRM);
 
 		bool IsVRMAModel() const;
-		void SetVRMAModel(bool bVRMA);
+		void SetVRMAModel(bool Value);
 
 		bool IsBVHModel() const;
-		void SetBVHModel(bool bBVH);
+		void SetBVHModel(bool Value);
 
 		bool IsPMXModel() const;
 		void SetPMXModel(bool bPMX);
 
 		bool IsNoMesh() const;
-		void SetNoMesh(bool bNoMesh);
+		void SetNoMesh(bool Value);
 
 		bool IsForceOverride() const;
 		float GetModelScale() const;
@@ -192,6 +203,17 @@ public:
 
 		EVRMImportMaterialType GetMaterialType() const;
 		void SetMaterialType(EVRMImportMaterialType type);
+		bool bImportMode = false;
+	private:
+		const FImportOptionData *ImportOption = nullptr;
+		TOptional<FImportOptionData> ImportOptionStorage;
+		bool bVRM0 = false;
+		bool bVRM10 = false;
+		bool bVRMA = false;
+		bool bBVH = false;
+		bool bPMX = false;
+		bool bNoMesh = false;
+		EVRMImportMaterialType MaterialType = EVRMImportMaterialType::VRMIMT_Auto;
 	};
 };
 
