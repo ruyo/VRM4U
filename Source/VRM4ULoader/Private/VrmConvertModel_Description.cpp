@@ -210,6 +210,7 @@ static void FindMeshInfo(const aiScene* scene, aiNode* node, FReturnedData& resu
 		tempMatrix.M[2][0] = tempTrans.a3; tempMatrix.M[2][1] = tempTrans.b3; tempMatrix.M[2][2] = tempTrans.c3; tempMatrix.M[2][3] = tempTrans.d3;
 		tempMatrix.M[3][0] = tempTrans.a4; tempMatrix.M[3][1] = tempTrans.b4; tempMatrix.M[3][2] = tempTrans.c4; tempMatrix.M[3][3] = tempTrans.d4;
 		mi.RelativeTransform = FTransform(tempMatrix);
+		const FMatrix NormalTransform = mi.RelativeTransform.ToMatrixWithScale().Inverse().GetTransposed();
 
 		auto &useFlag = mi.vertexUseFlag;
 		if (VRMConverter::Options::Get().IsOptimizeVertex()) {
@@ -300,7 +301,7 @@ static void FindMeshInfo(const aiScene* scene, aiNode* node, FReturnedData& resu
 					mesh->mNormals[j].y,
 					mesh->mNormals[j].z);
 
-				//normal = mi.RelativeTransform.TransformFVector4(normal);
+				normal = NormalTransform.TransformVector(normal).GetSafeNormal();
 				mi.Normals.Push(normal);
 			} else
 			{
@@ -327,7 +328,7 @@ static void FindMeshInfo(const aiScene* scene, aiNode* node, FReturnedData& resu
 			{
 				FVector v(mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z);
 				//FProcMeshTangent meshTangent = FProcMeshTangent(v.X, v.Y, v.Z);
-				mi.Tangents.Push(v);
+				mi.Tangents.Push(mi.RelativeTransform.TransformVector(v).GetSafeNormal());
 				//mi.MeshTangents.Push(meshTangent);
 			}
 
