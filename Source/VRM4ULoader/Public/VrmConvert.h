@@ -73,8 +73,6 @@ public:
 
 	bool ConvertTextureAndMaterial(UVrmAssetListObject *vrmAssetList);
 	bool ConvertModel(UVrmAssetListObject* vrmAssetList);
-	bool ConvertModel_internal(UVrmAssetListObject* vrmAssetList);
-	bool ConvertModel_internal_description(UVrmAssetListObject* vrmAssetList);
 	bool ConvertMorphTarget(UVrmAssetListObject *vrmAssetList);
 
 	void GetVRMMeta(const aiScene *mScenePtr, UVrmLicenseObject *& a, UVrm1LicenseObject *& b);
