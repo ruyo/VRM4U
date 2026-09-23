@@ -10,11 +10,7 @@
 #include "VrmLicenseObject.h"
 #include "Vrm1LicenseObject.h"
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#include "AssetRegistryModule.h"
-#else
 #include "AssetRegistry/AssetRegistryModule.h"
-#endif
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 

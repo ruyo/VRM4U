@@ -61,11 +61,7 @@ class UVrmAssetListThumbnailRenderer : public UTextureThumbnailRenderer
 	// UThumbnailRenderer interface
 	virtual void GetThumbnailSize(UObject* Object, float Zoom, uint32& OutWidth, uint32& OutHeight) const override;
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-	virtual void Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget*, FCanvas* Canvas) override;
-#else
 	virtual void Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget*, FCanvas* Canvas, bool bAdditionalViewFamily) override;
-#endif
 	// End of UThumbnailRenderer interface
 
 #if	UE_VERSION_OLDER_THAN(5,5,0)

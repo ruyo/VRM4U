@@ -3,7 +3,7 @@
   "Version": 1,
   "VersionName": "1.0",
   "FriendlyName": "VRM4U",
-  "Description": "VRM importer and runtime loader for UE4",
+  "Description": "VRM importer and runtime loader for UE4.27 and UE5",
   "Category": "Rendering",
   "CreatedBy": "ruyo",
   "CreatedByURL": "ruyo",
@@ -46,7 +46,6 @@
       "LoadingPhase": "PostConfigInit"
     },
     {
-      "_comment_vrm4u_dummy": "Use Developer instead of UncookedOnly for UE4.23-",
       "Name": "VRM4UImporter",
       "Type": "UncookedOnly",
       "LoadingPhase": "PreDefault",

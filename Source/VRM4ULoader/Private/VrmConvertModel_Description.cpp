@@ -1874,7 +1874,6 @@ bool VRMConverter::ConvertModel_internal_description(UVrmAssetListObject *vrmAss
 
 #else // game
 
-			// 4.25
 			// force reinit renderdata
 			{
 				FSkeletalMeshRenderData* p = sk->GetResourceForRendering();

@@ -6,11 +6,7 @@
 #include "Misc/EngineVersionComparison.h"
 
 #include "AssetToolsModule.h"
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#include "AssetRegistryModule.h"
-#else
 #include "AssetRegistry/AssetRegistryModule.h"
-#endif
 #include "PackageTools.h"
 #include "Misc/Paths.h"
 #include "Engine/SkeletalMesh.h"
@@ -45,11 +41,7 @@ class SWindow2 : public SWindow{
 public:
 	//		bCanTick = false;
 	SWindow2() : SWindow() {
-#if	UE_VERSION_OLDER_THAN(4,21,0)
-		bCanTick = true;
-#else
 		SetCanTick(true);
-#endif
 	}
 
 public:
@@ -60,11 +52,7 @@ public:
 	}
 	bool OnIsActiveChanged(const FWindowActivateEvent& ActivateEvent) {
 		bool r = SWindow::OnIsActiveChanged(ActivateEvent);
-#if	UE_VERSION_OLDER_THAN(4,21,0)
-		bCanTick = true;
-#else
 		SetCanTick(true);
-#endif
 		return r;
 	}
 };
@@ -500,12 +488,9 @@ UObject* UVRM4UImporterFactory::FactoryCreateBinary(UClass* InClass, UObject* In
 		ULoaderBPFunctionLibrary::SetImportMode(false, nullptr);
 		importOption.SetVrmOption(nullptr);
 
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 		if (GEditor) {
 			GEditor->GetEditorSubsystem<UImportSubsystem>()->BroadcastAssetPostImport(this, mret);
 		}
-#endif
 
 
 		GWarn->EndSlowTask();
@@ -563,19 +548,13 @@ EReimportResult::Type UVRM4UImporterFactory::Reimport(UObject* Obj) {
 	if (asset->AssetImportData == nullptr) {
 		return EReimportResult::Failed;
 	}
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 	if (asset->AssetImportData->GetSourceFileCount() <= 0) {
 		return EReimportResult::Failed;
 	}
-#endif
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 	ReimportBase = asset;
 	asset->Package = asset->GetPackage();
 	asset->ReimportBase = asset;
-#endif
 
 	{
 		FString str = asset->AssetImportData->GetSourceData().SourceFiles[0].RelativeFilename;

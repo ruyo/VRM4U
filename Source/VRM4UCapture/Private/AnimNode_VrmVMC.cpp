@@ -172,19 +172,12 @@ void FAnimNode_VrmVMC::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseCont
 		bool bFirstBone = true;
 
 		for (const auto &t : VrmMetaObject_Internal->humanoidBoneTable) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-			auto *tmpVal = BoneTrans.Find(t.Key.ToLower());
-			if (tmpVal == nullptr) continue;
-
-			auto modelBone = *tmpVal;
-#else
 			auto filterList= BoneTrans.FilterByPredicate([&t](TPair<FString, FTransform> a) {
 				return a.Key.Compare(t.Key, ESearchCase::IgnoreCase) == 0;
 			}
 			);
 			if (filterList.Num() != 1) continue;
 			auto modelBone = filterList.begin()->Value;
-#endif
 
 			int index = RefSkeleton.FindBoneIndex(*t.Value);
 			if (index < 0) continue;

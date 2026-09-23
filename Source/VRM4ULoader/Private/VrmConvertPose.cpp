@@ -384,9 +384,7 @@ namespace {
 #endif
 		}
 
-#if UE_VERSION_OLDER_THAN(4,22,0)
-		PreviewAnimation->NumFrames = PoseCount;
-#elif UE_VERSION_OLDER_THAN(5,0,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 		PreviewAnimation->SetRawNumberOfFrame(PoseCount);
 #endif
 
@@ -1223,9 +1221,7 @@ namespace {
 			}
 
 
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-			ase->NumFrames = SmartNamePoseList.Num();
-#elif UE_VERSION_OLDER_THAN(5,0,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 			ase->SetRawNumberOfFrame(SmartNamePoseList.Num());
 #endif
 
@@ -1329,8 +1325,6 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 		bPlay = b1 || b2;
 	}
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 #if WITH_EDITOR
 
 	// pose asset
@@ -1786,7 +1780,6 @@ bool VRMConverter::ConvertPose(UVrmAssetListObject *vrmAssetList) {
 	}
 
 #endif // editor
-#endif //420
 
 	return true;
 

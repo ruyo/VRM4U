@@ -94,8 +94,7 @@ static void renameToHumanoidBone(USkeletalMesh *targetSK, const UVrmMetaObject *
 	VRMSetRefSkeleton(targetSK, targetSkeleton->GetReferenceSkeleton());
 
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#elif UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,4,0)
 	if (src_rig) {
 		rig->SetSourceAsset(src_rig->GetSourceAsset());
 		rig->SetTargetAsset(targetSK);
@@ -189,8 +188,7 @@ static void renameToUE4Bone(USkeletalMesh *targetSK, UVrmMetaObject *meta, const
 	VRMSetRefSkeleton(targetSK, targetSkeleton->GetReferenceSkeleton());
 
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#elif UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,4,0)
 
 	if (src_rig) {
 		rig->SetSourceAsset(src_rig->GetSourceAsset());
@@ -305,10 +303,7 @@ bool VRMConverter::ConvertHumanoid(UVrmAssetListObject *vrmAssetList) {
 		ss->CalculateExtendedBounds();
 #if WITH_EDITORONLY_DATA
 		ss->ConvertLegacyLODScreenSize();
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 		ss->UpdateGenerateUpToData();
-#endif
 #endif
 
 #if WITH_EDITORONLY_DATA

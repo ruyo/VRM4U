@@ -117,11 +117,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Mesh, meta = (ImportType = "StaticMesh|SkeletalMesh", DisplayName = "Eable MorphTarget Normal(TangentZDelta)"))
 	bool bEnableMorphTargetNormal = false;
 
-#if UE_VERSION_OLDER_THAN(4,26,0)
-	static const bool VRM4U_UseBC7 = false;
-#else
 	static const bool VRM4U_UseBC7 = true;
-#endif
 
 
 	/** Force Original MorphTarget Name Mode */

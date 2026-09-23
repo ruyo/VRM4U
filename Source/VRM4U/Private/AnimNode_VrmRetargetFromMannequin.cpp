@@ -134,12 +134,9 @@ void FAnimNode_VrmRetargetFromMannequin::CacheBones_AnyThread(const FAnimationCa
 
 }
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 void FAnimNode_VrmRetargetFromMannequin::ResetDynamics(ETeleportType InTeleportType) {
 	Super::ResetDynamics(InTeleportType);
 }
-#endif
 
 void FAnimNode_VrmRetargetFromMannequin::UpdateInternal(const FAnimationUpdateContext& Context){
 	Super::UpdateInternal(Context);
@@ -319,11 +316,7 @@ void FAnimNode_VrmRetargetFromMannequin::EvaluateSkeletalControl_AnyThread(FComp
 					if (BoneCount == 1) {
 						// RootBone transform
 						float s = dd.GetLocation().Z / FMath::Max(1.0f, srcRefSkeletonCompTransform[srcIndex].GetLocation().Z);
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-						FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->RelativeScale3D;
-#else
 						FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->GetRelativeScale3D();
-#endif
 						if (ComponentScale.X == 0.f) {
 							ComponentScale.X = 0.001f;
 						}

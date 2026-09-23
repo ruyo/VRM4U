@@ -552,11 +552,7 @@ void UVrmMocopiReceiver::OnPacketReceived(FStructMocopiData data) {
 		if (MocopiReceiveBuffer.Num()  == 0) {
 			break;
 		}
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-		MocopiReceiveBuffer.RemoveAt(0);
-#else
 		MocopiReceiveBuffer.PopFront();
-#endif
 	}
 	MocopiReceiveBuffer.Add(data);
 }

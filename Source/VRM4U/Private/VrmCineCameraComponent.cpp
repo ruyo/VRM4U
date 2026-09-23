@@ -22,10 +22,7 @@ void UVrmCineCameraComponent::OnRegister()
 			DrawFrustum->CreationMethod = CreationMethod;
 			DrawFrustum->RegisterComponentWithWorld(GetWorld());
 
-#if	UE_VERSION_OLDER_THAN(4,21,0)
-#else
 			DrawFrustum->SetIsVisualizationComponent(true);
-#endif
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
 #else

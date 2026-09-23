@@ -133,10 +133,7 @@ void UVrmHMDTrackingComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 				(*(pinch[handCount]))[i] = handState.PinchStrength[i];
 			}
 
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-			ovrpSkeleton skeleton;
-			if (FOculusHMDModule::GetPluginWrapper().GetSkeleton(eSkeletonType[handCount], &skeleton) == 0) {
-#elif UE_VERSION_OLDER_THAN(5,0,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 			ovrpSkeleton2 skeleton;
 			if (FOculusHMDModule::GetPluginWrapper().GetSkeleton2(eSkeletonType[handCount], &skeleton) == 0) {
 #else

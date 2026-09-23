@@ -26,11 +26,7 @@ void VRMConverter::SetImportMode(bool b) {
 UPackage *VRMConverter::CreatePackageFromImportMode(UPackage *p, const FString &name) {
 	FString n =	p->GetName();
 	n += TEXT("/") + name;
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-	return CreatePackage(nullptr, *n);
-#else
 	return CreatePackage(*n);
-#endif
 }
 
 
@@ -725,11 +721,7 @@ UPackage* VRM4U_CreatePackage(UPackage* Outer, FName Name) {
 		FString s1, s2;
 		s.Split(TEXT("/"), &s1, &s2, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-		pkg = CreatePackage(nullptr, *(s1 + TEXT("/") + Name.ToString()));
-#else
 		pkg = CreatePackage(*(s1 + TEXT("/") + Name.ToString()));
-#endif
 	}
 	return pkg;
 }

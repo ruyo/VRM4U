@@ -583,12 +583,8 @@ UTexture2D* VRMLoaderUtil::CreateTexture(int32 InSizeX, int32 InSizeY, FString n
 
 		int32 NumBlocksX = InSizeX / GPixelFormats[format].BlockSizeX;
 		int32 NumBlocksY = InSizeY / GPixelFormats[format].BlockSizeY;
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-		FTexture2DMipMap* Mip = new(NewTexture->PlatformData->Mips) FTexture2DMipMap();
-#else
 		FTexture2DMipMap* Mip = new FTexture2DMipMap();
 		GetPlatformData(NewTexture)->Mips.Add(Mip);
-#endif
 		Mip->SizeX = InSizeX;
 		Mip->SizeY = InSizeY;
 		Mip->BulkData.Lock(LOCK_READ_WRITE);
@@ -622,22 +618,13 @@ bool VRMLoaderUtil::LoadImageFromMemory(const void* vBuffer, const size_t Length
 	}
 	if (ImageWrapper.IsValid()) {
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
 		TArray<uint8> RawData;
-#endif
 		const TArray<uint8>* pRawData = nullptr;
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-		if (ImageWrapper.IsValid()) {
-			if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, pRawData) == false) return false;
-		}
-#else
 		if (ImageWrapper.IsValid()) {
 			if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData) == false) return false;
 		}
 		pRawData = &RawData;
-#endif
 
 		const int Width = FMath::Max(ImageWrapper->GetWidth(), 1);
 		const int Height = FMath::Max(ImageWrapper->GetHeight(), 1);

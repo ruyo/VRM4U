@@ -125,8 +125,6 @@ void FAnimNode_VrmSpringBone::CacheBones_AnyThread(const FAnimationCacheBonesCon
 	Super::CacheBones_AnyThread(Context);
 }
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 void FAnimNode_VrmSpringBone::ResetDynamics(ETeleportType InTeleportType) {
 	Super::ResetDynamics(InTeleportType);
 	if (SpringManager.Get()){
@@ -141,7 +139,6 @@ void FAnimNode_VrmSpringBone::ResetDynamics(ETeleportType InTeleportType) {
 		}
 	}
 }
-#endif
 
 void FAnimNode_VrmSpringBone::UpdateInternal(const FAnimationUpdateContext& Context){
 	Super::UpdateInternal(Context);

@@ -40,11 +40,7 @@ UVrmAssetListObject* UVrmImporterBPFunctionLibrary::ImportVRMFileWithOptions(
 		return nullptr;
 	}
 
-#if UE_VERSION_OLDER_THAN(4,26,0)
-	UPackage* Package = CreatePackage(nullptr, *DestinationPackagePath);
-#else
 	UPackage* Package = CreatePackage(*DestinationPackagePath);
-#endif
 	if (!Package)
 	{
 		UE_LOG(

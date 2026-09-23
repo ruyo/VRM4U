@@ -137,8 +137,6 @@ void FAnimNode_VrmModifyBoneList::EvaluateSkeletalControl_AnyThread(FComponentSp
 		}else{
 			bool bUseInputTrans = false;
 
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-#else
 			FString t = RefSkeleton.GetBoneName(boneIndexTable[i]).ToString();
 
 			auto ret = UseInputTransBoneList.FilterByPredicate([&t](FString a) {
@@ -148,7 +146,6 @@ void FAnimNode_VrmModifyBoneList::EvaluateSkeletalControl_AnyThread(FComponentSp
 			if (ret.Num() > 0) {
 				bUseInputTrans = true;
 			}
-#endif
 			if (bUseInputTrans) {
 				FCompactPoseBoneIndex CompactPoseBoneToModify(boneIndexTable[i]);
 				FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(CompactPoseBoneToModify);

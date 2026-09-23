@@ -42,11 +42,7 @@
 #include "IImageWrapperModule.h"
 #include "Engine/Blueprint.h"
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#include "AssetRegistryModule.h"
-#else
 #include "AssetRegistry/AssetRegistryModule.h"
-#endif
 
 #include "UObject/Package.h"
 #include "Engine/Engine.h"
@@ -86,10 +82,6 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/vrm/vrmmeta.h>
 
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-#define TRACE_CPUPROFILER_EVENT_SCOPE(a)
-#else
-#endif
 
 
 // tem
@@ -277,10 +269,7 @@ static UTexture2D* LocalGetTexture(const aiScene* mScenePtr, int texIndex) {
 	auto& t = *mScenePtr->mTextures[texIndex];
 	int Width = t.mWidth;
 	int Height = t.mHeight;
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
 	TArray<uint8> RawData;
-#endif
 	const TArray<uint8>* pRawData = nullptr;
 
 	if (Height == 0) {
@@ -294,12 +283,8 @@ static UTexture2D* LocalGetTexture(const aiScene* mScenePtr, int texIndex) {
 			return nullptr;
 		}
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, pRawData);
-#else
 		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData);
 		pRawData = &RawData;
-#endif
 	}
 	FString baseName;
 
@@ -451,10 +436,7 @@ bool ULoaderBPFunctionLibrary::VRMReTransformHumanoidBone(USkeletalMeshComponent
 
 #if WITH_EDITORONLY_DATA
 	sk->ConvertLegacyLODScreenSize();
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 	sk->UpdateGenerateUpToData();
-#endif
 #endif
 
 #if WITH_EDITORONLY_DATA

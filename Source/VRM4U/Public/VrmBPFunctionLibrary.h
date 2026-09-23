@@ -10,16 +10,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "VrmUtil.h"
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 #include "AssetRegistry/AssetData.h"
-#endif
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-struct FCameraTrackingFocusSettings {
-	int dummy;
-};
-#elif UE_VERSION_OLDER_THAN(5,3,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 #include "CinematicCamera/Public/CineCameraComponent.h"
 #else
 #include "CineCameraComponent.h"
@@ -32,12 +25,6 @@ class UMaterialInstanceConstant;
 class UAnimationAsset;
 class USkeleton;
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-struct FCameraFilmbackSettings {
-public:
-	int dummy = 0;
-};
-#endif
 
 UENUM(BlueprintType)
 enum class EVRMWidgetMode : uint8

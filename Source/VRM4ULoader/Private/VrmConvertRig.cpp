@@ -123,8 +123,7 @@ bool VRMConverter::ConvertRig(UVrmAssetListObject *vrmAssetList) {
 
 	auto* k = VRMGetSkeleton(vrmAssetList->SkeletalMesh);
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#elif UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,4,0)
 
 #if WITH_EDITOR
 	UNodeMappingContainer* mc = nullptr;

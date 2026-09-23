@@ -28,11 +28,7 @@ struct FSkeletalMaterial;
 template<typename T>
 USkeleton* VRMGetSkeleton(T* t){
 	if (t == nullptr) return nullptr;
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->Skeleton;
-#else
 	return t->GetSkeleton();
-#endif
 }
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -45,20 +41,12 @@ USkeleton* VRMGetSkeleton(TObjectPtr<T> t) {
 
 template<typename T>
 const USkeleton* VRMGetSkeleton(const T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->Skeleton;
-#else
 	return t->GetSkeleton();
-#endif
 }
 
 template<typename T>
 void VRMSetSkeleton(T* t, USkeleton *sk) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	t->Skeleton = sk;
-#else
 	t->SetSkeleton(sk);
-#endif
 }
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -75,11 +63,7 @@ void VRMSetSkeleton(TObjectPtr<T> t, USkeleton* sk) {
 
 template<typename T>
 FReferenceSkeleton& VRMGetRefSkeleton(T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->RefSkeleton;
-#else
 	return t->GetRefSkeleton();
-#endif
 }
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -92,20 +76,12 @@ FReferenceSkeleton& VRMGetRefSkeleton(TObjectPtr<T> t) {
 
 template<typename T>
 const FReferenceSkeleton& VRMGetRefSkeleton(const T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->RefSkeleton;
-#else
 	return t->GetRefSkeleton();
-#endif
 }
 
 template<typename T>
 void VRMSetRefSkeleton(T* t, const FReferenceSkeleton& refsk) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	t->RefSkeleton = refsk;
-#else
 	t->SetRefSkeleton(refsk);
-#endif
 }
 
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -126,53 +102,33 @@ TArray<UMorphTarget*>& VRMGetMorphTargets(T* t) {
 template<typename T>
 TArray<TObjectPtr<UMorphTarget>>& VRMGetMorphTargets(T * t) {
 #endif
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->MorphTargets;
-#else
 	return t->GetMorphTargets();
-#endif
 }
 
 
 template<typename T>
 const TArray<UMorphTarget*>& VRMGetMorphTargets(const T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->MorphTargets;
-#else
 	return t->GetMorphTargets();
-#endif
 }
 
 // materials
 
 template<typename T>
 TArray<FSkeletalMaterial>& VRMGetMaterials(T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->Materials;
-#else
 	return t->GetMaterials();
-#endif
 }
 
 // physics
 
 template<typename T>
 void VRMSetPhysicsAsset(T* t, UPhysicsAsset *pa) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	t->PhysicsAsset = pa;
-#else
 	t->SetPhysicsAsset(pa);
-#endif
 }
 
 
 template<typename T>
 UPhysicsAsset* VRMGetPhysicsAsset(T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->PhysicsAsset;
-#else
 	return t->GetPhysicsAsset();
-#endif
 }
 
 // nodemappingdata
@@ -183,20 +139,12 @@ TArray<class UNodeMappingContainer*>& VRMGetNodeMappingData(T* t) {
 template<typename T>
 TArray<TObjectPtr<class UNodeMappingContainer>>& VRMGetNodeMappingData(T * t) {
 #endif
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->NodeMappingData;
-#else
 	return t->GetNodeMappingData();
-#endif
 }
 
 template<typename T>
 const TArray<class UNodeMappingContainer*>& VRMGetNodeMappingData(const T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->NodeMappingData;
-#else
 	return t->GetNodeMappingData();
-#endif
 }
 
 // retargetbase
@@ -204,9 +152,7 @@ const TArray<class UNodeMappingContainer*>& VRMGetNodeMappingData(const T* t) {
 
 template<typename T>
 void VRMSetRetargetBasePose(T* t, TArray<FTransform>& pose) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	t->RetargetBasePose = pose;
-#elif UE_VERSION_OLDER_THAN(5,3,0)
+#if UE_VERSION_OLDER_THAN(5,3,0)
 	t->SetRetargetBasePose(pose);
 #else
 	// no old retarget pose.
@@ -216,29 +162,19 @@ void VRMSetRetargetBasePose(T* t, TArray<FTransform>& pose) {
 
 template<typename T>
 TArray<FTransform>& VRMGetRetargetBasePose(T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->RetargetBasePose;
-#else
 	return t->GetRetargetBasePose();
-#endif
 }
 
 template<typename T>
 const TArray<FTransform>& VRMGetRetargetBasePose(const T* t) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	return t->RetargetBasePose;
-#else
 	return t->GetRetargetBasePose();
-#endif
 }
 
 
 // key
 template<typename T>
 void VRMSetUseLegacyMeshDerivedDataKey(T* t, bool b) {
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-	t->UseLegacyMeshDerivedDataKey = b;
-#elif UE_VERSION_OLDER_THAN(5,4,0)
+#if UE_VERSION_OLDER_THAN(5,4,0)
 	t->SetUseLegacyMeshDerivedDataKey(b);
 #else
 	// ue5.4 no action
@@ -338,11 +274,7 @@ struct VRM4U_API FImportOptionData {
 public:
 	GENERATED_BODY()
 
-#if UE_VERSION_OLDER_THAN(4,26,0)
-	static const bool VRM4U_UseBC7 = false;
-#else
 	static const bool VRM4U_UseBC7 = true;
-#endif
 
 #if UE_VERSION_OLDER_THAN(5,2,0)
 	static const bool VRM4U_UseUE5Mat = false;
@@ -495,11 +427,7 @@ public:
 
 	struct FImportImage
 	{
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-		TArray<uint8> RawData;
-#else
 		TArray64<uint8> RawData;
-#endif
 		ETextureSourceFormat Format = TSF_Invalid;
 		TextureCompressionSettings CompressionSettings = TC_Default;
 		int32 NumMips;
@@ -513,10 +441,7 @@ public:
 			switch (Format)
 			{
 			case TSF_G8:		BytesPerPixel = 1; break;
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 			case TSF_G16:		BytesPerPixel = 2; break;
-#endif
 			case TSF_BGRA8:		BytesPerPixel = 4; break;
 			case TSF_BGRE8:		BytesPerPixel = 4; break;
 			case TSF_RGBA16:	BytesPerPixel = 8; break;

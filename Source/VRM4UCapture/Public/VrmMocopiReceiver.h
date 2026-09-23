@@ -14,10 +14,7 @@
 #include "Tickable.h"
 
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 #include "Containers/RingBuffer.h"
-#endif
 
 #include "VrmMocopiReceiver.generated.h"
 
@@ -107,11 +104,7 @@ class VRM4UCAPTURE_API UVrmMocopiReceiver : public UObject
 
 	TUniquePtr<FMocopiReceiverProxy> ReceiverProxy;
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-	TArray<FStructMocopiData> MocopiReceiveBuffer;
-#else
 	TRingBuffer<FStructMocopiData> MocopiReceiveBuffer;
-#endif
 
 public:
 

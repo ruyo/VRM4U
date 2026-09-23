@@ -32,12 +32,8 @@ bool FVRMRetargetSrcAnimSequenceCustomization::ShouldFilterAsset(const FAssetDat
 			TEXT("simple"),
 		};
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-		const FString* Value = AssetData.TagsAndValues.Find(TEXT("Skeleton"));
-#else
 		const FString V = AssetData.TagsAndValues.FindTag(TEXT("Skeleton")).GetValue();
 		const FString* Value = &V;
-#endif
 
 		if (Value == nullptr) {
 			return false;

@@ -15,14 +15,9 @@
 #include "Animation/MorphTarget.h"
 #include "Misc/EngineVersionComparison.h"
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#include "AssetRegistryModule.h"
-#include "ARFilter.h"
-#else
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/ARFilter.h"
 #include "AssetRegistry/AssetData.h"
-#endif
 
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/LightComponent.h"
@@ -206,11 +201,7 @@ void UVrmBPFunctionLibrary::VRMUpdateRefPose(USkeletalMeshComponent* target, boo
 		auto *sk = VRMGetSkinnedAsset(target);
 		auto *k = VRMGetSkeleton( VRMGetSkinnedAsset(target) );
 
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-		const auto &transTable = target->BoneSpaceTransforms;
-#else
 		const auto &transTable = target->GetBoneSpaceTransforms();
-#endif
 
 		TArray<FTransform> origGlobalTransform;
 		TArray<FTransform> origGlobalTransformInv;
@@ -283,10 +274,7 @@ void UVrmBPFunctionLibrary::VRMUpdateRefPose(USkeletalMeshComponent* target, boo
 		VRMSetRefSkeleton(sk, k->GetReferenceSkeleton());
 		VRMGetRefSkeleton(sk).RebuildRefSkeleton(k, true);
 		sk->CalculateInvRefMatrices();
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 		sk->UpdateGenerateUpToData();
-#endif
 
 		k->RecreateBoneTree(sk);
 		{
@@ -350,12 +338,7 @@ void UVrmBPFunctionLibrary::VRMUpdateRefPose(USkeletalMeshComponent* target, boo
 #endif
 							n = destGlobalTransform[BoneIndex].TransformVector(n);
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-							SoftVert->Position += p * (float)SoftVert->InfluenceWeights[j] / 255.f;
-							SoftVert->TangentZ.Vector.X += n.X * (float)SoftVert->InfluenceWeights[j] / 255.f;
-							SoftVert->TangentZ.Vector.Y += n.Y * (float)SoftVert->InfluenceWeights[j] / 255.f;
-							SoftVert->TangentZ.Vector.Z += n.Z * (float)SoftVert->InfluenceWeights[j] / 255.f;
-#elif	UE_VERSION_OLDER_THAN(5, 0, 0)
+#if	UE_VERSION_OLDER_THAN(5, 0, 0)
 							SoftVert->Position += p * (float)SoftVert->InfluenceWeights[j] / 255.f;
 							SoftVert->TangentZ += n * (float)SoftVert->InfluenceWeights[j] / 255.f;
 #else
@@ -383,11 +366,7 @@ void UVrmBPFunctionLibrary::VRMGetMaterialPropertyOverrides(const UMaterialInter
 		return;
 	}
 	BlendMode		= Material->GetBlendMode();
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-	ShadingModel = Material->GetShadingModel();
-#else
 	ShadingModel = Material->GetShadingModels().GetFirstShadingModel();
-#endif
 	IsTwoSided		= Material->IsTwoSided();
 	IsMasked		= Material->IsMasked();
 }
@@ -414,72 +393,7 @@ void UVrmBPFunctionLibrary::VRMGetMobileMode(bool &IsMobile, bool &IsAndroid, bo
 
 void UVrmBPFunctionLibrary::VRMDrawMaterialToRenderTarget(UObject* WorldContextObject, UTextureRenderTarget2D* TextureRenderTarget, UMaterialInterface* Material)
 {
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#elif UE_VERSION_OLDER_THAN(4,25,0)
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-
-	if (!World)
-	{
-		//FMessageLog("Blueprint").Warning(LOCTEXT("DrawMaterialToRenderTarget_InvalidWorldContextObject", "DrawMaterialToRenderTarget: WorldContextObject is not valid."));
-	} else if (!Material)
-	{
-		//FMessageLog("Blueprint").Warning(LOCTEXT("DrawMaterialToRenderTarget_InvalidMaterial", "DrawMaterialToRenderTarget: Material must be non-null."));
-	} else if (!TextureRenderTarget)
-	{
-		//FMessageLog("Blueprint").Warning(LOCTEXT("DrawMaterialToRenderTarget_InvalidTextureRenderTarget", "DrawMaterialToRenderTarget: TextureRenderTarget must be non-null."));
-	} else if (!TextureRenderTarget->Resource)
-	{
-		//FMessageLog("Blueprint").Warning(LOCTEXT("DrawMaterialToRenderTarget_ReleasedTextureRenderTarget", "DrawMaterialToRenderTarget: render target has been released."));
-	} else
-	{
-		UCanvas* Canvas = World->GetCanvasForDrawMaterialToRenderTarget();
-
-		FCanvas RenderCanvas(
-			TextureRenderTarget->GameThread_GetRenderTargetResource(),
-			nullptr,
-			World,
-			World->FeatureLevel);
-
-		Canvas->Init(TextureRenderTarget->SizeX, TextureRenderTarget->SizeY, nullptr, &RenderCanvas);
-		Canvas->Update();
-
-
-
-		TDrawEvent<FRHICommandList>* DrawMaterialToTargetEvent = new TDrawEvent<FRHICommandList>();
-
-		FName RTName = TextureRenderTarget->GetFName();
-		ENQUEUE_RENDER_COMMAND(BeginDrawEventCommand)(
-			[RTName, DrawMaterialToTargetEvent](FRHICommandListImmediate& RHICmdList)
-		{
-			// Update resources that were marked for deferred update. This is important
-			// in cases where the blueprint is invoked in the same frame that the render
-			// target is created. Among other things, this will perform deferred render
-			// target clears.
-			FDeferredUpdateResource::UpdateResources(RHICmdList);
-
-			BEGIN_DRAW_EVENTF(
-				RHICmdList,
-				DrawCanvasToTarget,
-				(*DrawMaterialToTargetEvent),
-				*RTName.ToString());
-		});
-
-		Canvas->K2_DrawMaterial(Material, FVector2D(0, 0), FVector2D(TextureRenderTarget->SizeX, TextureRenderTarget->SizeY), FVector2D(0, 0));
-
-		RenderCanvas.Flush_GameThread();
-		Canvas->Canvas = NULL;
-
-		FTextureRenderTargetResource* RenderTargetResource = TextureRenderTarget->GameThread_GetRenderTargetResource();
-		ENQUEUE_RENDER_COMMAND(CanvasRenderTargetResolveCommand)(
-			[RenderTargetResource, DrawMaterialToTargetEvent](FRHICommandList& RHICmdList)
-		{
-			RHICmdList.CopyToResolveTarget(RenderTargetResource->GetRenderTargetTexture(), RenderTargetResource->TextureRHI, FResolveParams());
-			STOP_DRAW_EVENT((*DrawMaterialToTargetEvent));
-			delete DrawMaterialToTargetEvent;
-		}
-		);
-	}
-#elif UE_VERSION_OLDER_THAN(5,5,0)
+#if UE_VERSION_OLDER_THAN(5,5,0)
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
 
 	if (!World)
@@ -700,11 +614,7 @@ void UVrmBPFunctionLibrary::VRMChangeMaterialShadingModel(UMaterialInstanceConst
 		if (p == nullptr) {
 			bChange = true;
 		} else {
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-			auto s = p->GetShadingModel();
-#else
 			auto s = p->GetShadingModels().GetFirstShadingModel();
-#endif
 
 			if (s == ShadingModel) {
 				bOverride = false;
@@ -712,11 +622,7 @@ void UVrmBPFunctionLibrary::VRMChangeMaterialShadingModel(UMaterialInstanceConst
 		}
 	}
 	{
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-		auto s = material->GetShadingModel();
-#else
 		auto s = material->GetShadingModels().GetFirstShadingModel();
-#endif
 
 		bChange |= material->BasePropertyOverrides.bOverride_ShadingModel != bOverride;
 		bChange |= s != ShadingModel;
@@ -1146,68 +1052,41 @@ void UVrmBPFunctionLibrary::VRMSetLightingChannelPrim(UPrimitiveComponent* prim,
 		return;
 	}
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-	prim->LightingChannels.bChannel0 = bChannel0;
-	prim->LightingChannels.bChannel1 = bChannel1;
-	prim->LightingChannels.bChannel2 = bChannel2;
-#else
 	prim->SetLightingChannels(bChannel0, bChannel1, bChannel2);
-#endif
 }
 
 void UVrmBPFunctionLibrary::VRMSetLightingChannelLight(ULightComponent *light, bool bChannel0, bool bChannel1, bool bChannel2) {
 	if (light == nullptr) {
 		return;
 	}
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-	light->LightingChannels.bChannel0 = bChannel0;
-	light->LightingChannels.bChannel1 = bChannel1;
-	light->LightingChannels.bChannel2 = bChannel2;
-#else
 	light->SetLightingChannels(bChannel0, bChannel1, bChannel2);
-#endif
 }
 
 void UVrmBPFunctionLibrary::VRMSetCastRaytracedShadow(ULightComponent *light, bool bEnable){
 	if (light == nullptr) {
 		return;
 	}
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 	light->SetCastRaytracedShadow(bEnable);
-#endif
 }
 
 void UVrmBPFunctionLibrary::VRMSetShadowSlopeBias(ULightComponent *light, float bias) {
 	if (light == nullptr) {
 		return;
 	}
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-#else
 	light->SetShadowSlopeBias(bias);
-#endif
 }
 
 void UVrmBPFunctionLibrary::VRMSetSpecularScale(ULightComponent* light, float scale) {
 	if (light == nullptr) {
 		return;
 	}
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 	light->SetSpecularScale(scale);
-#endif
 }
 
 
 bool UVrmBPFunctionLibrary::VRMGetCameraFilmback(UCineCameraComponent *c, FCameraFilmbackSettings &s) {
 	if (c) {
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-
-#elif	UE_VERSION_OLDER_THAN(4,24,0)
-		s = c->FilmbackSettings;
-#else
 		s = c->Filmback;
-#endif
 	
 		return true;
 	}
@@ -1216,13 +1095,7 @@ bool UVrmBPFunctionLibrary::VRMGetCameraFilmback(UCineCameraComponent *c, FCamer
 
 bool UVrmBPFunctionLibrary::VRMSetCameraFilmback(UCineCameraComponent *c, const FCameraFilmbackSettings &s) {
 	if (c) {
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-
-#elif	UE_VERSION_OLDER_THAN(4,24,0)
-		c->FilmbackSettings = s;
-#else
 		c->Filmback= s;
-#endif
 		return true;
 	}
 	return false;
@@ -1235,8 +1108,6 @@ bool UVrmBPFunctionLibrary::VRMSetPostProcessSettingFromCineCamera(FPostProcessS
 
 	OutSettings = InSettings;
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 
 	OutSettings.bOverride_DepthOfFieldFstop = true;
 	OutSettings.DepthOfFieldFstop = CineCamera->CurrentAperture;
@@ -1250,15 +1121,9 @@ bool UVrmBPFunctionLibrary::VRMSetPostProcessSettingFromCineCamera(FPostProcessS
 	OutSettings.bOverride_DepthOfFieldFocalDistance = true;
 	OutSettings.DepthOfFieldFocalDistance = CineCamera->CurrentFocusDistance;
 
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-	OutSettings.bOverride_DepthOfFieldSensorWidth = true;
-	OutSettings.DepthOfFieldSensorWidth = CineCamera->FilmbackSettings.SensorWidth;
-#else
 	OutSettings.bOverride_DepthOfFieldSensorWidth = true;
 	OutSettings.DepthOfFieldSensorWidth = CineCamera->Filmback.SensorWidth;
-#endif
 
-#endif	// 4.20-
 
 	return true;
 }
@@ -1266,22 +1131,15 @@ bool UVrmBPFunctionLibrary::VRMSetPostProcessSettingFromCineCamera(FPostProcessS
 void UVrmBPFunctionLibrary::VRMSetPostProcessToneCurveAmount(FPostProcessSettings& OutSettings, const FPostProcessSettings& InSettings, bool bOverride, float Amount) {
 	OutSettings = InSettings;
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-
-#else
 	OutSettings.ToneCurveAmount = Amount;
 	OutSettings.bOverride_ToneCurveAmount = bOverride;
-#endif
 }
 
 
 void UVrmBPFunctionLibrary::VRMMakeCameraTrackingFocusSettings(AActor *ActorToTrack, FVector RelativeOffset, bool bDrawDebugTrackingFocusPoint, FCameraTrackingFocusSettings &Settings){
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 	Settings.ActorToTrack = ActorToTrack;
 	Settings.RelativeOffset = RelativeOffset;
 	Settings.bDrawDebugTrackingFocusPoint = bDrawDebugTrackingFocusPoint;
-#endif
 }
 
 void UVrmBPFunctionLibrary::VRMSetActorLabel(AActor *Actor, const FString& NewActorLabel) {
@@ -1606,19 +1464,13 @@ void UVrmBPFunctionLibrary::VRMSetPostProcessSettingAO(FPostProcessSettings& Out
 	o.bOverride_AmbientOcclusionRadius = bOverride;
 	o.bOverride_AmbientOcclusionIntensity = bOverride;
 
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 	o.RayTracingAO = bRayTracing;
 	o.bOverride_RayTracingAO = bOverride;
-#endif
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 	o.RayTracingAORadius = Radius;
 	o.RayTracingAOIntensity = AOIntensity;
 	o.bOverride_RayTracingAORadius = bOverride;
 	o.bOverride_RayTracingAOIntensity = bOverride;
-#endif
 }
 
 
@@ -1658,11 +1510,7 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 
 	//FString NewPackageName = "/Game/aaaa";
 	FString NewPackageName = FilePath + AssetFileName;
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-	UPackage* Package = CreatePackage(nullptr, *NewPackageName);
-#else
 	UPackage* Package = CreatePackage(*NewPackageName);
-#endif
 
 	UAnimSequence* ase;
 	ase = NewObject<UAnimSequence>(Package, *(TEXT("A_") + AssetFileName), EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
@@ -1767,9 +1615,7 @@ bool UVrmBPFunctionLibrary::VRMBakeAnim(const USkeletalMeshComponent* skc, const
 		totalFrameNum = 1;
 		totalTime = 1;
 
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-		ase->NumFrames = totalFrameNum;
-#elif	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(5,0,0)
 		ase->SetRawNumberOfFrame(totalFrameNum);
 #else
 		ase->GetController().SetFrameRate(FFrameRate(totalFrameNum, 1));

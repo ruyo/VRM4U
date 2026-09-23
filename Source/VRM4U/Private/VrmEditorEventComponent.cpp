@@ -10,11 +10,7 @@
 #include "Engine/Selection.h"
 
 //#include "MovieSceneTrackEditor.h"
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#elif UE_VERSION_OLDER_THAN(4,27,0)
-#include "ILevelSequenceEditorToolkit.h"
-#include "LevelSequenceEditor/Private/LevelSequenceEditorBlueprintLibrary.h"
-#elif UE_VERSION_OLDER_THAN(5,0,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 #include "ILevelSequenceEditorToolkit.h"
 #include "LevelSequenceEditor/Public/LevelSequenceEditorBlueprintLibrary.h"
 #elif UE_VERSION_OLDER_THAN(5,3,0)
@@ -120,8 +116,7 @@ void UVrmEditorEventComponent::SetSelectCheck(bool bCheckOn) {
 
 void UVrmEditorEventComponent::OnGlobalTimeChangeFunc() {
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#elif UE_VERSION_OLDER_THAN(5,5,0)
+#if UE_VERSION_OLDER_THAN(5,5,0)
 
 	int32  t = ULevelSequenceEditorBlueprintLibrary::GetCurrentTime();
 	OnGlobalTimeChange.Broadcast((float)t);
@@ -137,8 +132,6 @@ void UVrmEditorEventComponent::OnGlobalTimeChangeFunc() {
 
 void UVrmEditorEventComponent::SetGlobalTimeCheck(bool bCheckOn) {
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 	{
 		if (GEditor == nullptr) return;
 		auto *LevelSeq = ULevelSequenceEditorBlueprintLibrary::GetCurrentLevelSequence();
@@ -178,17 +171,13 @@ void UVrmEditorEventComponent::SetGlobalTimeCheck(bool bCheckOn) {
 	//USelection::SelectionChangedEvent.AddUObject(this, &UVrmEditorEventComponent::OnSelectionChangeFunc);
 	//USelection::SelectObjectEvent.AddUObject(this, &UVrmEditorEventComponent::OnSelectionObjectFunc);
 #endif
-#endif
 }
 
 
 
 void UVrmEditorEventComponent::OnPIEEventFunc(EVRM4U_PIEEvent e) {
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 	OnPIEEvent.Broadcast(e);
-#endif
 #endif
 }
 
@@ -202,14 +191,11 @@ void UVrmEditorEventComponent::OnEndPIE(const bool bIsSimulating) {
 
 void UVrmEditorEventComponent::SetPIEEventCheck(bool bCheckOn) {
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 	{
 		FEditorDelegates::BeginPIE.AddUObject(this, &UVrmEditorEventComponent::OnBeginPIE);
 		FEditorDelegates::EndPIE.AddUObject(this, &UVrmEditorEventComponent::OnEndPIE);
 
 	}
-#endif
 #endif
 }
 

@@ -139,11 +139,7 @@ void UVrmAssetListThumbnailRenderer::GetThumbnailSize(UObject* Object, float Zoo
 }
 
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget* RenderTarget, FCanvas* Canvas)
-#else
 void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uint32 Width, uint32 Height, FRenderTarget* RenderTarget, FCanvas* Canvas, bool bAdditionalViewFamily)
-#endif
 {
 	UTexture2D *tex = nullptr;
 	USkeletalMesh *sk = nullptr;
@@ -275,11 +271,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 		}
 		if (sk) {
 			if (VRMGetSkeleton(sk)) {
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-				meshThumbnail->Draw((UObject*)(sk), X, Y, Width, Height, RenderTarget, Canvas);
-#else
 				meshThumbnail->Draw((UObject*)(sk), X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
-#endif
 				DrawText();
 				return;
 			}
@@ -292,11 +284,7 @@ void UVrmAssetListThumbnailRenderer::Draw(UObject* Object, int32 X, int32 Y, uin
 		obj = tex;
 	}
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-	Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas);
-#else
 	Super::Draw(obj, X, Y, Width, Height, RenderTarget, Canvas, bAdditionalViewFamily);
-#endif
 
 	DrawText();
 }

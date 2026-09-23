@@ -62,8 +62,6 @@ void UVrmPoseableMeshComponent::UpdateLeader() {
 void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 
 #if	UE_VERSION_OLDER_THAN(5,1,0)
 	USkinnedMeshComponent* MPCPtr = MasterPoseComponent.Get();
@@ -75,7 +73,6 @@ void UVrmPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick T
 		MorphTargetWeights = MPCPtr->MorphTargetWeights;
 		ActiveMorphTargets = MPCPtr->ActiveMorphTargets;
 	}
-#endif
 }
 
 void UVrmPoseableMeshComponent::VRMCopyPoseAndMorphFromSkeletalComponent(USkeletalMeshComponent* InComponentToCopy) {

@@ -5,11 +5,7 @@
 #include "Engine/Engine.h"
 #include "Logging/MessageLog.h"
 #include "Engine/Canvas.h"
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#include "AssetRegistryModule.h"
-#else
 #include "AssetRegistry/AssetRegistryModule.h"
-#endif
 
 #include "MovieScene.h"
 #include "MovieSceneSequence.h"
@@ -23,9 +19,6 @@ int UVrmEditorBPFunctionLibrary::EvaluateCurvesFromSequence(const UMovieSceneSeq
     names.Empty();
     curves.Empty();
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-    return 0;
-#else
 
     //if (Track == nullptr) return 0;
 
@@ -51,5 +44,4 @@ int UVrmEditorBPFunctionLibrary::EvaluateCurvesFromSequence(const UMovieSceneSeq
         }
     }
     return curves.Num();
-#endif
 }

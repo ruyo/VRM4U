@@ -17,12 +17,6 @@
 
 
 
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-
-//Couldn't find parent type for 'VRM4U_AnimSubsystem' named 'UEngineSubsystem'
-#error "please remove VRM4U_AnimSubsystem.h/cpp  for <=UE4.21"
-
-#endif
 
 
 UCLASS()

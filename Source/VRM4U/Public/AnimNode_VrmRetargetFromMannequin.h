@@ -70,10 +70,7 @@ struct VRM4U_API FAnimNode_VrmRetargetFromMannequin : public FAnimNode_SkeletalC
 	virtual bool IsValidToEvaluate(const USkeleton* Skeleton, const FBoneContainer& RequiredBones) override;
 
 	virtual bool NeedsDynamicReset() const override { return true; }
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 	virtual void ResetDynamics(ETeleportType InTeleportType) override;
-#endif
 
 	virtual bool HasPreUpdate() const override { return true; }
 	virtual void PreUpdate(const UAnimInstance* InAnimInstance) override;

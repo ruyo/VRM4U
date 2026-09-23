@@ -19,7 +19,6 @@
 
 
 namespace {
-	// for UE4.19-4.22
 	template<class BaseType, class PoseType>
 	static void ConvertToLocalPoses(const BaseType &basePose, PoseType& OutPose)
 	{
@@ -232,11 +231,7 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 				FVector diff = srcCurrentTrans.GetLocation() - srcRefTrans.GetLocation();
 				HeightScale = HipHeight / srcRefTrans.GetLocation().Z;
 
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-				FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->RelativeScale3D;
-#else
 				FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->GetRelativeScale3D();
-#endif
 				if (ComponentScale.X == 0.f) {
 					ComponentScale.X = 0.001f;
 				}
@@ -270,11 +265,7 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 		if (bIgnoreCenterLocation) {
 			t.SetTranslation(CenterLocationOffset);
 		}else{
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-			FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->RelativeScale3D;
-#else
 			FVector ComponentScale = Output.AnimInstanceProxy->GetSkelMeshComponent()->GetRelativeScale3D();
-#endif
 			if (ComponentScale.X == 0.f) {
 				ComponentScale.X = 0.001f;
 			}
@@ -312,13 +303,10 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 			}
 
 			if (Node_Constraint.Get()) {
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 				if (animInstance->PendingDynamicResetTeleportType != ETeleportType::None)
 				{
 					Node_Constraint->ResetDynamics(animInstance->PendingDynamicResetTeleportType);
 				}
-#endif
 
 				auto& constraint = *Node_Constraint.Get();
 
@@ -366,13 +354,10 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 			}
 
 			if (Node_SpringBone.Get()) {
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-#else
 				if(animInstance->PendingDynamicResetTeleportType != ETeleportType::None)
 				{
 					Node_SpringBone->ResetDynamics(animInstance->PendingDynamicResetTeleportType);
 				}
-#endif
 
 				auto& springBone = *Node_SpringBone.Get();
 
@@ -419,15 +404,9 @@ bool FVrmAnimInstanceCopyProxy::Evaluate(FPoseContext& Output) {
 
 	return true;
 }
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-void FVrmAnimInstanceCopyProxy::UpdateAnimationNode(float DeltaSeconds) {
-	CurrentDeltaTime = DeltaSeconds;
-}
-#else
 void FVrmAnimInstanceCopyProxy::UpdateAnimationNode(const FAnimationUpdateContext& InContext) {
 	CurrentDeltaTime = InContext.GetDeltaTime();
 }
-#endif
 
 /////
 

@@ -18,11 +18,6 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/vrm/vrmmeta.h>
 
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-#define TRACE_CPUPROFILER_EVENT_SCOPE(a)
-#define TRACE_CPUPROFILER_EVENT_SCOPE_TEXT(a)
-#else
-#endif
 
 namespace {
 	class VrmLocalAsyncAsset {

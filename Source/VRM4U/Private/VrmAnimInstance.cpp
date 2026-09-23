@@ -225,9 +225,6 @@ bool FVrmAnimInstanceProxy::Evaluate(FPoseContext& Output) {
 		}
 	}
 	//
-#if	UE_VERSION_OLDER_THAN(4,21,0)
-	ComponentSpacePoseContext.Pose.ConvertToLocalPoses(Output.Pose);
-#endif
 
 	for (int i=0; i<3; ++i){
 		auto b = GetSkelMeshComponent()->GetBoneIndex(*targetBoneTable[i*2]);
@@ -282,13 +279,8 @@ bool FVrmAnimInstanceProxy::Evaluate(FPoseContext& Output) {
 	return true;
 }
 
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-void FVrmAnimInstanceProxy::UpdateAnimationNode(float DeltaSeconds) {
-}
-#else
 void FVrmAnimInstanceProxy::UpdateAnimationNode(const FAnimationUpdateContext& InContext){
 }
-#endif
 
 /////
 

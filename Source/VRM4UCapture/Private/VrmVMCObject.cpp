@@ -22,8 +22,6 @@ void UVrmVMCObject::DestroyServer() {
 void UVrmVMCObject::CreateServer(FString inName, uint16 inPort) {
 	ServerName = inName;
 	port = inPort;
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
 	OSCServer.Reset(UOSCManager::CreateOSCServer(ServerName, port, true, true, FString(), this));
 
 	OSCServer->OnOscMessageReceivedNative.RemoveAll(nullptr);
@@ -32,7 +30,6 @@ void UVrmVMCObject::CreateServer(FString inName, uint16 inPort) {
 #if WITH_EDITOR
 	OSCServer->SetTickInEditor(true);
 #endif // WITH_EDITOR
-#endif
 }
 
 void UVrmVMCObject::OSCReceivedMessageEvent(const FOSCMessage& Message, const FString& IPAddress, uint16 Port) {

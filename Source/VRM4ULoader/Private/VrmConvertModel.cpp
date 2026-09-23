@@ -753,10 +753,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #if WITH_EDITOR
 		sk->PreEditChange(NULL);
 		//Dirty the DDC Key for any imported Skeletal Mesh
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 		sk->InvalidateDeriveDataCacheGUID();
-#endif
 		if (bReimportMode == false) {
 			FSkeletalMeshModel* ImportedResource = sk->GetImportedModel();
 			ImportedResource->LODModels.Empty();
@@ -766,18 +763,10 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 		if (bReimportMode == false) {
 			sk->ReleaseCPUResources();
 			sk->ReleaseResources();
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 			sk->ReleaseSkinWeightProfileResources();
-#endif
 
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-			sk->PhysicsAsset = nullptr;
-			sk->BodySetup = nullptr;
-#else
 			sk->SetPhysicsAsset(nullptr);
 			sk->SetBodySetup(nullptr);
-#endif
 		}
 	}
 
@@ -957,10 +946,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 		sk->CalculateInvRefMatrices();
 		sk->CalculateExtendedBounds();
 #if WITH_EDITOR
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-#else
 		sk->UpdateGenerateUpToData();
-#endif
 		sk->ConvertLegacyLODScreenSize();
 		sk->GetImportedModel()->LODModels.Reset();
 #endif
@@ -984,15 +970,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 		vrmAssetList->SkeletalMesh = sk;
 
 		if (sk->GetLODInfo(0) == nullptr) {
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-			sk->LODInfo.AddZeroed(1);
-			//const USkeletalMeshLODSettings* DefaultSetting = sk->GetDefaultLODSetting();
-			// if failed to get setting, that means, we don't have proper setting 
-			// in that case, use last index setting
-			//!DefaultSetting->SetLODSettingsToMesh(sk, 0);
-#else
 			FSkeletalMeshLODInfo& info = sk->AddLODInfo();
-#endif
 		}
 
 		bool bHasNormals = aiData->mNumMeshes > 0;
@@ -1116,12 +1094,8 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 		//sk->OnPostMeshCached().Broadcast(sk);
 
 		if (p->LODRenderData.Num() == 0) {
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-			new(p->LODRenderData) FSkeletalMeshLODRenderData();
-#else
 			auto* tmp = new FSkeletalMeshLODRenderData();
 			p->LODRenderData.Add(tmp);
-#endif
 		}
 		FSkeletalMeshLODRenderData* pRd = &p->LODRenderData[0];
 
@@ -1141,11 +1115,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #else
 
 			{
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-				TArray< TSkinWeightInfo<false> > InWeights;
-#else
 				TArray<FSkinWeightInfo> InWeights;
-#endif
 
 				InWeights.SetNum(allVertex);
 				for (auto& a : InWeights) {
@@ -1197,13 +1167,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 
 			FSoftSkinVertexLocal softSkinVertexLocalZero;
 			{
-#if	UE_VERSION_OLDER_THAN(4,20,0)
-				{
-					FPackedNormal n(0);
-					softSkinVertexLocalZero.Position = FVector::ZeroVector;
-					softSkinVertexLocalZero.TangentX = softSkinVertexLocalZero.TangentY = softSkinVertexLocalZero.TangentZ = n;
-				}
-#elif	UE_VERSION_OLDER_THAN(5,0,0)
+#if	UE_VERSION_OLDER_THAN(5,0,0)
 				softSkinVertexLocalZero.Position = softSkinVertexLocalZero.TangentX = softSkinVertexLocalZero.TangentY = FVector::ZeroVector;
 				softSkinVertexLocalZero.TangentZ.Set(0, 0, 0, 1);
 #else
@@ -1230,11 +1194,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 
 #if WITH_EDITORONLY_DATA
 			if (sk->GetImportedModel()->LODModels.Num() == 0) {
-#if	UE_VERSION_OLDER_THAN(4,23,0)
-				new(sk->GetImportedModel()->LODModels) FSkeletalMeshLODModel();
-#else
 				sk->GetImportedModel()->LODModels.Add(new FSkeletalMeshLODModel());
-#endif
 			}
 			sk->GetImportedModel()->LODModels[0].Sections.Empty();
 			sk->GetImportedModel()->LODModels[0].Sections.SetNum(result.meshInfo.Num());
@@ -1695,10 +1655,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 					}
 
 					if (s.MaterialIndex >= vrmAssetList->Materials.Num()) s.MaterialIndex = 0;
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 					s.OriginalDataSectionIndex = meshID;
-#endif
 					s.BaseIndex = currentIndex;
 					s.NumTriangles = result.meshInfo[meshID].Triangles.Num() / 3;
 					s.BaseVertexIndex = currentVertex;
@@ -1849,9 +1806,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 			}
 #else // game
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-#else
-			// 4.25
 			// force reinit renderdata
 			{
 				FSkeletalMeshRenderData* p = sk->GetResourceForRendering();
@@ -1896,7 +1850,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 				}
 #endif // 5.4
 			}
-#endif // 4.25
 
 #endif // editor
 
@@ -1935,11 +1888,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #else
 
 					{
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-						typedef TSkinWeightInfo<false> WeightInfo;
-#else
 						typedef FSkinWeightInfo WeightInfo;
-#endif
 						TArray< WeightInfo > InWeights;
 						InWeights.Reserve(Weight.Num());
 
@@ -1967,10 +1916,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 					}
 #endif	// editor
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-					d.SkinWeightVertexBuffer.InitResource();
-#else
-#endif
 
 					d.StaticVertexBuffers.PositionVertexBuffer.UpdateRHI(VRM4U_RHI_CMD_LIST);
 					d.StaticVertexBuffers.StaticMeshVertexBuffer.UpdateRHI(VRM4U_RHI_CMD_LIST);
@@ -1980,10 +1925,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 					d.AdjacencyMultiSizeIndexContainer.GetIndexBuffer()->UpdateRHI();
 #endif
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-					d.SkinWeightVertexBuffer.UpdateRHI();
-#else
-#endif
 				});
 			}
 		}
@@ -2007,16 +1948,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 #if WITH_EDITOR
 		if (VRMConverter::IsImportMode()) {
 
-#if	UE_VERSION_OLDER_THAN(4,25,0)
-			UProperty* ChangedProperty = FindField<UProperty>(USkeletalMesh::StaticClass(), "Materials");
-			check(ChangedProperty);
-			sk->PreEditChange(ChangedProperty);
-
-			FPropertyChangedEvent PropertyUpdateStruct(ChangedProperty);
-			sk->PostEditChangeProperty(PropertyUpdateStruct);
-
-			sk->PostEditChange();
-#else
 			FProperty* ChangedProperty = FindFProperty<FProperty>(USkeletalMesh::StaticClass(), TEXT("Materials"));
 			check(ChangedProperty);
 			sk->PreEditChange(ChangedProperty);
@@ -2025,7 +1956,6 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 			sk->PostEditChangeProperty(PropertyUpdateStruct);
 
 			sk->PostEditChange();
-#endif
 		}
 #endif
 
@@ -2708,9 +2638,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 					totalFrameNum = FMath::Max(totalFrameNum, RawTrack.PosKeys.Num());
 					totalTime = totalFrameNum / aiA->mTicksPerSecond;
 
-#if	UE_VERSION_OLDER_THAN(4,22,0)
-					ase->NumFrames = totalFrameNum;
-#elif UE_VERSION_OLDER_THAN(5,0,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 					ase->SetRawNumberOfFrame(totalFrameNum);
 #else
 #endif
@@ -2758,11 +2686,7 @@ bool VRMConverter::ConvertModel_internal(UVrmAssetListObject *vrmAssetList) {
 				FKismetEditorUtilities::CompileBlueprint(b);
 #endif
 				UBlueprintGeneratedClass* bpClass = Cast<UBlueprintGeneratedClass>(b->GeneratedClass);
-#if	UE_VERSION_OLDER_THAN(4,27,0)
-				sk->PostProcessAnimBlueprint = bpClass;
-#else
 				sk->SetPostProcessAnimBlueprint(bpClass);
-#endif
 				sk->PostEditChange();
 			}
 		}

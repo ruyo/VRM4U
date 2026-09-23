@@ -3,21 +3,15 @@
 #include "AnimGraphNode_VrmPoseBlendNode.h"
 #include "EdGraphSchema_K2_Actions.h"
 #include "Modules/ModuleManager.h"
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 #include "ToolMenus.h"
-#endif
 
 #include "AnimGraphCommands.h"
 #include "BlueprintActionFilter.h"
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
 
-#if	UE_VERSION_OLDER_THAN(4,26,0)
-#else
 #include "AssetRegistry/ARFilter.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#endif
 
 #define LOCTEXT_NAMESPACE "PoseBlendNode"
 
@@ -138,8 +132,6 @@ bool UAnimGraphNode_VrmPoseBlendNode::DoesSupportTimeForTransitionGetter() const
 	return false;
 }
 
-#if	UE_VERSION_OLDER_THAN(4,24,0)
-#else
 void UAnimGraphNode_VrmPoseBlendNode::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
 #if	UE_VERSION_OLDER_THAN(5,0,0)
@@ -154,7 +146,6 @@ void UAnimGraphNode_VrmPoseBlendNode::GetNodeContextMenuActions(UToolMenu* Menu,
 	}
 #endif
 }
-#endif
 
 EAnimAssetHandlerType UAnimGraphNode_VrmPoseBlendNode::SupportsAssetClass(const UClass* AssetClass) const
 {
