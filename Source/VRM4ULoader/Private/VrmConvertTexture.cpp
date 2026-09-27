@@ -52,11 +52,16 @@ namespace {
 #if WITH_EDITOR
 		if (VRMConverter::IsImportMode()) {
 			material->SetParentEditorOnly(parent);
+			FMaterialUpdateContext UpdateContext(FMaterialUpdateContext::EOptions::Default, GMaxRHIShaderPlatform);
+			UpdateContext.AddMaterialInstance(material);
 		} else {
+			// Runtime conversion: the instance is transient, no component references it yet,
+			// and its parameters are published later by LocalMaterialFinishParam (PostLoad).
+			// A default FMaterialUpdateContext here would recreate the render state of every
+			// component in every world and flush the rendering thread, once per material.
+			// Non-editor builds already take this path (they only assign Parent).
 			material->Parent = parent;
 		}
-		FMaterialUpdateContext UpdateContext(FMaterialUpdateContext::EOptions::Default, GMaxRHIShaderPlatform);
-		UpdateContext.AddMaterialInstance(material);
 #else
 		material->Parent = parent;
 #endif
