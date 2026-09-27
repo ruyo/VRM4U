@@ -1204,6 +1204,12 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 				TArray<FSoftSkinVertexLocal> meshWeight;
 				auto &mInfo = result.meshInfo[meshID];
 
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5,0,0)
+				// VertexColor Override Allow
+				if (0 < mInfo.VertexColors.Num() && sk->GetHasVertexColors() == false) {
+					sk->SetHasVertexColors(true);
+				}
+#endif
 				for (int i = 0; i < mInfo.Vertices.Num(); ++i) {
 					FSoftSkinVertexLocal *meshS = new(meshWeight) FSoftSkinVertexLocal();
 					*meshS = softSkinVertexLocalZero;
@@ -1281,7 +1287,8 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 
 					if (i < mInfo.VertexColors.Num()) {
 						auto &c = mInfo.VertexColors[i];
-						meshS->Color = FColor(c.R, c.G, c.B, c.A);
+						//Convert FLinearColor (0.0 - 1.0) to FColor (0 - 255)
+						meshS->Color = c.ToFColor(false);
 					}
 
 					FSoftSkinVertexLocal &s = Weight[currentVertex + i];
