@@ -2806,7 +2806,10 @@ bool VRMConverter::ConvertModel(UVrmAssetListObject *vrmAssetList) {
 		FSoftObjectPath r(TEXT("/VRM4U/Util/Actor/latest/ABP_PostProcessBase.ABP_PostProcessBase"));
 		UObject* u = r.TryLoad();
 
-		if (u) {
+		// The post-process AnimBlueprint is an editor asset saved next to an imported mesh.
+		// Runtime conversion (LoadVRMFile*, including PIE and -game on an editor build) puts
+		// the mesh in the transient package, where SetPreviewMesh asserts.
+		if (u && VRMConverter::IsImportMode()) {
 			FString name = FString(TEXT("ABP_Post_")) + vrmAssetList->BaseFileName;
 
 			auto b = Cast<UAnimBlueprint>(VRM4U_StaticDuplicateObject(u, vrmAssetList->Package, *name, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone));
