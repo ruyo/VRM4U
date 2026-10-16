@@ -84,20 +84,11 @@ public class VRM4U : ModuleRules
 				{
 					if (bUseMovieRenderPipeline)
 					{
+						PrivateDependencyModuleNames.Add("MovieRenderPipelineCore");
 						PrivateDependencyModuleNames.Add("MovieRenderPipelineEditor");
 					}
 					PrivateDependencyModuleNames.Add("ControlRigDeveloper");
 
-				}
-			}
-		}
-		{
-			BuildVersion Version2;
-			if (BuildVersion.TryRead(BuildVersion.GetDefaultFileName(), out Version2))
-			{
-				if (Version2.MajorVersion == 5 && bUseMovieRenderPipeline)
-				{
-					PrivateDependencyModuleNames.Add("MovieRenderPipelineCore");
 				}
 			}
 		}
