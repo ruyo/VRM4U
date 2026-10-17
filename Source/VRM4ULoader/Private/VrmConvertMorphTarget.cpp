@@ -629,7 +629,17 @@ bool VRMConverter::ConvertMorphTarget(UVrmAssetListObject *vrmAssetList) {
 			continue;
 		}
 
-		VRMGetSkeleton(sk)->AccumulateCurveMetaData(*name, false, true);
+		if (VRMConverter::IsImportMode()) {
+			VRMGetSkeleton(sk)->AccumulateCurveMetaData(*name, false, true);
+		} else {
+			// Runtime conversion must not open an editor transaction: AccumulateCurveMetaData
+			// calls AddCurveMetaData(name, bTransact=true), which dereferences GEditor. GEditor is
+			// null when an editor build runs with -game or as a standalone game.
+			VRMGetSkeleton(sk)->AddCurveMetaData(*name, false);
+			if (FCurveMetaData* AddedCurveMetaData = VRMGetSkeleton(sk)->GetCurveMetaData(*name)) {
+				AddedCurveMetaData->Type.bMorphtarget = true;
+			}
+		}
 	}
 
 #if WITH_EDITOR

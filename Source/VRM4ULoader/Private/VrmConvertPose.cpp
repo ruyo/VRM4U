@@ -165,7 +165,8 @@ namespace {
 			if (NameIndex == 1) {
 				NewName = *Name;
 			}
-		} while (Skeleton->AddCurveMetaData(NewName) == false);
+			// Runtime conversion must not open an editor transaction (GEditor is null in -game).
+		} while (Skeleton->AddCurveMetaData(NewName, VRMConverter::IsImportMode()) == false);
 
 
 		return NewName;
