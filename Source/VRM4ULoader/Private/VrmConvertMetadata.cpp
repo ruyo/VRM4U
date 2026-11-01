@@ -584,7 +584,7 @@ bool VRMConverter::ConvertVrmMeta(UVrmAssetListObject* vrmAssetList, const aiSce
 		auto& nodes = jsonData.doc["nodes"];
 		for (auto& node : nodes.GetArray()) {
 
-			auto pp = GetDataJSON(jsonData.doc, { "extensions", "VRMC_node_constraint", "constraint" });
+			auto pp = GetDataJSON(node, { "extensions", "VRMC_node_constraint", "constraint" });
 
 			if (!pp.second) continue;
 			auto& constraint = *pp.second;
