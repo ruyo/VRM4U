@@ -2,6 +2,13 @@ set V_DATE=%date:~0,4%%date:~5,2%%date:~8,2%
 
 set BUILD_SCRIPT=build_ver2.bat
 
+::5_9
+call %BUILD_SCRIPT% 5.9 Win64 Shipping VRM4U_5_9_%V_DATE%.zip
+if not %errorlevel% == 0 (
+    echo [ERROR] :P
+    goto err
+)
+
 ::5_8
 call %BUILD_SCRIPT% 5.8 Win64 Shipping VRM4U_5_8_%V_DATE%.zip
 if not %errorlevel% == 0 (
