@@ -153,6 +153,14 @@ namespace VRM1Spring {
 		FVector initialTail;
 		FVector boneAxis;
 		float boneLength = 0.f;
+
+		// VRMC_springBone 1.0 general chain topology. anchor* is
+		// the previous authored joint and the plain nodes between it and this
+		// joint. tail* is the next authored joint and the plain nodes between.
+		int32 anchorBoneNo = INDEX_NONE;
+		TArray<int32> anchorInterBoneNos;
+		int32 tailBoneNo = INDEX_NONE;
+		TArray<int32> tailInterBoneNos;
 		FTransform initialLocalMatrix;
 		FQuat initialLocalRotation;
 

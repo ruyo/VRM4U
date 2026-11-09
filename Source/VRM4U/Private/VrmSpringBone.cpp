@@ -558,31 +558,90 @@ namespace VRM1Spring {
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 					continue;
 				}
-				FTransform parentTransform = Output.Pose.GetComponentSpaceTransform(uu);
-
-				auto& state = JointStateMap.FindOrAdd(j1.boneNo);
 
 				if (RefSkeletonTransform.IsValidIndex(j1.boneNo) == false) {
 					continue;
 				}
 
+				// VRMC_springBone 1.0 defines consecutive joints[j] and joints[j+1]
+				// as a Head/Tail pair: boneAxis points from the Head to its authored
+				// Tail in Head-local space, composed across any plain (non-joint)
+				// nodes in between. The last joint is Tail-only and is not simulated.
+				if (jointNo + 1 >= s.joints.Num()) {
+					continue;
+				}
+
+				const int32 TailBoneNo = s.joints[jointNo + 1].boneNo;
+				FVector TailInHead = FVector::ZeroVector;
+				TArray<int32> TailInterBoneNos;
+				bool bTailResolved = false;
+				if (TailBoneNo != INDEX_NONE && RefSkeletonTransform.IsValidIndex(TailBoneNo)) {
+					FVector v = FVector::ZeroVector;
+					int32 walk = TailBoneNo;
+					while (walk != INDEX_NONE && walk != j1.boneNo && RefSkeletonTransform.IsValidIndex(walk)) {
+						v = RefSkeletonTransform[walk].TransformPosition(v);
+						if (walk != TailBoneNo) {
+							TailInterBoneNos.Insert(walk, 0);
+						}
+						walk = RefSkeleton.GetParentIndex(walk);
+					}
+					if (walk == j1.boneNo && v.IsNearlyZero() == false) {
+						TailInHead = v;
+						bTailResolved = true;
+					}
+				}
+
+				auto& state = JointStateMap.FindOrAdd(j1.boneNo);
+
 				state.initialLocalMatrix = RefSkeletonTransform[j1.boneNo];
 				state.initialLocalRotation = RefSkeletonTransform[j1.boneNo].GetRotation();
 
-#if	UE_VERSION_OLDER_THAN(5,0,0)
-				state.boneLength = RefSkeletonTransform[parentBoneIndex].GetLocation().Size();
-#else
-				state.boneLength = RefSkeletonTransform[j1.boneNo].GetLocation().Length();
-#endif
-				state.boneAxis = RefSkeletonTransform[j1.boneNo].TransformPosition(FVector::ZeroVector).GetSafeNormal();
+				// Anchor = the previous authored joint, if this joint descends from it.
+				state.anchorBoneNo = INDEX_NONE;
+				state.anchorInterBoneNos.Reset();
+				if (jointNo > 0 && s.joints[jointNo - 1].boneNo != INDEX_NONE) {
+					const int32 AnchorBoneNo = s.joints[jointNo - 1].boneNo;
+					TArray<int32> AnchorInterBoneNos;
+					int32 walk = parentBoneIndex;
+					bool bAnchorResolved = false;
+					while (walk != INDEX_NONE) {
+						if (walk == AnchorBoneNo) {
+							bAnchorResolved = true;
+							break;
+						}
+						AnchorInterBoneNos.Insert(walk, 0);
+						walk = RefSkeleton.GetParentIndex(walk);
+					}
+					if (bAnchorResolved) {
+						state.anchorBoneNo = AnchorBoneNo;
+						state.anchorInterBoneNos = AnchorInterBoneNos;
+					}
+				}
+
+				state.tailBoneNo = INDEX_NONE;
+				state.tailInterBoneNos.Reset();
+				if (bTailResolved) {
+					state.tailBoneNo = TailBoneNo;
+					state.tailInterBoneNos = TailInterBoneNos;
+					state.boneLength = TailInHead.Length();
+					state.boneAxis = TailInHead.GetSafeNormal();
+				} else {
+					// Tail missing or not a descendant: keep a scaled legacy axis so
+					// the joint stays stable instead of guessing an unresolvable chain.
+					const FVector FallbackAxis = RefSkeletonTransform[j1.boneNo].GetLocation() * 0.7f;
+					state.boneLength = FallbackAxis.Length();
+					state.boneAxis = FallbackAxis.GetSafeNormal();
+				}
 
 				{
 					FCompactPoseBoneIndex u = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j1.boneNo);
 					auto t = Output.Pose.GetComponentSpaceTransform(u);
 
-					state.prevTail = 
+					const FVector InitialTailLocal = t.GetLocation()
+						+ t.GetRotation().RotateVector(state.boneAxis * state.boneLength);
+					state.prevTail =
 						state.currentTail =
-						state.initialTail = ComponentToLocal.InverseTransformPosition(t.GetLocation());
+						state.initialTail = ComponentToLocal.InverseTransformPosition(InitialTailLocal);
 
 					state.resultQuat = t.GetRotation();
 				}
@@ -635,7 +694,11 @@ namespace VRM1Spring {
 
 				auto* state = JointStateMap.Find(j1.boneNo);
 				if (state == nullptr) {
-					init(vrmMetaObject, Output);
+					// Tail-only joints have no state by design. Re-init only when the
+					// manager never initialized, or this would re-run every frame.
+					if (bInit == false) {
+						init(vrmMetaObject, Output);
+					}
 					continue;
 				}
 
@@ -648,7 +711,26 @@ namespace VRM1Spring {
 					continue;
 				}
 
-				if (springBoneNoList.Find(parentBoneIndex) < 0) {
+				// Anchor to the previous authored joint's simulated transform,
+				// composing rest transforms across plain nodes in between
+				// (VRMC_springBone 1.0 allows Head to be any ancestor of Tail).
+				const FTransform* AnchorTransform = (state->anchorBoneNo != INDEX_NONE)
+					? calcTransform.Find(state->anchorBoneNo) : nullptr;
+				const FTransform* DirectParentCalc = calcTransform.Find(parentBoneIndex);
+				if (AnchorTransform || DirectParentCalc) {
+					// 親が揺れ骨。揺れ骨計算結果から参照
+					FTransform t = AnchorTransform ? *AnchorTransform : *DirectParentCalc;
+					if (AnchorTransform) {
+						for (int32 InterBoneNo : state->anchorInterBoneNos) {
+							if (RefSkeletonTransform.IsValidIndex(InterBoneNo) == false) {
+								continue;
+							}
+							t = RefSkeletonTransform[InterBoneNo] * t;
+						}
+					}
+					parentTransform = t;
+					currentTransform = RefSkeletonTransform[j1.boneNo] * parentTransform;
+				} else {
 					// 親が揺れ骨ではない。通常骨から参照
 
 					// 親
@@ -657,8 +739,7 @@ namespace VRM1Spring {
 						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 							continue;
 						}
-						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
-						parentTransform = NewBoneTM;
+						parentTransform = Output.Pose.GetComponentSpaceTransform(uu);
 					}
 
 					{
@@ -667,24 +748,8 @@ namespace VRM1Spring {
 						if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 							continue;
 						}
-						FTransform NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
-						currentTransform = NewBoneTM;
+						currentTransform = Output.Pose.GetComponentSpaceTransform(uu);
 					}
-				} else {
-					// 親が揺れ骨。揺れ骨計算結果から参照
-
-					// 親
-					//parentTransform = currentTransform;
-					auto* p = calcTransform.Find(parentBoneIndex);
-					if (p) {
-						parentTransform = *p;
-					}
-
-					auto c = RefSkeletonTransform[j1.boneNo];
-					auto t = c * parentTransform;
-
-					// 自分
-					currentTransform = t;
 				}
 
 				FQuat m_localRotation = state->initialLocalMatrix.GetRotation();
@@ -824,6 +889,15 @@ namespace VRM1Spring {
 		}
 	}
 
+	static void AddUniqueBoneTransform(TArray<FBoneTransform>& OutBoneTransforms, const FBoneTransform& BoneTransform) {
+		for (auto& t : OutBoneTransforms) {
+			if (t.BoneIndex == BoneTransform.BoneIndex) {
+				return;
+			}
+		}
+		OutBoneTransforms.Add(BoneTransform);
+	}
+
 	void VRM1SpringManager::applyToComponent(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms) {
 
 		const auto RefSkeleton = Output.AnimInstanceProxy->GetSkeleton()->GetReferenceSkeleton();
@@ -853,7 +927,6 @@ namespace VRM1Spring {
 				if (state == nullptr) continue;
 
 				FCompactPoseBoneIndex uu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(j.boneNo);
-				//FCompactPoseBoneIndex uu(j.boneNo);
 
 				if (Output.Pose.GetPose().IsValidIndex(uu) == false) {
 					continue;
@@ -862,48 +935,60 @@ namespace VRM1Spring {
 				FTransform NewBoneTM;
 
 				int parentBoneIndex = RefSkeleton.GetParentIndex(j.boneNo);
-				if (springBoneNoList.Find(parentBoneIndex) < 0) {
-					// 親は揺れ骨でない。
-
-					// 現在値
-					NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
-
-					// 差分
+				const FTransform* AnchorTransform = (state->anchorBoneNo != INDEX_NONE)
+					? calcTransform.Find(state->anchorBoneNo) : nullptr;
+				const FTransform* DirectParentCalc = calcTransform.Find(parentBoneIndex);
+				if (AnchorTransform || DirectParentCalc) {
+					// 親は揺れ骨。計算結果から参照する
+					FTransform t = AnchorTransform ? *AnchorTransform : *DirectParentCalc;
+					if (AnchorTransform) {
+						// Plain nodes between the previous joint and this joint follow
+						// rigidly, like scene-graph propagation in the source model.
+						for (int32 InterBoneNo : state->anchorInterBoneNos) {
+							if (RefSkeletonTransform.IsValidIndex(InterBoneNo) == false) {
+								continue;
+							}
+							t = RefSkeletonTransform[InterBoneNo] * t;
+							FCompactPoseBoneIndex iu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(InterBoneNo);
+							if (Output.Pose.GetPose().IsValidIndex(iu)) {
+								AddUniqueBoneTransform(OutBoneTransforms, FBoneTransform(iu, t));
+							}
+						}
+					}
+					NewBoneTM = RefSkeletonTransform[j.boneNo] * t;
 					NewBoneTM.SetRotation(state->resultQuat);
-
 					CurrentTransForm = NewBoneTM;
 				}
 				else {
-					// 親は揺れ骨。計算結果から参照する
-
-					auto* p = calcTransform.Find(parentBoneIndex);
-					if (p) {
-						NewBoneTM = *p;
-					}
-
-					auto c = RefSkeletonTransform[j.boneNo];
-					NewBoneTM = c * NewBoneTM;
+					// 親は揺れ骨でない。現在値に差分を適用
+					NewBoneTM = Output.Pose.GetComponentSpaceTransform(uu);
 					NewBoneTM.SetRotation(state->resultQuat);
-
 					CurrentTransForm = NewBoneTM;
 				}
 
-				FBoneTransform a(uu, NewBoneTM);
-
-				bool bFirst = true;
-				for (auto& t : OutBoneTransforms) {
-					if (t.BoneIndex == a.BoneIndex) {
-						bFirst = false;
-						break;
-					}
-				}
-
-				if (bFirst) {
-					OutBoneTransforms.Add(a);
-				}
-
+				AddUniqueBoneTransform(OutBoneTransforms, FBoneTransform(uu, NewBoneTM));
 
 				calcTransform.Add(j.boneNo, CurrentTransForm);
+
+				// The authored chain tail (and plain nodes before it) is Tail-only:
+				// not simulated, so move it rigidly with this joint to keep the
+				// skinned chain connected.
+				if (state->tailBoneNo != INDEX_NONE && JointStateMap.Contains(state->tailBoneNo) == false) {
+					FTransform t = CurrentTransForm;
+					TArray<int32> FollowBoneNos = state->tailInterBoneNos;
+					FollowBoneNos.Add(state->tailBoneNo);
+					for (int32 FollowBoneNo : FollowBoneNos) {
+						if (RefSkeletonTransform.IsValidIndex(FollowBoneNo) == false) {
+							break;
+						}
+						FCompactPoseBoneIndex fu = Output.Pose.GetPose().GetBoneContainer().GetCompactPoseIndexFromSkeletonIndex(FollowBoneNo);
+						if (Output.Pose.GetPose().IsValidIndex(fu) == false) {
+							break;
+						}
+						t = RefSkeletonTransform[FollowBoneNo] * t;
+						AddUniqueBoneTransform(OutBoneTransforms, FBoneTransform(fu, t));
+					}
+				}
 				// update rotation
 				//FVector to = (state->currentTail * (node.parent.worldMatrix * state->initialLocalMatrix).inverse).normalized;
 				//node.rotation = initialLocalRotation * Quaternion.fromToQuaternion(boneAxis, to);
